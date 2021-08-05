@@ -1,0 +1,19 @@
+{
+  "name": "fnkit",
+  "version": "1.0.0",
+  "description": "base function tools",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edsolater/fnkit.git"
+  },
+  "author": "edsolater <edsolater@qq.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/edsolater/fnkit/issues"
+  },
+  "homepage": "https://github.com/edsolater/fnkit#readme"
+}
