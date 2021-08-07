@@ -1,3 +1,2 @@
-export default function add(a, b) {
-  return a + b
-}
+export * from "./src/string"
+export * as String from "./src/string"
