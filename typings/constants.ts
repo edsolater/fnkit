@@ -4,8 +4,6 @@
  *
  ******************************/
 
-import { PropsWithChildren } from 'react'
-
 export type Primitive = boolean | number | string
 export type NoNullablePrimitive = NonNullable<Primitive>
 export type ObjectNotArray = { [key: string]: any }
@@ -81,18 +79,16 @@ export type URL = string
 /**
  * 2个方向
  */
-export type Direction = 'x' | 'y'
+export type Direction = "x" | "y"
 
 /**
  * 3个方向
  */
-export type Direction3D = 'x' | 'y' | 'z'
+export type Direction3D = "x" | "y" | "z"
 
 /**
  * 对应event都有的timeStamp
  */
 export type Timestamp = number
-
-export type ReactProps<P = {}> = PropsWithChildren<P>
 
 export type StringNumber = string

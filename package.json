@@ -4,7 +4,8 @@
   "description": "base function tools",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/edsolater/fnkit/issues"
   },
-  "homepage": "https://github.com/edsolater/fnkit#readme"
+  "homepage": "https://github.com/edsolater/fnkit#readme",
+  "devDependencies": {
+    "@types/jest": "^26.0.24",
+    "jest": "^27.0.6",
+    "typescript": "^4.3.5"
+  }
 }
