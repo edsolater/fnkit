@@ -1,6 +1,8 @@
 export type MayArray<T> = T | Array<T>
+export type MayReadonlyArray<T> = T | readonly T[]
 
 export type MayDeepArray<T> = T | Array<MayDeepArray<T>>
+export type MayDeepReadonlyArray<T> = T | ReadonlyArray<MayDeepReadonlyArray<T>>
 
 export type MayFunction<T> = T | (() => T)
 

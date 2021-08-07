@@ -1,6 +1,6 @@
 import isObjectLike from '../judgers/isObjectOrArray'
 import mergeShallow from '../object/mergeShallow'
-import { AnyFn } from 'typings/constants'
+import { AnyFn } from '../../typings/constants'
 
 /**
  * attach a param to the function.return the function's copy.

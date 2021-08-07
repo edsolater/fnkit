@@ -1,4 +1,4 @@
-import { Primitive } from 'typings/constants'
+import { Primitive } from '../../typings/constants'
 import isBoolean from './isBoolean'
 import isNumber from './isNumber'
 import isString from './isString'

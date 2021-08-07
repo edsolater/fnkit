@@ -11,7 +11,7 @@ import pick from './pick'
  */
 export default function divide<T extends object, U extends keyof T>(
   obj: T,
-  propNameList: ReadonlyArray<U>
+  propNameList: readonly U[]
 ): [Omit<T, U>, Pick<T, U>] {
   return [omit(obj, propNameList), pick(obj, propNameList)]
 }

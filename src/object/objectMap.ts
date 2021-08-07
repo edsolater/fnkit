@@ -1,4 +1,4 @@
-import type { Keyof, SKeyof, SValueof } from 'typings/tools'
+import type { Keyof, SKeyof, SValueof } from '../../typings/tools'
 
 /**
  * (纯函数)

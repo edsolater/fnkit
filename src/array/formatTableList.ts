@@ -1,4 +1,4 @@
-import { MayArray } from 'typings/tools'
+import { MayArray } from '../../typings/tools'
 import isArray from '../judgers/isArray'
 import isObjectLike from '../judgers/isObjectOrArray'
 import isPrimitive from '../judgers/isPrimitive'

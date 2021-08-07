@@ -10,5 +10,5 @@
     "strict": true,
     "baseUrl": "./" //typescript 根路径（绝对路径的根节点）
   },
-  "include": ["functions/**/*","typings/**/*", "index.tsx", "functions"]
+  "include": ["src/**/*","typings/**/*", "index.tsx", "src"]
 }

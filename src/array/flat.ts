@@ -1,4 +1,4 @@
-import { MayDeepArray } from '../../typings/tools'
+import { MayDeepReadonlyArray } from "../../typings/tools"
 /**
  * 将值包成数组并拍平
  * @param values 需要拍平的值
@@ -6,6 +6,8 @@ import { MayDeepArray } from '../../typings/tools'
  * @example
  * flat(1,[2,3,[4,5,[6]]]) // [1,2,3,4,5,6]
  */
-export default function flat<T>(...values: Array<MayDeepArray<T>>): T[] {
+export default function flat<T>(
+  ...values: readonly MayDeepReadonlyArray<T>[]
+): readonly T[] {
   return values.flat(Infinity)
 }
