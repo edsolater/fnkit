@@ -1,4 +1,4 @@
-import { AnyFn } from '../../typings/constants'
+import { AnyFn } from '../typings/constants'
 import isFunction from '../judgers/isFunction'
 
 /**

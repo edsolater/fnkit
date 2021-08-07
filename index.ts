@@ -1,2 +1,2 @@
-export * from "./src/string"
-export * as String from "./src/string"
+//@ts-ignore just for build
+export * from "./dist"

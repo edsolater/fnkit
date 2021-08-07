@@ -1,7 +1,7 @@
 // SERENDIPITY: looks like this is Promise then chain
 // Ask so, why not just use promise.prototype.then()？
 
-import { AnyFn } from '../../typings/constants'
+import { AnyFn } from '../typings/constants'
 
 // because the value can't get syncly
 function fall<T, F1 extends (arg: T) => any>(n: T, actions: [F1]): ReturnType<F1>

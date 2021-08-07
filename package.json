@@ -1,6 +1,6 @@
 {
-  "name": "fnkit",
-  "version": "1.0.0",
+  "name": "@edsolater/fnkit",
+  "version": "1.0.2",
   "description": "base function tools",
   "main": "index.ts",
   "scripts": {
@@ -17,6 +17,7 @@
     "url": "https://github.com/edsolater/fnkit/issues"
   },
   "homepage": "https://github.com/edsolater/fnkit#readme",
+  "files": ["dist/**/*"],
   "devDependencies": {
     "@types/jest": "^26.0.24",
     "jest": "^27.0.6",

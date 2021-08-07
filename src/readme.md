@@ -1,4 +1,4 @@
-函数 tag
+function tag
 
 - `array`
 - `dateTime`

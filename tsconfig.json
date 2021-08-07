@@ -9,7 +9,8 @@
     "noImplicitAny": false,
     "strict": true,
     "baseUrl": "./", //typescript 根路径（绝对路径的根节点）,
-    "outDir": "dist"
+    "outDir": "dist",
+    "declaration": true, // see https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig
   },
-  "include": ["src/**/*","typings/**/*", "index.tsx", "src"]
+  "include": ["src/**/*","src/typings/**/*", "index.tsx", "src"]
 }

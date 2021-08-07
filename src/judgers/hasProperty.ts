@@ -1,4 +1,4 @@
-import { MayArray } from '../../typings/tools'
+import { MayArray } from '../typings/tools'
 import isPrimitive from './isPrimitive'
 
 // it type is not intelligent enough

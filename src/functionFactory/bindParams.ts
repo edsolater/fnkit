@@ -1,4 +1,4 @@
-import { AnyFn } from '../../typings/constants'
+import { AnyFn } from '../typings/constants'
 
 /**
  * 绑定函数参数，以生成一个新函数

@@ -1,4 +1,4 @@
-import { ID } from '../../typings/constants'
+import { ID } from '../typings/constants'
 
 /**
  * 随机

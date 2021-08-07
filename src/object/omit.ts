@@ -1,5 +1,5 @@
-import { MayReadonlyArray } from "../../typings/tools"
-import flat from "../array/flat"
+import { MayReadonlyArray } from '../typings/tools'
+import flat from '../array/flatMayArray'
 
 /**
  * 几乎是Typescript的Omit的翻版

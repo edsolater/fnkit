@@ -1,4 +1,4 @@
-import { NotFunctionValue, Primitive } from '../../typings/constants'
+import { NotFunctionValue, Primitive } from '../typings/constants'
 import shrinkToValue from './shrinkToValue'
 
 // TODO: It's type generic is not correct

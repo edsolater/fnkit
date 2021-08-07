@@ -1,4 +1,4 @@
-import { ObjectNotArray } from '../typings/constants'
+import { ObjectNotArray } from './typings/constants'
 
 /**
  * （这只是个基础框架，没多少实用价值，需要包装成更强的函数）（只是浅复制了一层）
