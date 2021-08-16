@@ -1,6 +1,6 @@
 {
   "name": "@edsolater/fnkit",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "base function tools",
   "main": "./src/index.ts",
   "scripts": {
