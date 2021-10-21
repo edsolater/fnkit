@@ -50,9 +50,7 @@ type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: undefined }
  * const d: F = { d: '2' } // OK
  * const d: F = { a: 1, b: true, c: () => true, d: '2' } // Error
  */
-export type XOR<T, U> = T | U extends object
-  ? (Without<T, U> & U) | (Without<U, T> & T)
-  : T | U
+export type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
 /**
  * 只选取满足条件的属性名
@@ -85,11 +83,7 @@ export type NotUndefinedValue<O> = {
  * @example
  * ExtractProperty<{ key: 'hello' }, 'key'> // "hello"
  */
-export type ExtractProperty<
-  O,
-  P extends keyof any,
-  Fallback extends keyof any = any
-> = O extends {
+export type ExtractProperty<O, P extends keyof any, Fallback extends keyof any = any> = O extends {
   [Key in P]: infer K
 }
   ? K extends any
@@ -143,9 +137,7 @@ export type PascalCaseFromCamelCase<S extends string> = Capitalize<S>
  * PascalCase<'hello-world-hi-I-am'> // 'HelloWroldHiIAm'
  * PascalCase<'hello-world-hi-I-am-Ed'> // 'HelloWroldHiIAmEd'
  */
-export type PascalCase<S extends string> = PascalCaseFromKebabCase<
-  Capitalize<S>
->
+export type PascalCase<S extends string> = PascalCaseFromKebabCase<Capitalize<S>>
 
 /**
  * @example
@@ -186,9 +178,7 @@ export type CamelCaseFromPascalCase<S extends string> = Uncapitalize<S>
  * CamelCase<'hello-world-hi-I-am'> // 'HelloWroldHiIAm'
  * CamelCase<'hello-world-hi-I-am-Ed'> // 'HelloWroldHiIAmEd'
  */
-export type CamelCase<S extends string> = CamelCaseFromKebabCase<
-  Uncapitalize<S>
->
+export type CamelCase<S extends string> = CamelCaseFromKebabCase<Uncapitalize<S>>
 
 /**
  * !!! only support kebab-case => snake_case yet!!!
@@ -221,3 +211,21 @@ export type SKeyof<O> = O extends { [s in infer T]: any } ? T : any
  */
 export type SValueof<O> = O extends { [s: string]: infer T } ? T : any
 //#endregion
+
+/**
+ *
+ * @example
+ * interface A {
+ *   keyA: string
+ *   keyB: string
+ *   keyC: number
+ * }
+ * type WrappedA = SwitchValue<A, string, boolean> // {
+ *   keyA: boolean
+ *   keyB: boolean
+ *   keyC: number
+ * }
+ */
+export type SwitchValue<Old, FromValue, ToValue> = {
+  [T in keyof Old]: Old[T] extends FromValue ? ToValue : Old[T]
+}
