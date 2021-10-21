@@ -2,7 +2,7 @@
  * @param str input string
  * @example
  * 'helloWorld' => ['hello', 'world']
- * 'helloWorldUI' => ['hello', 'world', 'u', 'i']
+ * 'helloWorldUI' => ['hello', 'world', 'ui']
  * 'helloWOrld' => ['hello', 'w', 'orld']
  * 'hello-world' => ['hello', 'world']
  * 'hello--world' => ['hello', 'world']
@@ -12,9 +12,11 @@
  */
 function _parseString(str: string): string[] {
   return str
-    .replace(/[A-Z]/g, '-$&')
+    .replace(/(?<![A-Z])[A-Z]/g, '-$&')
+    .replace(/(?<=[A-Z])[A-Z](?=[a-z])/g, '-$&')
+    .replace(/_/g, '-')
     .toLowerCase()
-    .replace(/[^a-z]+/g, ' ')
+    .replace(/\W+/g, ' ')
     .trim()
     .split(' ')
 }
