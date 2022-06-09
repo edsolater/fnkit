@@ -8,9 +8,10 @@
     "moduleResolution": "node", //可以自动使用文件夹下的 index.ts
     "noImplicitAny": false,
     "strict": true,
-    "baseUrl": "./", //typescript 根路径（绝对路径的根节点）,
+    "noEmit": true,
+    "incremental": true,
     "outDir": "dist",
     "declaration": true, // see https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig
+    "isolatedModules": true,
   },
-  "include": ["src/**/*","src/typings/**/*", "index.tsx", "src"]
 }

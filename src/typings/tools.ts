@@ -1,10 +1,25 @@
+import { AnyFn, Falsy } from './constants'
+
 export type MayArray<T> = T | Array<T>
-export type MayReadonlyArray<T> = T | readonly T[]
+export type DeMayArray<T> = T extends any[] ? T[number] : T
+
+export type MayFn<T, Params extends any[] = any[]> = T | ((...params: Params) => T)
+export type DeMayFn<T extends MayFn<any>> = T extends (...args: any[]) => infer R ? R : T
+export type MayParameter<T> = AnyFn extends T ? Parameters<Extract<T, AnyFn>> : any[]
+
+export type Wrap<T, Params extends any[] = any[]> = MayArray<MayFn<T, Params>>
+export type DeWrap<T extends MayArray<MayFn<any>>> = DeMayFn<DeMayArray<T>>
 
 export type MayDeepArray<T> = T | Array<MayDeepArray<T>>
-export type MayDeepReadonlyArray<T> = T | ReadonlyArray<MayDeepReadonlyArray<T>>
+export type DeMayDeepArray<T> = T extends MayDeepArray<infer U> // can't recursively unwrap a recursively wrapped value , so have to handle special case first
+  ? U
+  : T extends Array<any>
+  ? DeMayDeepArray<T[number]>
+  : T
 
-export type MayFunction<T> = T | (() => T)
+export type MayObj<T, KeyName extends string = 'defaultKey'> = T | { [key in KeyName]: T }
+export type DeMayObj<T extends MayObj<any>> = T extends Record<string, any> ? T[keyof T] : T
+export type MayObjKey<T extends MayObj<any>> = T extends Primitive ? never : T extends Record<infer R, any> ? R : never
 
 /**
  * 能有enum提示，同时，传入其他string也不报错
@@ -13,6 +28,9 @@ export type MayFunction<T> = T | (() => T)
  */
 export type MayEnum<T> = T | (string & {})
 
+/** it's result must be one level of Promise */
+export type Promisify<T> = Promise<Awaited<T>>
+export type MayPromise<T> = Awaited<T> | Promisify<T>
 /**
  * type I = GetRequired<{ foo: number, bar?: string }> // expected to be { foo: number }
  */
@@ -24,22 +42,25 @@ export type MayEnum<T> = T | (string & {})
 // type GetOptional<T> = {[P in keyof T as T[P] extends Required<T>[P] ? never: P]: T[P]}
 
 /**
- * 获取对象的所有非方法的属性名
+ * get all property names with filter
  * @example
  * Properties<{a: number, b: true, c(): boolean}> // 'a' | 'b'
  */
-export type Properties<O, T = keyof O> = T extends keyof O
-  ? O[T] extends () => void
-    ? never
-    : T
-  : never
+export type PickKeys<O, AssertType, K = keyof O> = K extends keyof O ? (O[K] extends AssertType ? K : never) : never
 
 /**
- * 获取对象的所有方法名
+ * get all method names
  * @example
- * Properties<{a: number, b: true, c(): boolean}> // 'c'
+ * MethodKeys<{a: number, b: true, c(): boolean}> // 'c'
  */
-export type Methods<O> = Exclude<keyof O, Properties<O>>
+export type PickMethodKeys<O> = PickKeys<O, AnyFn>
+
+/**
+ * get all pure property names
+ * @example
+ * PropertyKeys<{a: number, b: true, c(): boolean}> // 'a' | 'b'
+ */
+export type PickPropertyKeys<O> = Exclude<keyof O, PickMethodKeys<O>>
 
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: undefined }
 /**
@@ -90,12 +111,6 @@ export type ExtractProperty<O, P extends keyof any, Fallback extends keyof any =
     ? K
     : Fallback
   : Fallback
-
-/**
- * @example
- * ArrayItem<['hello', 'world']> // "hello" | "world"
- */
-export type ArrayItem<A> = A extends readonly (infer T)[] ? T : any
 
 //#region ------------------- word case -------------------
 /**
@@ -203,29 +218,100 @@ export type SnakeCase<S extends string> =
 export type Keyof<O> = keyof O
 export type Valueof<O> = O[keyof O]
 /**
- * extract only string and number
+ * extract only string
  */
-export type SKeyof<O> = O extends { [s in infer T]: any } ? T : any
+export type SKeyof<O> = Extract<keyof O, string>
+
 /**
  * extract only string and number
  */
-export type SValueof<O> = O extends { [s: string]: infer T } ? T : any
+export type SValueof<O> = O[SKeyof<O>]
 //#endregion
+
+type A = '3' | number | symbol
+type B = Extract<A, string | number>
+type Primitive = boolean | number | string | null | undefined
 
 /**
  *
  * @example
+ * ```
  * interface A {
- *   keyA: string
- *   keyB: string
- *   keyC: number
+ *   keyA: string;
+ *   keyB: string;
+ *   map: {
+ *     hello: string;
+ *     i: number;
+ *   };
+ *   list: (string | number)[];
+ *   keyC: number;
  * }
- * type WrappedA = SwitchValue<A, string, boolean> // {
- *   keyA: boolean
- *   keyB: boolean
- *   keyC: number
+ *
+ * type WrappedA = ReplaceType<A, string, boolean> // {
+ *   keyA: boolean;
+ *   keyB: boolean;
+ *   map: {
+ *     hello: boolean;
+ *     i: number;
+ *   };
+ *   list: (number | boolean)[];
+ *   keyC: number;
  * }
+ * ```
  */
-export type SwitchValue<Old, FromValue, ToValue> = {
-  [T in keyof Old]: Old[T] extends FromValue ? ToValue : Old[T]
+export type ReplaceType<Old, From, To> = {
+  [T in keyof Old]: Old[T] extends Primitive
+    ? From extends Old[T]
+      ? Exclude<Old[T], From> | To
+      : Old[T]
+    : ReplaceType<Old[T], From, To>
 }
+
+/**
+ * @see https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir
+ * @see https://github.com/Microsoft/TypeScript/issues/27024#issuecomment-421529650
+ */
+export type TypeEquals<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false
+export type WritableKeys<T> = {
+  [P in keyof T]: TypeEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }> extends true ? P : never
+}[keyof T]
+export type ReadonlyKeys<T> = {
+  [P in keyof T]: TypeEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }> extends true ? never : P
+}[keyof T]
+export type OnlyWritable<T> = Pick<T, WritableKeys<T>>
+export type OnlyReadonly<T> = Pick<T, ReadonlyKeys<T>>
+
+export type NeverKeys<O> = { [K in keyof O]: O[K] extends never ? K : never }[keyof O]
+export type UndefinedKeys<O> = { [K in keyof O]: O[K] extends undefined ? K : never }[keyof O]
+export type NullKeys<O> = { [K in keyof O]: O[K] extends null ? K : never }[keyof O]
+export type NilKeys<O> = NullKeys<O> | UndefinedKeys<O>
+export type FalsyKeys<O> = { [K in keyof O]: O[K] extends Falsy ? K : never }[keyof O]
+
+export type ShakeNever<O> = Omit<O, NeverKeys<O>>
+export type ShakeUndefined<O> = Omit<O, UndefinedKeys<O>>
+export type ShakeNull<O> = Omit<O, NullKeys<O>>
+export type ShakeNil<O> = Omit<O, NilKeys<O>>
+export type ShakeFalsy<O> = Omit<O, FalsyKeys<O>>
+
+export type GetValue<T, K> = K extends keyof T ? T[K] : undefined
+/**
+ * @example
+ * type A = { a: number; b: string; c?: string }
+ * type B = { a: string; c: string; d?: boolean }
+ *
+ * type D = SOR<A, B> // { a: number | string; b: string | undefined; c: string | undefined; d: boolean | undefined } // ! if use SOR, you lost union type guard feature, try NOT to use this trick
+ */
+export type SOR<T, U> = { [K in keyof T | keyof U]: GetValue<T, K> | GetValue<U, K> }
+
+export type Fallback<T, FallbackT> = T extends undefined ? FallbackT : T
+
+/**
+ * @example
+ * type A = { a: number; b: string; c?: string }
+ * type B = { a: string; c: string; d?: boolean }
+ *
+ * type D = Cover<A, B> // { a: string; b: string; c: string; d?: boolean}
+ */
+export type Cover<O, T> = { [K in SKeyof<O> | SKeyof<T>]: Fallback<GetValue<T, K>, GetValue<O, K>> }
+
+export type UnionCover<O, T> = T extends T ? Cover<O, T> : never

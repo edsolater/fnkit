@@ -4,16 +4,26 @@
  *
  ******************************/
 
+
 export type Primitive = boolean | number | string
 export type NoNullablePrimitive = NonNullable<Primitive>
 export type ObjectNotArray = { [key: string]: any }
+export type Numberish = number | string | bigint | NumberishAtom 
+export type NumberishAtom = { decimal: number; all: bigint; toString: () => string }
+export type NumberishAtomRaw = Omit<NumberishAtom, 'toString'>
 /**
  * 任何函数
  */
 export type AnyFn = (...args: any[]) => any
 export type AnyObj = { [key: string]: any }
-export type AnyArr = any[]
+export type AnyArr = readonly any[]
+export type AnyMap = Map<any, any>
+export type AnySet = Set<any>
 export type NotFunctionValue = Exclude<any, AnyFn>
+
+export type Nullish = undefined | null
+export type Falsy = Nullish | false | 0 | ''
+export type NonFalsy<T> = Exclude<T, Falsy>
 
 /**
  * 移动距离
@@ -79,12 +89,12 @@ export type URL = string
 /**
  * 2个方向
  */
-export type Direction = "x" | "y"
+export type Direction = 'x' | 'y'
 
 /**
  * 3个方向
  */
-export type Direction3D = "x" | "y" | "z"
+export type Direction3D = 'x' | 'y' | 'z'
 
 /**
  * 对应event都有的timeStamp

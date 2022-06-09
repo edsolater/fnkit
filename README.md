@@ -1,2 +1,5 @@
-# fnkit
-just some base function, which can be used in all other project
+# collection
+
+`xxxEntry()` and `xxxKey()` is for object \
+`xxx()` is for arr and object(value, key)
+
