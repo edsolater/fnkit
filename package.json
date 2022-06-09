@@ -1,5 +1,5 @@
 {
-  "name": "@uni/fnkit",
+  "name": "@edsolater/fnkit",
   "version": "0.0.1",
   "description": "base function tools",
   "main": "./dist/index.js",
