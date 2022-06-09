@@ -2,7 +2,7 @@ import { AnyObj, isArray } from '../'
 import { SKeyof, SValueof } from '../typings'
 
 export function reduce<T, U>(
-  arr: T[],
+  arr: readonly T[],
   callbackFn: (acc: U, item: T, index: number, arr: readonly T[]) => U,
   initialValue: U
 ): U
