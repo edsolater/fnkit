@@ -1,8 +1,6 @@
 export type Entry<Value = any, Key = any> = [Key, Value]
 export type ItemEntry<Item = any> = Entry<Item, number>
-export type Collection<Value = any, Key = any> =
-  | ArrayLikeCollection<Value>
-  | ObjectLikeCollection<Value, Key>
+export type Collection<Value = any, Key = any> = ArrayLikeCollection<Value> | ObjectLikeCollection<Value, Key>
 
 type ArrayLikeCollection<Value = any> =
   | ReadonlyArray<Value>
@@ -12,11 +10,9 @@ type ArrayLikeCollection<Value = any> =
 type ObjectLikeCollection<Value = any, Key = any> =
   | ReadonlyMap<Key, Value>
   | Map<Key, Value>
-  // @ts-expect-error tedius key type string | symbol | number
-  | Record<Key, Value>
+  | Record<Extract<Key, string | symbol>, Value>
   | {
-      // @ts-expect-error tedius key type string | symbol | number
-      [k in Key]: Value
+      [k in Extract<Key, string | symbol>]: Value
     }
 
 export type GetCollectionKey<C> = C extends ArrayLikeCollection

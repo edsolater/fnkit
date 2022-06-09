@@ -23,10 +23,10 @@ export default function filter(collection, predicate) {
 
 export function filterEntry<O, V extends O[keyof O], K extends keyof any>(
   collection: O,
-  predicate: (entry: [key: keyof O, value: O[keyof O]], obj: O) => unknown
+  predicate: (entry: [key: SKeyof<O>, value:SValueof<O>], obj: O) => unknown
 ): { [P in K]?: V } {
   return Object.fromEntries(
-    Object.entries(collection).filter(([k, v]) => predicate([k as keyof O, v], collection))
+    Object.entries(collection).filter(([k, v]) => predicate([k as SKeyof<O>, v], collection))
   ) as {
     [P in K]?: V
   }

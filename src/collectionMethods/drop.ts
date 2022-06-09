@@ -1,5 +1,5 @@
 import { isMemberOf } from '../compare'
-import { AnyObj, ShakeNever } from '../typings'
+import { AnyObj, ShakeNever, SValueof } from '../typings'
 import filter, { filterEntry, filterKey } from './filter'
 
 type Drop<T, K> = ShakeNever<{
@@ -27,10 +27,10 @@ export default function drop(collection, ...values): any {
   return filter(collection, (v) => !isMemberOf(values, v))
 }
 
-export function dropEntry<O extends AnyObj>(collection: O[], ...values: O[keyof O][]) {
+export function dropEntry<O extends AnyObj>(collection: O, ...values: SValueof<O>[]) {
   return filterEntry(collection, ([k, v]) => !isMemberOf(values, v))
 }
 
-export function dropKey<O extends AnyObj>(collection: O, ...keys: O[keyof O][]) {
+export function dropKey<O extends AnyObj>(collection: O, ...keys: SValueof<O>[]) {
   return filterKey(collection, (k) => !isMemberOf(keys, k))
 }
