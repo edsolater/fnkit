@@ -1,6 +1,6 @@
 {
   "name": "@edsolater/fnkit",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "base function tools",
   "main": "./dist/index.js",
   "scripts": {
@@ -14,8 +14,7 @@
     "url": "git+https://github.com/edsolater/fnkit.git"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "author": "edsolater <edsolater@qq.com>",
   "license": "MIT",
