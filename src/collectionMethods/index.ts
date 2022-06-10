@@ -27,12 +27,16 @@ export * from './insert'
 export * from './map'
 export { default as map } from './map'
 
-// TODO isolate flatMap() (2022-04-20 02:42)
-
 export * from './reduce'
+
+// TODO isolate flatMap() (2022-06-10)
 export * from './shakeNil'
 export { default as some } from './some'
 
 // TODO: changeCollectionType: (oldCollection, targetType: 'array' | 'object' | 'set' | 'map') => newCollection
 
 export * from './arrayEnhanceMethods'
+
+
+/** @dreprecated */
+export * from './entries'

@@ -1,9 +1,10 @@
 {
   "name": "@edsolater/fnkit",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "base function tools",
   "main": "./dist/index.js",
   "scripts": {
+    "publish": "npm publish --access public",
     "build": "tsup",
     "test": "jest",
     "type-check": "tsc --pretty --noEmit"
