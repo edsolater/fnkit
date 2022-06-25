@@ -191,6 +191,14 @@ export function isPrimitive(v: unknown): v is Primitive {
   return isBoolean(v) || isNumber(v) || isString(v)
 }
 
+export function isEmtyObject(obj: any): boolean {
+  return (isArray(obj) && obj.length === 0) || (isObject(obj) && Object.keys(obj).length === 0)
+}
+
+export function isEmtyString(v: any): boolean {
+  return v === ''
+}
+
 export function isSymbol(val: unknown): val is symbol {
   return getType(val) === 'symbol'
 }
