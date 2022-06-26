@@ -25,3 +25,9 @@ export function shakeFalsy(target) {
 export function unified<T>(arr: T[]): T[] {
   return [...new Set(arr)]
 }
+
+export function unifyByKey<T>(objList: T[], getKey: (item: T) => string): T[] {
+  const mapKey = objList.map(getKey)
+  const unifyMap = unified(mapKey)
+  return shakeNil(unifyMap.map((key) => objList.find((item) => getKey(item) === key)))
+}
