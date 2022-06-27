@@ -73,27 +73,30 @@ export function equal(a: Numberish | undefined, b: Numberish | undefined): boole
 }
 export const eq = equal
 
-export function isMeaningfulNumber(n: Numberish | undefined): n is Numberish {
+export function isMeaningfulNumber<T extends Numberish | undefined>(n: T): n is NonNullable<T> {
   if (n == null) return false
   return !eq(n, 0)
 }
 
-export function isMeaninglessNumber(n: Numberish | undefined): n is Numberish {
+export function isMeaninglessNumber<T extends Numberish | undefined>(n: T): boolean {
   if (n == null) return true
   return eq(n, 0)
 }
 
-export const isZero = (a: Numberish | undefined) => (a == null ? false : equal(a, 0))
-export const notZero = (a: Numberish | undefined) => (a == null ? false : !equal(a, 0))
-export const hasDecimal = (a: Numberish | undefined) =>
+export const isZero = <T extends Numberish | undefined>(a: T): a is NonNullable<T> => (a == null ? false : equal(a, 0))
+
+export const notZero = <T extends Numberish | undefined>(a: T): boolean => !isZero(a)
+
+export const hasDecimal = <T extends Numberish | undefined>(a: T): a is NonNullable<T> =>
   a == null ? false : toNumberishAtom(a).decimal > 0
-export const isInt = (a: Numberish | undefined) =>
+
+export const isInt = <T extends Numberish | undefined>(a: T): a is NonNullable<T> =>
   a == null ? false : toNumberishAtom(a).decimal === 0
 
-export function getMax(a: Numberish, b: Numberish): Numberish {
+export function getMax<A extends Numberish, B extends Numberish>(a: A, b: B): A | B {
   return gt(b, a) ? b : a
 }
 
-export function getMin(a: Numberish, b: Numberish): Numberish {
+export function getMin<A extends Numberish, B extends Numberish>(a: A, b: B): A | B {
   return lt(b, a) ? b : a
 }
