@@ -1,4 +1,4 @@
-import { isFunction, isNumber, isIndex } from './dataType'
+import { isFunction, isNumber, isIndex, isArray, isSet } from './dataType'
 import { MayPromise, Promisify } from './typings/tools'
 
 /**
@@ -79,26 +79,72 @@ export function groupArrayBySize<T>(items: readonly T[], groupSize: number) {
 }
 
 /**
- * 基于index删除数组项（返回新数组）
+ *
+ * @param arr source
+ * @param fromIndex delete start index
+ * @param length delete length (default 1)
  */
-export function remove<T extends Array<any>, U extends number, V extends number>(arr: T, fromIndex: U, length: V): T {
+export function removeItemByLength<T extends any[]>(arr: T, fromIndex: number, length = 1): T {
   const newArray = [...arr]
   newArray.splice(fromIndex, length)
-  //@ts-ignore
-  return newArray
+  return newArray as T
 }
 
 /**
- * 基于items删除数组项（返回新数组）
+ * @param arr source
+ * @param fromIndex delete start index
+ * @param endIndex delete end index (default fromIndex + 1)
+ * @returns
  */
-export function removeItem<T extends Array<any>>(arr: T, ...items: T): T {
+export function removeItemByIndex<T extends any[]>(arr: T, fromIndex: number, endIndex = fromIndex + 1): T {
   const newArray = [...arr]
-  items.forEach((item) => {
-    const removeIndex = newArray.indexOf(item)
-    if (isIndex(removeIndex)) newArray.splice(removeIndex, 1)
-  })
-  //@ts-ignore
-  return newArray
+  newArray.splice(fromIndex, endIndex - fromIndex)
+  return newArray as T
+}
+
+export function addItem<T, U>(arr: T[], ...items: U[]): (T | U)[]
+export function addItem<T, U>(set: Set<T>, ...items: U[]): Set<T | U>
+export function addItem(arr, ...items) {
+  if (isArray(arr)) {
+    return [...arr, ...items]
+  }
+  // Set
+  if (isSet(arr)) {
+    const newSet = new Set(arr)
+    items.forEach((item) => newSet.add(item))
+    return newSet
+  }
+}
+
+export function removeItem<T>(arr: T[], ...items: T[]): T[]
+export function removeItem<T>(set: Set<T>, ...items: T[]): Set<T>
+export function removeItem(arr, ...items) {
+  if (isArray(arr)) {
+    return arr.filter((i) => !items.includes(i))
+  }
+  // Set
+  if (isSet(arr)) {
+    const newSet = new Set(arr)
+    items.forEach((item) => newSet.delete(item))
+    return newSet
+  }
+}
+
+/** toggle will auto unified items */
+export function toggleSetItem<T>(arr: T[], ...items: T[]): T[]
+export function toggleSetItem<T>(set: Set<T>, ...items: T[]): Set<T>
+export function toggleSetItem(arr, ...items) {
+  if (isArray(arr)) {
+    const newSet = new Set(arr)
+    items.forEach((item) => (newSet.has(item) ? newSet.delete(item) : newSet.add(item)))
+    return Array.from(newSet)
+  }
+  // Set
+  if (isSet(arr)) {
+    const newSet = new Set(arr)
+    items.forEach((item) => (newSet.has(item) ? newSet.delete(item) : newSet.add(item)))
+    return newSet
+  }
 }
 
 /**
