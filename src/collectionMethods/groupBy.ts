@@ -11,7 +11,7 @@ import { toEntries } from './entries'
 export function groupBy<T extends AnyArr, GroupName extends string | number | undefined>(
   arr: T,
   predicate: (item: T[number], index: number, arr: T) => GroupName
-): Record<NonNullable<GroupName>, Partial<T> | undefined>
+): Record<NonNullable<GroupName>, T | undefined>
 export function groupBy<K, V, GroupName extends string | number | undefined>(
   collection: Map<K, V>,
   predicate: (value: V, key: K, map: Map<K, V>) => GroupName
@@ -31,7 +31,7 @@ export function groupBy(collection, predicate) {
 function jsArrayGroupBy<T extends AnyArr, GroupName extends string | number | undefined>(
   arr: T,
   predicate: (item: T[number], index: number, arr: T) => GroupName
-): Record<NonNullable<GroupName>, Partial<T> | undefined> {
+): Record<NonNullable<GroupName>, T | undefined> {
   return arr.reduce((acc, item, idx) => {
     const groupName = predicate(item, idx, arr)
     if (groupName) acc[groupName] = [...(acc[groupName] ?? []), item]

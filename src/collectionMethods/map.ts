@@ -42,10 +42,10 @@ export function mapKey<O extends {}, N extends keyof any>(
  */
 export function flatMapEntries<C extends Collection, V, K>(
   collection: C,
-  callback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>) => Entry<V, K>[]
+  callback: (entry: [key: GetCollectionKey<C>, value: GetCollectionValue<C>]) => Entry<V, K>[]
 ): GetNewCollection<C, V, K> {
   const entries = toEntries(collection)
-  const newEntries = entries.flatMap((entry) => callback(getEntryValue(entry), getEntryKey(entry)))
+  const newEntries = entries.flatMap((entry) => callback([getEntryKey(entry), getEntryValue(entry)]))
   return toCollection(newEntries, getType(collection))
 }
 
@@ -88,7 +88,7 @@ export function flatMap<C extends Collection, V, K = GetCollectionKey<C>>(
     // @ts-expect-error faster for build-in method, no need type check
     return collection.flatMap(callback)
   }
-  return flatMapEntries(collection, (value, key) =>
+  return flatMapEntries(collection, ([key, value]) =>
     callback(value, key).map((newValue) => toEntry(newValue, key))
   ) as any
 }

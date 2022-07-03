@@ -162,7 +162,7 @@ export function toggleSetItem(arr, ...items) {
  */
 export function replaceItem<T, U>(
   arr: readonly U[],
-  replaceTarget: U | number | ((item: U, index: number) => boolean),
+  replaceTarget: U | ((item: U, index: number) => boolean),
   newItem: T
 ) {
   const index = isNumber(replaceTarget)
