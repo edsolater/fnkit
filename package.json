@@ -6,9 +6,8 @@
   "scripts": {
     "build": "tsup",
     "test": "jest",
-    "type-check": "tsc --pretty --noEmit"
+    "type-check": "tsc --noEmit"
   },
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/edsolater/fnkit.git"

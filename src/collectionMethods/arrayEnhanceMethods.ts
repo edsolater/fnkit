@@ -42,6 +42,6 @@ export function pick<T extends Collection, U extends keyof T>(
 }
 
 export function getKeys<T extends Collection>(collection: T): GetCollectionKey<T>[] {
-  const entries = toEntries(collection)
+  const entries = [...toEntries(collection)]
   return entries.map((entry) => getEntryKey(entry))
 }

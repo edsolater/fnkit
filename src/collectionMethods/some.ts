@@ -1,16 +1,6 @@
-import {
-  Collection,
-  isArray
-} from '../'
-import {
-  GetCollectionKey,
-  GetCollectionValue
-} from './'
-import {
-  getEntryKey,
-  getEntryValue,
-  toEntries
-} from './entries'
+import { Collection, isArray } from '../'
+import { GetCollectionKey, GetCollectionValue } from './'
+import { getEntryKey, getEntryValue, toEntries } from './entries'
 
 /**
  * design for arry object set and map
@@ -27,8 +17,8 @@ export default function some<C extends Collection>(
 ): boolean {
   if (isArray(collection)) {
     // @ts-expect-error faster for build-in method, no need type check
-    return collection.some(predicate) 
+    return collection.some(predicate)
   }
-  const entries = toEntries(collection)
+  const entries = [...toEntries(collection)]
   return entries.some((entry) => predicate(getEntryValue(entry), getEntryKey(entry)))
 }

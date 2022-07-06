@@ -1,4 +1,6 @@
-export type Entry<Value = any, Key = any> = [Key, Value]
+export type Entry<Value = any, Key = any> = { key: Key; value: Value }
+export type GetEntryValue<E extends Entry> = E['value'] 
+export type GetEntryKey<E extends Entry> = E['key'] 
 export type ItemEntry<Item = any> = Entry<Item, number>
 export type Collection<Value = any, Key = any> = ArrayLikeCollection<Value> | ObjectLikeCollection<Value, Key>
 

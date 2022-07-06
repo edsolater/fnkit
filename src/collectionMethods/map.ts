@@ -2,7 +2,7 @@ import { Collection, Entry, getType } from '../'
 import { isArray } from '../dataType'
 import { AnyArr, AnyObj, SKeyof, SValueof } from '../typings'
 import { GetCollectionKey, GetCollectionValue, GetNewCollection } from './'
-import { getEntryKey, getEntryValue, toCollection, toEntries, toEntry, toKeyValueEntry } from './entries'
+import { getEntryKey, getEntryValue, toCollection, toEntries, toEntry } from './entries'
 
 /**
  * {@link mapEntry `mapEntry()`}
@@ -44,7 +44,7 @@ export function flatMapEntries<C extends Collection, V, K>(
   collection: C,
   callback: (entry: [key: GetCollectionKey<C>, value: GetCollectionValue<C>]) => Entry<V, K>[]
 ): GetNewCollection<C, V, K> {
-  const entries = toEntries(collection)
+  const entries = [...toEntries(collection)]
   const newEntries = entries.flatMap((entry) => callback([getEntryKey(entry), getEntryValue(entry)]))
   return toCollection(newEntries, getType(collection))
 }
@@ -94,3 +94,4 @@ export function flatMap<C extends Collection, V, K = GetCollectionKey<C>>(
 }
 
 // TODO: asyncMap (already in bonsai)
+

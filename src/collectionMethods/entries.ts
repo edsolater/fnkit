@@ -3,21 +3,81 @@
  * @TODO delete
  */
 
-import { Collection, Entry, isArray, isMap, isObject, isSet } from '../'
+import {
+  AnyArr,
+  AnyMap,
+  AnyObj,
+  AnySet,
+  Collection,
+  Entry,
+  GetEntryKey,
+  GetEntryValue,
+  isArray,
+  isMap,
+  isObject,
+  isSet
+} from '../'
 
 /**
+ * @example
+ * toEntry(toEntry(v, k)) === toEntry(v, k)
+ */
+export function toEntry<E, K>(value: E, key?: K): E extends Entry ? E : Entry<E, K> {
+  // @ts-expect-error force
+  return isEntry(value) ? value : ({ key: key, value: value } as Entry<E, K>)
+}
+/**
  * split collection into pieces
+ * ! return iterable
  * @param target Entriesable
  * @returns a list of Entry
  * @requires {@link isArray `isArray()`} {@link isMap `isMap()`} {@link isObject `isObject()`} {@link isSet `isSet()`}
  */
-export function toEntries<Key = any, Value = any>(target: Collection<Value, Key>): Entry<Value, Key>[] {
-  if (isArray(target)) return target.map((fragnment, idx) => toEntry(fragnment, idx as unknown as Key))
-  if (isSet(target)) return [...target].map((fragnment, idx) => toEntry(fragnment, idx as unknown as Key))
-  if (isMap(target)) return [...target.entries()].map(([key, value]) => toEntry(value, key))
-  if (isObject(target)) return Object.entries(target).map(([key, value]) => toEntry(value, key))
-
+export function toEntries<Key = any, Value = any>(target: Collection<Value, Key>): Iterable<Entry<Value, Key>> {
+  if (isArray(target)) return toArrayEntries(target)
+  if (isSet(target)) return toSetEntries(target)
+  if (isMap(target)) return toMapEntries(target)
+  if (isObject(target)) return toObjectEntries(target)
   throw new Error(`#fn:toEntry : ${target} can't transform to Entries`)
+}
+function* toArrayEntries(arr: AnyArr): Iterable<Entry> {
+  for (const [idx, item] of arr.entries()) {
+    yield toEntry(item, idx)
+  }
+}
+function* toObjectEntries(obj: AnyObj): Iterable<Entry> {
+  for (const [key, value] of Object.entries(obj)) {
+    yield toEntry(value, key)
+  }
+}
+function* toSetEntries(arr: AnySet): Iterable<Entry> {
+  for (const [randomIdx, item] of arr.entries()) {
+    yield toEntry(item, randomIdx)
+  }
+}
+function* toMapEntries(arr: AnyMap): Iterable<Entry> {
+  for (const [mapKey, mapValue] of arr.entries()) {
+    yield toEntry(mapValue, mapKey)
+  }
+}
+function* mapEntry<E extends Entry, U>(
+  entries: Iterable<E>,
+  mapFn: (value: GetEntryValue<E>, key: GetEntryKey<E>) => U
+) {
+  for (const entry of entries) {
+    yield mapFn(getEntryValue(entry), getEntryKey(entry))
+  }
+}
+
+export function isEntry(mayEntry: any): mayEntry is Entry {
+  return isObject(mayEntry) && '_key' in mayEntry && '_value' in mayEntry
+}
+
+export function getEntryKey<K>(entry: Entry<any, K>): K {
+  return entry.key
+}
+export function getEntryValue<V>(entry: Entry<V>): V {
+  return entry.value
 }
 
 /**
@@ -25,41 +85,15 @@ export function toEntries<Key = any, Value = any>(target: Collection<Value, Key>
  * @param entries the return of {@link toEntries `toEntries()`}
  * @param format target collection type (Array, Set, Map, Object)
  */
-export function toCollection<T = any>(entries: Entry<T, any>[], format: 'Array'): T[]
-export function toCollection<T = any>(entries: Entry<T, any>[], format: 'Set'): Set<T>
-export function toCollection<K = any, V = any>(entries: Entry<V, K>[], format: 'Map'): Map<K, V>
-export function toCollection<K = any, V = any>(entries: Entry<V, K>[], format: 'Object'): Record<K & string, V>
-export function toCollection(entries: Entry<any, any>[], format: string): any
-export function toCollection(entries: Entry<any, any>[], format: string): any {
-  if (format === 'Array') return entries.map((entry) => getEntryValue(entry))
-  if (format === 'Set') return new Set(entries.map((entry) => getEntryValue(entry)))
-  if (format === 'Map') return new Map(entries.map((entry) => [getEntryKey(entry), getEntryValue(entry)]))
-  if (format === 'Object') return Object.fromEntries(entries.map((entry) => [getEntryKey(entry), getEntryValue(entry)]))
+export function toCollection<T = any>(entries: Iterable<Entry<T, any>>, format: 'Array'): T[]
+export function toCollection<T = any>(entries: Iterable<Entry<T, any>>, format: 'Set'): Set<T>
+export function toCollection<K = any, V = any>(entries: Iterable<Entry<V, K>>, format: 'Map'): Map<K, V>
+export function toCollection<K = any, V = any>(entries: Iterable<Entry<V, K>>, format: 'Object'): Record<K & string, V>
+export function toCollection(entries: Iterable<Entry<any, any>>, format: string): any
+export function toCollection(entries: Iterable<Entry<any, any>>, format: string): any {
+  if (format === 'Array') return Array.from(mapEntry(entries, (item) => item))
+  if (format === 'Set') return new Set(mapEntry(entries, (item) => item))
+  if (format === 'Map') return new Map(mapEntry(entries, (v, k) => [k, v]))
+  if (format === 'Object') return Object.fromEntries(mapEntry(entries, (v, k) => [k, v]))
   throw new Error(`format ${format} is not supported`)
-}
-
-export function isEntry(mayEntry: any): mayEntry is Entry {
-  return isObject(mayEntry) && '_key' in mayEntry && '_value' in mayEntry
-}
-
-export function isArrayTypeCollection(collection: any): collection is any[] | Set<any> {
-  return isArray(collection) || isSet(collection)
-}
-
-export function toEntry<E, K>(mayEntry: E, defaultKey?: K): E extends Entry ? E : Entry<E, K> {
-  // @ts-expect-error force
-  return isEntry(mayEntry) ? mayEntry : ([defaultKey, mayEntry] as Entry<E, K>)
-}
-export function toKeyValueEntry<K extends string, V>(value: V, key: K): Entry<V, K> {
-  return toEntry(value, key)
-}
-export function toItemEntry<I>(item: I): Entry<I> {
-  return toEntry(item)
-}
-
-export function getEntryKey<K>(entry: Entry<any, K>): K {
-  return entry[0]
-}
-export function getEntryValue<V>(entry: Entry<V>): V {
-  return entry[1]
 }

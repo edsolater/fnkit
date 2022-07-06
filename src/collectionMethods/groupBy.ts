@@ -43,8 +43,8 @@ function jsObjectGroupBy<O extends AnyObj, GroupName extends string | number | u
   obj: O,
   predicate: (value: SValueof<O>, key: SKeyof<O>, obj: O) => GroupName
 ): Record<NonNullable<GroupName>, Partial<O> | undefined> {
-  const entries = toEntries(obj)
-  const groupedEntries = jsArrayGroupBy(entries, ([k, v]) => predicate(v, k as SKeyof<O>, obj))
+  const entries = [...toEntries(obj)]
+  const groupedEntries = jsArrayGroupBy(entries, ({ key: k, value: v }) => predicate(v, k as SKeyof<O>, obj))
   //@ts-expect-error inner core , no need to worry
   return map(groupedEntries, (entries) => (entries ? Object.fromEntries(shakeNil(entries)) : undefined))
 }
@@ -53,8 +53,8 @@ function jsMapGroupBy<K, V, GroupName extends string | number | undefined>(
   collection: Map<K, V>,
   predicate: (value: V, key: K, map: Map<K, V>) => GroupName
 ): Record<NonNullable<GroupName>, Map<K, V> | undefined> {
-  const entries = toEntries(collection)
-  const groupedEntries = jsArrayGroupBy(entries, ([k, v]) => predicate(v, k, collection))
+  const entries = [...toEntries(collection)]
+  const groupedEntries = jsArrayGroupBy(entries, ({ key: k, value: v }) => predicate(v, k, collection))
   //@ts-expect-error inner core , no need to worry
   return map(groupedEntries, (entries) => (entries ? new Map(shakeNil(entries)) : undefined))
 }
