@@ -2,7 +2,7 @@ import { Collection, Entry, getType } from '../'
 import { isArray } from '../dataType'
 import { AnyArr, AnyObj, SKeyof, SValueof } from '../typings'
 import { GetCollectionKey, GetCollectionValue, GetNewCollection } from './'
-import { getEntryKey, getEntryValue, toCollection, toEntries, toEntry } from './entries'
+import { getEntryKey, getEntryValue, entryToCollection, toEntries, toEntry } from './entries'
 
 /**
  * {@link mapEntry `mapEntry()`}
@@ -46,7 +46,7 @@ export function flatMapEntries<C extends Collection, V, K>(
 ): GetNewCollection<C, V, K> {
   const entries = [...toEntries(collection)]
   const newEntries = entries.flatMap((entry) => callback([getEntryKey(entry), getEntryValue(entry)]))
-  return toCollection(newEntries, getType(collection))
+  return entryToCollection(newEntries, getType(collection))
 }
 
 /**

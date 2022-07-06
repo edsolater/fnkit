@@ -85,12 +85,12 @@ export function getEntryValue<V>(entry: Entry<V>): V {
  * @param entries the return of {@link toEntries `toEntries()`}
  * @param format target collection type (Array, Set, Map, Object)
  */
-export function toCollection<T = any>(entries: Iterable<Entry<T, any>>, format: 'Array'): T[]
-export function toCollection<T = any>(entries: Iterable<Entry<T, any>>, format: 'Set'): Set<T>
-export function toCollection<K = any, V = any>(entries: Iterable<Entry<V, K>>, format: 'Map'): Map<K, V>
-export function toCollection<K = any, V = any>(entries: Iterable<Entry<V, K>>, format: 'Object'): Record<K & string, V>
-export function toCollection(entries: Iterable<Entry<any, any>>, format: string): any
-export function toCollection(entries: Iterable<Entry<any, any>>, format: string): any {
+export function entryToCollection<T = any>(entries: Iterable<Entry<T, any>>, format: 'Array'): T[]
+export function entryToCollection<T = any>(entries: Iterable<Entry<T, any>>, format: 'Set'): Set<T>
+export function entryToCollection<K = any, V = any>(entries: Iterable<Entry<V, K>>, format: 'Map'): Map<K, V>
+export function entryToCollection<K = any, V = any>(entries: Iterable<Entry<V, K>>, format: 'Object'): Record<K & string, V>
+export function entryToCollection(entries: Iterable<Entry<any, any>>, format: string): any
+export function entryToCollection(entries: Iterable<Entry<any, any>>, format: string): any {
   if (format === 'Array') return Array.from(mapEntry(entries, (item) => item))
   if (format === 'Set') return new Set(mapEntry(entries, (item) => item))
   if (format === 'Map') return new Map(mapEntry(entries, (v, k) => [k, v]))
