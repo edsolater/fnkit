@@ -1,6 +1,6 @@
 export type Entry<Value = any, Key = any> = { key: Key; value: Value }
-export type GetEntryValue<E extends Entry> = E['value'] 
-export type GetEntryKey<E extends Entry> = E['key'] 
+export type GetEntryValue<E extends Entry> = E['value']
+export type GetEntryKey<E extends Entry> = E['key']
 export type ItemEntry<Item = any> = Entry<Item, number>
 export type Collection<Value = any, Key = any> = ArrayLikeCollection<Value> | ObjectLikeCollection<Value, Key>
 
@@ -12,15 +12,17 @@ type ArrayLikeCollection<Value = any> =
 type ObjectLikeCollection<Value = any, Key = any> =
   | ReadonlyMap<Key, Value>
   | Map<Key, Value>
-  | Record<Extract<Key, string | symbol>, Value>
+  // @ts-expect-error if user write it in Record, Key is aready string | number | symbol
+  | Record<Key, Value>
   | {
-      [k in Extract<Key, string | symbol>]: Value
+      // @ts-expect-error if user write it in Record, Key is aready string | number | symbol
+      [k in Key]: Value
     }
 
 export type GetCollectionKey<C> = C extends ArrayLikeCollection
   ? number
-  : C extends Collection<any, infer K>
-  ? K
+  : C extends ObjectLikeCollection<any, infer Key>
+  ? Key
   : unknown
 
 export type GetCollectionValue<C> = C extends ArrayLikeCollection<infer V>
@@ -55,13 +57,12 @@ export type GetNewCollection<
   ? Record<Extract<NewKey, string | number | symbol>, NewValue>
   : never
 
-type A = GetCollectionValue<Map<string, number>>
-type B = A
 /** test */
 // type V = GetCollectionKey<('hello' | number)[]>
 // type F = GetCollectionKey<Record<'hello', number>>
 // type G = GetCollectionKey<{ a: 1; b: 2 }>
 // type H = GetCollectionKey<Map<string, number>>
+
 // type V1 = GetCollectionValue<('hello' | number)[]>
 // type F1 = GetCollectionValue<Record<'hello', number>>
 // type G1 = GetCollectionValue<{ a: 1; b: 2 }>

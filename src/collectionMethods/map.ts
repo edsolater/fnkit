@@ -59,15 +59,20 @@ export function flatMapEntries<C extends Collection, V, K>(
  * console.log(map(new Set([1, 2]), (v) => v + 1)) // Set { 2, 3 }
  * console.log(map(new Map([['a', 1], ['b', 2]]), (v) => v + 1)) // Map { 'a' => 2, 'b' => 3 }
  */
-export default function map<T extends AnyArr, N>(arr: T, mapper: (value: T[number], index: number, arr: T) => N): N[]
-export default function map<O extends AnyObj, N>(
-  obj: O,
-  mapper: (value: SValueof<O>, key: SKeyof<O>, obj: O) => N
+export default function map<T, N>(arr: readonly T[], mapper: (value: T, index: number, arr: readonly T[]) => N): N[]
+export default function map<O, N>(
+  collection: O,
+  mapper: (value: SValueof<O>, key: SKeyof<O>, collection: O) => N
 ): Record<SKeyof<O>, N>
-export default function map(collection, callback) {
+export default function map(collection, mapCallback) {
   return isArray(collection)
-    ? collection.map(callback)
-    : mapEntry(collection, ([k, v], obj) => [k, callback(v, k, obj)])
+    ? collection.map(mapCallback)
+    : entryToCollection(
+        // TODO: mapfn should build in toEntries list Array.from
+        // TODO: should test
+        mapEntry(toEntries(collection), (v, k) => toEntry(mapCallback(v, k))),
+        getType(collection)
+      )
 }
 
 /**
@@ -94,4 +99,3 @@ export function flatMap<C extends Collection, V, K = GetCollectionKey<C>>(
 }
 
 // TODO: asyncMap (already in bonsai)
-

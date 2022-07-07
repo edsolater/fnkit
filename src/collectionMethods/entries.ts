@@ -69,8 +69,12 @@ function* mapEntry<E extends Entry, U>(
   }
 }
 
-export function isEntry(mayEntry: any): mayEntry is Entry {
-  return isObject(mayEntry) && 'key' in mayEntry && 'value' in mayEntry
+export function isEntry(v: any): v is Entry {
+  return isObject(v) && 'key' in v && 'value' in v
+}
+
+export function isEmptyEntry(v: any): v is Entry {
+  return isEntry(v) && getEntryKey(v) === undefined && getEntryValue(v) === undefined
 }
 
 export function getEntryKey<K>(entry: Entry<any, K>): K {
