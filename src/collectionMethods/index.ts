@@ -25,7 +25,7 @@ export { default as insert } from './insert'
 export * from './insert'
 
 export * from './map'
-export { default as map } from './map'
+export { map } from './map'
 
 export * from './reduce'
 

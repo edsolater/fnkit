@@ -1,7 +1,7 @@
 import { flap } from './collectionMethods'
 import { isObjectLike, isFunction, isObject } from './dataType'
 import { AnyObj } from './typings/constants'
-import { SKeyof, SValueof } from './typings/tools'
+import { SKeyof, Valueof } from './typings/tools'
 
 /** 给配置对象添加默认值 */
 export function addDefault<T extends object, W extends Partial<T>>(initConfig: T, defaultConfig: W): T & W {
@@ -43,7 +43,7 @@ export function appendEntries<T extends object, U extends keyof any, V>(
 
 export function flatMapObjectEntry<T>(
   target: T,
-  flatMapper: (entry: [key: SKeyof<T>, value: SValueof<T>]) => any[]
+  flatMapper: (entry: [key: SKeyof<T>, value: Valueof<T>]) => any[]
 ): any {
   //@ts-ignore
   return Object.fromEntries(Object.entries(target ?? {}).flatMap(flatMapper)) as any

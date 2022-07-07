@@ -1,5 +1,5 @@
 import { AnyObj, isArray } from '../'
-import { SKeyof, SValueof } from '../typings'
+import { SKeyof, Valueof } from '../typings'
 
 export function reduce<T, U>(
   arr: readonly T[],
@@ -8,7 +8,7 @@ export function reduce<T, U>(
 ): U
 export function reduce<O extends AnyObj, F>(
   obj: O,
-  callbackFn: (acc: F, value: SValueof<O>, key: SKeyof<O>) => F,
+  callbackFn: (acc: F, value: Valueof<O>, key: SKeyof<O>) => F,
   initialValue: F
 ): F
 export function reduce(collection, callbackFn, initialValue) {
@@ -32,7 +32,7 @@ export function reduceItem<T, U>(
  */
 export function reduceEntry<O extends AnyObj, F extends [string, any]>(
   obj: O,
-  callbackFn: (acc: F, entry: [key: SKeyof<O>, value: SValueof<O>]) => F,
+  callbackFn: (acc: F, entry: [key: SKeyof<O>, value: Valueof<O>]) => F,
   initialValue: F
 ): F {
   return (

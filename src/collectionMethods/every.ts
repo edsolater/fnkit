@@ -1,5 +1,5 @@
 import { AnyObj, isArray } from '../'
-import { AnyArr, SKeyof, SValueof } from '../typings'
+import { AnyArr, Keyof, SKeyof, Valueof } from '../typings'
 
 /**
  * design for arry object set and map
@@ -15,7 +15,7 @@ export default function every<T extends AnyArr, U>(
 ): boolean
 export default function every<O extends AnyObj, V>(
   collection: O,
-  predicate: (value: SValueof<O>, key: SKeyof<O>, obj: O) => unknown
+  predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => unknown
 ): boolean
 export default function every(collection, predicate): boolean {
   return isArray(collection)
@@ -25,11 +25,11 @@ export default function every(collection, predicate): boolean {
 
 export function everyEntry<O>(
   collection: O,
-  predicate: (entry: [key: SKeyof<O>, value: SValueof<O>], obj: O) => unknown
+  predicate: (entry: [key: SKeyof<O>, value: Valueof<O>], obj: O) => unknown
 ): boolean {
   return Object.entries(collection).every(([key, value]) => predicate([key as SKeyof<O>, value], collection))
 }
 
-export function everyKey<O>(collection: O, predicate: (key: keyof O, value: O[keyof O], obj: O) => unknown): boolean {
+export function everyKey<O>(collection: O, predicate: (key: Keyof<O>, value: Valueof<O>, obj: O) => unknown): boolean {
   return everyEntry(collection, ([key, value], collection) => predicate(key, value, collection))
 }

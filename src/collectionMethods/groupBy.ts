@@ -1,6 +1,6 @@
 import { map, shakeNil } from '..'
 import { isArray, isMap } from '../dataType'
-import { AnyArr, AnyObj, SKeyof, SValueof } from '../typings'
+import { AnyArr, AnyObj, SKeyof, Valueof } from '../typings'
 import { toEntries } from './entries'
 
 /**
@@ -18,7 +18,7 @@ export function groupBy<K, V, GroupName extends string | number | undefined>(
 ): Record<NonNullable<GroupName>, Map<K, V> | undefined>
 export function groupBy<O extends AnyObj, GroupName extends string | number | undefined>(
   obj: O,
-  predicate: (value: SValueof<O>, key: SKeyof<O>, obj: O) => GroupName
+  predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => GroupName
 ): Record<NonNullable<GroupName>, Partial<O> | undefined>
 export function groupBy(collection, predicate) {
   return isArray(collection)
@@ -41,7 +41,7 @@ function jsArrayGroupBy<T extends AnyArr, GroupName extends string | number | un
 
 function jsObjectGroupBy<O extends AnyObj, GroupName extends string | number | undefined>(
   obj: O,
-  predicate: (value: SValueof<O>, key: SKeyof<O>, obj: O) => GroupName
+  predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => GroupName
 ): Record<NonNullable<GroupName>, Partial<O> | undefined> {
   const entries = [...toEntries(obj)]
   const groupedEntries = jsArrayGroupBy(entries, ({ key: k, value: v }) => predicate(v, k as SKeyof<O>, obj))
