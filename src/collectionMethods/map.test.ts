@@ -21,7 +21,7 @@ import { map } from './map'
 
 test('fnkit: map()', () => {
   const source = Array.from({ length: 100000 }, (_, idx) => idx + 1)
-  
+
   console.time('map array original')
   const torignal = source.map((v) => v + 1).reduce((a, b) => a + b)
   const ct = torignal + 1
@@ -31,9 +31,12 @@ test('fnkit: map()', () => {
   const t0 = map(source, (v) => v + 1).reduce((a, b) => a + b)
   const c = t0 + 1
   console.timeEnd('map array iterable')
-  
+
   const t1 = map([1, 2], (v) => v + 1)
   expect(t1).toEqual([2, 3])
+
+  const t12 = map([1, 2], (v) => toEntry(v + 1, 0))
+  expect(t12).toEqual([2, 3])
 
   const t2 = map({ a: 1, b: 2 }, (v) => v + 1)
   expect(t2).toEqual({ a: 2, b: 3 })

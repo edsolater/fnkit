@@ -59,16 +59,12 @@ export function flatMapEntries<C extends Collection, V, K>(
  * console.log(map(new Set([1, 2]), (v) => v + 1)) // Set { 2, 3 }
  * console.log(map(new Map([['a', 1], ['b', 2]]), (v) => v + 1)) // Map { 'a' => 2, 'b' => 3 }
  */
-export function map<T, N>(arr: readonly T[], mapper: (value: T, index: number, arr: readonly T[]) => N): N[]
-export function map<O, N>(
-  collection: O,
-  mapper: (value: Valueof<O>, key: Keyof<O>, collection: O) => N
-): Record<SKeyof<O>, N>
-export function map(collection, mapCallback) {
-  return isArray(collection)
-    ? collection.map(mapCallback)
-    : entryToCollection(
-        toEntries(collection, (v, k) => mapCallback(v, k)),
+export function map<C extends Collection, U, K = GetCollectionKey<C>>(
+  collection: C,
+  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => U | Entry<K, U> | undefined
+): GetNewCollection<C, U, K> {
+  return  entryToCollection(
+        toEntries(collection, (v, k) => mapCallback(v, k, collection)),
         getType(collection)
       )
 }

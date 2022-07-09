@@ -45,10 +45,11 @@ export function toEntries<N extends any | Entry, Key = any, Value = any>(
       return toEntries(v, k) // actually mapFn must be true
     }
   }
-  if (isArray(target)) return mapFn ? mapEntry(toArrayEntries(target), parseEntry) : toArrayEntries(target)
-  if (isSet(target)) return mapFn ? mapEntry(toSetEntries(target), parseEntry) : toSetEntries(target)
-  if (isMap(target)) return mapFn ? mapEntry(toMapEntries(target), parseEntry) : toMapEntries(target)
-  if (isObject(target)) return mapFn ? mapEntry(toObjectEntries(target), parseEntry) : toObjectEntries(target)
+  if (isArray(target))
+    return mapFn ? mapEntries(toArrayEntries(target), (v, k) => toEntry(mapFn(v, k), k)) : toArrayEntries(target)
+  if (isSet(target)) return mapFn ? mapEntries(toSetEntries(target), parseEntry) : toSetEntries(target)
+  if (isMap(target)) return mapFn ? mapEntries(toMapEntries(target), parseEntry) : toMapEntries(target)
+  if (isObject(target)) return mapFn ? mapEntries(toObjectEntries(target), parseEntry) : toObjectEntries(target)
   throw new Error(`#fn:toEntry : ${target} can't transform to Entries`)
 }
 function* toArrayEntries(arr: AnyArr) {
@@ -71,7 +72,7 @@ function* toMapEntries(arr: AnyMap) {
     yield toEntry(mapValue, mapKey)
   }
 }
-function* mapEntry<E extends Entry, U>(
+function* mapEntries<E extends Entry, U>(
   entries: Iterable<E>,
   mapFn: (value: GetEntryValue<E>, key: GetEntryKey<E>) => U
 ) {
@@ -109,9 +110,9 @@ export function entryToCollection<K = any, V = any>(
 ): Record<K & string, V>
 export function entryToCollection(entries: Iterable<Entry<any, any>>, format: string): any
 export function entryToCollection(entries: Iterable<Entry<any, any>>, format: string): any {
-  if (format === 'Array') return Array.from(mapEntry(entries, (item) => item))
-  if (format === 'Set') return new Set(mapEntry(entries, (item) => item))
-  if (format === 'Map') return new Map(mapEntry(entries, (v, k) => [k, v]))
-  if (format === 'Object') return Object.fromEntries(mapEntry(entries, (v, k) => [k, v]))
+  if (format === 'Array') return Array.from(mapEntries(entries, (item) => item))
+  if (format === 'Set') return new Set(mapEntries(entries, (item) => item))
+  if (format === 'Map') return new Map(mapEntries(entries, (v, k) => [k, v]))
+  if (format === 'Object') return Object.fromEntries(mapEntries(entries, (v, k) => [k, v]))
   throw new Error(`format ${format} is not supported`)
 }
