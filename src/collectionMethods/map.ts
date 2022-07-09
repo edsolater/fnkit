@@ -1,7 +1,14 @@
 import { Collection, Entry, getType } from '../'
 import { isArray } from '../dataType'
 import { AnyArr, AnyObj, Keyof, SKeyof, Valueof } from '../typings'
-import { GetCollectionKey, GetCollectionValue, GetNewCollection } from './'
+import {
+  GetCollectionKey,
+  GetCollectionValue,
+  GetNewCollection,
+  mapCollection,
+  mapCollectionEntries,
+  shakeNil
+} from './'
 import { getEntryKey, getEntryValue, entryToCollection, toEntries, toEntry } from './entries'
 
 /**
@@ -59,14 +66,11 @@ export function flatMapEntries<C extends Collection, V, K>(
  * console.log(map(new Set([1, 2]), (v) => v + 1)) // Set { 2, 3 }
  * console.log(map(new Map([['a', 1], ['b', 2]]), (v) => v + 1)) // Map { 'a' => 2, 'b' => 3 }
  */
-export function map<C extends Collection, U, K = GetCollectionKey<C>>(
+export function map<C extends Collection, V, K = GetCollectionKey<C>>(
   collection: C,
-  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => U | Entry<K, U> | undefined
-): GetNewCollection<C, U, K> {
-  return  entryToCollection(
-        toEntries(collection, (v, k) => mapCallback(v, k, collection)),
-        getType(collection)
-      )
+  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V
+): GetNewCollection<C, V, K> {
+  return mapCollection(collection, mapCallback)
 }
 
 /**
