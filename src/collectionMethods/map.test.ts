@@ -1,5 +1,5 @@
 import { toEntry } from './entries'
-import { map, mapEntry } from './map'
+import { map, mapEntry, mapKey } from './map'
 
 // test('flatMapEntries() only for object and map', () => {
 //   expect(mapEntry({ a: 1, b: 2 }, (value, key) => toEntry(value + 2, key + 'c'))).toEqual({
@@ -35,14 +35,8 @@ test('fnkit: map()', () => {
   const t1 = map([1, 2], (v) => v + 1)
   expect(t1).toEqual([2, 3])
 
-  const t12 = mapEntry([1, 2], (v) => toEntry(v + 1, 0))
-  expect(t12).toEqual([2, 3])
-
   const t2 = map({ a: 1, b: 2 }, (v) => v + 1)
   expect(t2).toEqual({ a: 2, b: 3 })
-
-  const t3 = mapEntry({ a: 1, b: 2 }, (v, k) => toEntry(v + 1, k + 'c'))
-  expect(t3).toEqual({ ac: 2, bc: 3 })
 
   const t4 = map(new Set(['6', '7']), (v) => v + '1')
   expect(t4).toEqual(new Set(['61', '71']))
@@ -60,15 +54,21 @@ test('fnkit: map()', () => {
       ['b', 3]
     ])
   )
+
+  const t12 = mapEntry([1, 2], (v) => toEntry(v + 1, 0))
+  expect(t12).toEqual([2, 3])
+  const t3 = mapEntry({ a: 1, b: 2 }, (v, k) => toEntry(v + 1, k + 'c'))
+  expect(t3).toEqual({ ac: 2, bc: 3 })
 })
 
-// test('flatMap', () => {
-//   const t1 = flatMap([1, 2], (v) => [v + 1, v * v])
-//   expect(t1).toEqual([2, 1, 3, 4])
+test('fnkit:mapEntries()', () => {
+  const t12 = mapEntry([1, 2], (v) => toEntry(v + 1, 0))
+  expect(t12).toEqual([2, 3])
+  const t3 = mapEntry({ a: 1, b: 2 }, (v, k) => toEntry(v + 1, k + 'c'))
+  expect(t3).toEqual({ ac: 2, bc: 3 })
+})
 
-//   // const t2 = map({ a: 1, b: 2 }, (v) => v + 1)
-//   // expect(t2).toEqual({ a: 2, b: 3 })
-
-//   // const t3 = map({ a: 1, b: 2 }, (v, k) => [k + 'c', v + 1])
-//   // expect(t3).toEqual({ ac: 2, bc: 3 })
-// })
+test('fnkit:mapKey()', () => {
+  const t3 = mapKey({ a: 1, b: 2 }, (k) => k + 'c')
+  expect(t3).toEqual({ ac: 1, bc: 2 })
+})

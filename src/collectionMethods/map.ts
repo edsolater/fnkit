@@ -2,6 +2,7 @@ import { Collection, Entry, getType } from '../'
 import { isArray } from '../dataType'
 import { AnyArr, AnyObj, Keyof, SKeyof, Valueof } from '../typings'
 import {
+  forceEntry,
   GetCollectionKey,
   GetCollectionValue,
   GetNewCollection,
@@ -33,7 +34,12 @@ export function mapEntry<C extends Collection, V, K = GetCollectionKey<C>>(
 // ): { [P in N]: Valueof<O> } {
 //   return mapEntry(collection, ([key, value], obj) => [callback(key, value, obj), value])
 // }
-
+export function mapKey<C extends Collection, K>(
+  collection: C,
+  mapCallback: (key: GetCollectionKey<C>, value: GetCollectionValue<C>, source: C) => K
+): GetNewCollection<C, GetCollectionValue<C>, K> {
+  return mapEntry(collection, (v, k, s) => forceEntry(v, mapCallback(k, v, s)))
+}
 
 /**
  * {@link flatMapEntries `flatMapEntries()`}
