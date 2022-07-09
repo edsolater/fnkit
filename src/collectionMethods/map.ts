@@ -35,26 +35,6 @@ export function mapKey<C extends Collection, K>(
 }
 
 /**
- * {@link flatMapEntries `flatMapEntries()`}
- *
- * entry version of array.prototype.flapMap() , just object an map
- * @requires {@link toEntries `toEntries()`} {@link fromEntries `fromEntries()`} {@link getType `getType()`}
- * @example
- * console.log(flatMapEntries({ a: 1, b: 2 }, (value, key) => ({ [key + 'c']: value + 2 }))) // {  ac: 3, bc: 4 }
- * console.log(flatMapEntries({ a: 1, b: 2 }, (value, key) => ({ [key]: value, [key + 'c']: value + 2 }))) // { a: 1, ac: 3, b: 2, bc: 4 }
- */
-export function flatMapEntries<C extends Collection, V, K>(
-  collection: C,
-  callback: (
-    value: GetCollectionValue<C>,
-    key: GetCollectionKey<C>,
-    source: C
-  ) => MayArray<Entry<V, K> | undefined> | undefined
-): GetNewCollection<C, V, K> {
-  return flatMapCollectionEntries(collection, callback)
-}
-
-/**
  * {@link map `map()`}: simliar to array.prototype.map()
  * @requires {@link mapEntry `mapEntry()`}
  *
@@ -85,13 +65,25 @@ export function flatMap<C extends Collection, V, K = GetCollectionKey<C>>(
   collection: C,
   callback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>) => (V | Entry<V, K>)[]
 ): GetNewCollection<C, V, K> {
-  if (isArray(collection)) {
-    // @ts-expect-error faster for build-in method, no need type check
-    return collection.flatMap(callback)
-  }
-  return flatMapEntries(collection, (value, key) =>
-    callback(value, key).map((newValue) => toEntry(newValue, key))
-  ) as any
+  return flatMapEntry(collection, (value, key) => callback(value, key).map((newValue) => toEntry(newValue, key))) as any
+}
+
+/**
+ * entry version of array.prototype.flapMap() , just object an map
+ * @requires {@link toEntries `toEntries()`} {@link fromEntries `fromEntries()`} {@link getType `getType()`}
+ * @example
+ * console.log(flatMapEntries({ a: 1, b: 2 }, (value, key) => ({ [key + 'c']: value + 2 }))) // {  ac: 3, bc: 4 }
+ * console.log(flatMapEntries({ a: 1, b: 2 }, (value, key) => ({ [key]: value, [key + 'c']: value + 2 }))) // { a: 1, ac: 3, b: 2, bc: 4 }
+ */
+export function flatMapEntry<C extends Collection, V, K>(
+  collection: C,
+  callback: (
+    value: GetCollectionValue<C>,
+    key: GetCollectionKey<C>,
+    source: C
+  ) => MayArray<Entry<V, K> | undefined> | undefined
+): GetNewCollection<C, V, K> {
+  return flatMapCollectionEntries(collection, callback)
 }
 
 // TODO: asyncMap (already in bonsai)

@@ -1,8 +1,8 @@
 import { toEntry } from './entries'
-import { flatMapEntries, map, mapEntry, mapKey } from './map'
+import { flatMapEntry, map, mapEntry, mapKey } from './map'
 
 test('fnkit: flatMapEntries()', () => {
-  const a = flatMapEntries({ a: 1, b: 2 }, (value, key) => [
+  const a = flatMapEntry({ a: 1, b: 2 }, (value, key) => [
     { key: key + 'c', value: value + 2 },
     { key: key + 'a', value: value * value * 2 }
   ])
