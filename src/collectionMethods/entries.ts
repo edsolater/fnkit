@@ -22,7 +22,8 @@ import {
   isSet,
   isSymbol,
   isUndefined,
-  MayArray
+  MayArray,
+  shakeUndefinedItem
 } from '../'
 
 /**
@@ -162,8 +163,7 @@ export function entryToCollection(entries: Iterable<Entry<any, any>>, format: st
   if (format === 'Array') return Array.from(mapEntries(entries, (item) => item))
   if (format === 'Set') return new Set(mapEntries(entries, (item) => item))
   if (format === 'Map') return new Map(mapEntries(entries, (v, k) => [k, v]))
-  if (format === 'Object')
-    return Object.fromEntries(mapEntries(entries, (v, k) => [isSymbol(k) ? k : String(k), v]))
+  if (format === 'Object') return Object.fromEntries(mapEntries(entries, (v, k) => [isSymbol(k) ? k : String(k), v]))
   throw new Error(`format ${format} is not supported`)
 }
 
@@ -171,20 +171,24 @@ export function mapCollection<C extends Collection, U, K = GetCollectionKey<C>>(
   collection: C,
   mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => U | undefined
 ): GetNewCollection<C, U, K> {
-  return entryToCollection(
-    forceEntries(collection, (v, k) => mapCallback(v, k, collection)),
-    getType(collection)
-  )
+  return isArray(collection)
+    ? shakeUndefinedItem(collection.map(mapCallback as any)) // use build-in array methods if possiable
+    : entryToCollection(
+        forceEntries(collection, (v, k) => mapCallback(v, k, collection)),
+        getType(collection)
+      )
 }
 
 export function mapCollectionEntries<C extends Collection, U, K = GetCollectionKey<C>>(
   collection: C,
   mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => Entry<U, K> | undefined
 ): GetNewCollection<C, U, K> {
-  return entryToCollection(
-    toEntries(collection, (v, k) => mapCallback(v, k, collection)),
-    getType(collection)
-  )
+  return isArray(collection)
+    ? shakeUndefinedItem(collection.map((i, idx, source) => mapCallback(i, idx, source)?.value)) // use build-in array methods if possiable
+    : entryToCollection(
+        toEntries(collection, (v, k) => mapCallback(v, k, collection)),
+        getType(collection)
+      )
 }
 /**
  * mapCallback return multi entry, means add extra item
@@ -198,9 +202,13 @@ export function flatMapCollectionEntries<C extends Collection, U, K = GetCollect
     source: C
   ) => MayArray<Entry<U, K> | undefined> | undefined
 ): GetNewCollection<C, U, K> {
-  // @ts-ignore
-  return entryToCollection(
-    toFlatEntries(collection, (v, k) => mapCallback(v, k, collection)) as any,
-    getType(collection)
-  )
+  return isArray(collection)
+    ? shakeUndefinedItem( // use build-in array methods if possiable
+        collection.flatMap((i, idx, source) => {
+          // @ts-ignore
+          const result = mapCallback(i, idx as Key, source)
+          return isArray(result) ? shakeUndefinedItem(result.map((i) => i?.value)) : result?.value
+        })
+      )
+    : entryToCollection(toFlatEntries(collection, (v, k) => mapCallback(v, k, collection)) as any, getType(collection))
 }
