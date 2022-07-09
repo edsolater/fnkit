@@ -212,7 +212,7 @@ export function isEmtyString(v: any): boolean {
 }
 
 export function isSymbol(val: unknown): val is symbol {
-  return getType(val) === 'symbol'
+  return typeof val === 'symbol'
 }
 
 export function isTrue(val: unknown): val is true {

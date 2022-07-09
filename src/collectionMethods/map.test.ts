@@ -1,16 +1,29 @@
 import { toEntry } from './entries'
-import { map, mapEntry, mapKey } from './map'
+import { flatMapEntries, map, mapEntry, mapKey } from './map'
 
-// test('flatMapEntries() only for object and map', () => {
-//   expect(mapEntry({ a: 1, b: 2 }, (value, key) => toEntry(value + 2, key + 'c'))).toEqual({
-//     ac: 3,
-//     bc: 4
-//   })
-// })
-// test('flatMapEntries() only for object and map', () => {
-//   const a = flatMapEntries({ a: 1, b: 2 }, (value, key) =>
-//     toEntries({ [key + 'c']: value + 2, [key + 'a']: value * value * 2 })
-//   )
+test('fnkit: flatMapEntries()', () => {
+  const a = flatMapEntries({ a: 1, b: 2 }, (value, key) => [
+    { key: key + 'c', value: value + 2 },
+    { key: key + 'a', value: value * value * 2 }
+  ])
+  // const a = flatMapEntries({ a: 1, b: 2 }, (value, key) =>
+  //   toEntries({ [key + 'c']: value + 2, [key + 'a']: value * value * 2 })
+  // )
+  expect(a).toEqual({
+    ac: 3,
+    aa: 2,
+    bc: 4,
+    ba: 8
+  })
+})
+// test('fnkit: flatMapEntries()', () => {
+//   const a = flatMapEntries({ a: 1, b: 2 }, (value, key) => [
+//     { key: [key + 'c'], value: value + 2 },
+//     { key: [key + 'a'], value: value * value * 2 }
+//   ])
+//   // const a = flatMapEntries({ a: 1, b: 2 }, (value, key) =>
+//   //   toEntries({ [key + 'c']: value + 2, [key + 'a']: value * value * 2 })
+//   // )
 //   expect(a).toEqual({
 //     ac: 3,
 //     aa: 2,
@@ -54,17 +67,12 @@ test('fnkit: map()', () => {
       ['b', 3]
     ])
   )
-
-  const t12 = mapEntry([1, 2], (v) => toEntry(v + 1, 0))
-  expect(t12).toEqual([2, 3])
-  const t3 = mapEntry({ a: 1, b: 2 }, (v, k) => toEntry(v + 1, k + 'c'))
-  expect(t3).toEqual({ ac: 2, bc: 3 })
 })
 
 test('fnkit:mapEntries()', () => {
   const t12 = mapEntry([1, 2], (v) => toEntry(v + 1, 0))
   expect(t12).toEqual([2, 3])
-  const t3 = mapEntry({ a: 1, b: 2 }, (v, k) => toEntry(v + 1, k + 'c'))
+  const t3 = mapEntry({ a: 1, b: 2 }, (v, k) => ({ key: k + 'c', value: v + 1 }))
   expect(t3).toEqual({ ac: 2, bc: 3 })
 })
 

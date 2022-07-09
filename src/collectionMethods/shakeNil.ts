@@ -13,6 +13,10 @@ export function shakeNil(target) {
   return filter(target, isExist)
 }
 
+export function shakeUndefinedItem<T>(arr: readonly T[]): NonNullable<T>[] {
+  return arr.filter((i) => i !== undefined) as NonNullable<T>[]
+}
+
 /**
  * for array and object and set and map
  */

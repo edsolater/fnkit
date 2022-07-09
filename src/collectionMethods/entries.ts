@@ -20,6 +20,7 @@ import {
   isMap,
   isObject,
   isSet,
+  isSymbol,
   isUndefined,
   MayArray
 } from '../'
@@ -114,11 +115,11 @@ function* flatMapJSInnerEntries<K, V>(entries: Iterable<[K, V]>, mapFn: (value: 
   for (const [key, value] of entries) {
     const newEntry = mapFn(value, key)
     if (isArray(newEntry)) {
-      for (const ent of newEntry) {
-        if (isUndefined(ent)) {
+      for (const entry of newEntry) {
+        if (isUndefined(entry)) {
           continue
         } else {
-          yield newEntry
+          yield entry
         }
       }
     } else if (isUndefined(newEntry)) {
@@ -161,7 +162,8 @@ export function entryToCollection(entries: Iterable<Entry<any, any>>, format: st
   if (format === 'Array') return Array.from(mapEntries(entries, (item) => item))
   if (format === 'Set') return new Set(mapEntries(entries, (item) => item))
   if (format === 'Map') return new Map(mapEntries(entries, (v, k) => [k, v]))
-  if (format === 'Object') return Object.fromEntries(mapEntries(entries, (v, k) => [k, v]))
+  if (format === 'Object')
+    return Object.fromEntries(mapEntries(entries, (v, k) => [isSymbol(k) ? k : String(k), v]))
   throw new Error(`format ${format} is not supported`)
 }
 
@@ -198,7 +200,7 @@ export function flatMapCollectionEntries<C extends Collection, U, K = GetCollect
 ): GetNewCollection<C, U, K> {
   // @ts-ignore
   return entryToCollection(
-    flatMapCollectionEntries(collection, (v, k) => mapCallback(v, k, collection)) as any,
+    toFlatEntries(collection, (v, k) => mapCallback(v, k, collection)) as any,
     getType(collection)
   )
 }

@@ -1,16 +1,16 @@
-import { Collection, Entry, getType } from '../'
+import { Collection, Entry } from '../'
 import { isArray } from '../dataType'
-import { AnyArr, AnyObj, Keyof, SKeyof, Valueof } from '../typings'
+import { MayArray } from '../typings'
 import {
+  flatMapCollectionEntries,
   forceEntry,
   GetCollectionKey,
   GetCollectionValue,
   GetNewCollection,
   mapCollection,
-  mapCollectionEntries,
-  shakeNil
+  mapCollectionEntries
 } from './'
-import { getEntryKey, getEntryValue, entryToCollection, toEntries, toEntry } from './entries'
+import { toEntry } from './entries'
 
 /**
  * {@link mapEntry `mapEntry()`}
@@ -27,13 +27,6 @@ export function mapEntry<C extends Collection, V, K = GetCollectionKey<C>>(
   return mapCollectionEntries(collection, mapCallback)
 }
 
-// /** only object  */
-// export function mapKey<O extends {}, N extends keyof any>(
-//   collection: O,
-//   callback: (key: SKeyof<O>, value: Valueof<O>, obj: O) => N
-// ): { [P in N]: Valueof<O> } {
-//   return mapEntry(collection, ([key, value], obj) => [callback(key, value, obj), value])
-// }
 export function mapKey<C extends Collection, K>(
   collection: C,
   mapCallback: (key: GetCollectionKey<C>, value: GetCollectionValue<C>, source: C) => K
@@ -52,11 +45,13 @@ export function mapKey<C extends Collection, K>(
  */
 export function flatMapEntries<C extends Collection, V, K>(
   collection: C,
-  callback: (entry: [key: GetCollectionKey<C>, value: GetCollectionValue<C>]) => Entry<V, K>[]
+  callback: (
+    value: GetCollectionValue<C>,
+    key: GetCollectionKey<C>,
+    source: C
+  ) => MayArray<Entry<V, K> | undefined> | undefined
 ): GetNewCollection<C, V, K> {
-  const entries = [...toEntries(collection)]
-  const newEntries = entries.flatMap((entry) => callback([getEntryKey(entry), getEntryValue(entry)]))
-  return entryToCollection(newEntries, getType(collection))
+  return flatMapCollectionEntries(collection, callback)
 }
 
 /**
@@ -94,7 +89,7 @@ export function flatMap<C extends Collection, V, K = GetCollectionKey<C>>(
     // @ts-expect-error faster for build-in method, no need type check
     return collection.flatMap(callback)
   }
-  return flatMapEntries(collection, ([key, value]) =>
+  return flatMapEntries(collection, (value, key) =>
     callback(value, key).map((newValue) => toEntry(newValue, key))
   ) as any
 }
