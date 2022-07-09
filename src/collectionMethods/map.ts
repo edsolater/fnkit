@@ -19,24 +19,21 @@ import { getEntryKey, getEntryValue, entryToCollection, toEntries, toEntry } fro
  * @example
  * console.log(mapEntry({ a: 1, b: 2 }, (value, key) => [key + 'c', value + 2])) // {  ac: 3, bc: 4 }
  */
-export function mapEntry<O, V, K extends keyof any>(
-  collection: O,
-  callback: (entry: [key: SKeyof<O>, value: Valueof<O>], obj: O) => [K, V]
-): { [P in K]: V } {
-  return Object.fromEntries(Object.entries(collection).map(([k, v]) => callback([k as SKeyof<O>, v], collection))) as {
-    [P in K]: V
-  }
+export function mapEntry<C extends Collection, V, K = GetCollectionKey<C>>(
+  collection: C,
+  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => Entry<V, K>
+): GetNewCollection<C, V, K> {
+  return mapCollectionEntries(collection, mapCallback)
 }
 
-/** only object  */
-export function mapKey<O extends {}, N extends keyof any>(
-  collection: O,
-  callback: (key: SKeyof<O>, value: Valueof<O>, obj: O) => N
-): { [P in N]: Valueof<O> } {
-  return mapEntry(collection, ([key, value], obj) => [callback(key, value, obj), value])
-}
+// /** only object  */
+// export function mapKey<O extends {}, N extends keyof any>(
+//   collection: O,
+//   callback: (key: SKeyof<O>, value: Valueof<O>, obj: O) => N
+// ): { [P in N]: Valueof<O> } {
+//   return mapEntry(collection, ([key, value], obj) => [callback(key, value, obj), value])
+// }
 
-/** only Object */
 
 /**
  * {@link flatMapEntries `flatMapEntries()`}

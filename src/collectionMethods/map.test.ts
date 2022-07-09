@@ -1,5 +1,5 @@
 import { toEntry } from './entries'
-import { map } from './map'
+import { map, mapEntry } from './map'
 
 // test('flatMapEntries() only for object and map', () => {
 //   expect(mapEntry({ a: 1, b: 2 }, (value, key) => toEntry(value + 2, key + 'c'))).toEqual({
@@ -35,14 +35,14 @@ test('fnkit: map()', () => {
   const t1 = map([1, 2], (v) => v + 1)
   expect(t1).toEqual([2, 3])
 
-  // const t12 = map([1, 2], (v) => toEntry(v + 1, 0))
-  // expect(t12).toEqual([2, 3])
+  const t12 = mapEntry([1, 2], (v) => toEntry(v + 1, 0))
+  expect(t12).toEqual([2, 3])
 
   const t2 = map({ a: 1, b: 2 }, (v) => v + 1)
   expect(t2).toEqual({ a: 2, b: 3 })
 
-  // const t3 = map({ a: 1, b: 2 }, (v, k) => toEntry(v + 1, k + 'c'))
-  // expect(t3).toEqual({ ac: 2, bc: 3 })
+  const t3 = mapEntry({ a: 1, b: 2 }, (v, k) => toEntry(v + 1, k + 'c'))
+  expect(t3).toEqual({ ac: 2, bc: 3 })
 
   const t4 = map(new Set(['6', '7']), (v) => v + '1')
   expect(t4).toEqual(new Set(['61', '71']))
