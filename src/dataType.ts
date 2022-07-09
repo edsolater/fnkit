@@ -35,7 +35,19 @@ export function getType(
   | ReturnType<typeof getObjType>
   | 'unknown' {
   // @ts-ignore
-  return isNull(val) ? 'null' : typeof val === 'object' ? getObjType(val) ?? 'unknown' : typeof val
+  return isNull(val)
+    ? 'null'
+    : isArray(val)
+    ? 'Array'
+    : isFunction(val)
+    ? 'function'
+    : isSet(val)
+    ? 'Set'
+    : isMap(val)
+    ? 'Map'
+    : typeof val === 'object'
+    ? getObjType(val) ?? 'unknown'
+    : typeof val
 }
 
 export const getObjType = (obj: unknown): 'Array' | 'Object' | 'Set' | 'Map' | 'WeakSet' | 'WeakMap' | 'Date' => {

@@ -1,6 +1,6 @@
 import { Collection, Entry, getType } from '../'
 import { isArray } from '../dataType'
-import { AnyArr, AnyObj, SKeyof, Valueof } from '../typings'
+import { AnyArr, AnyObj, Keyof, SKeyof, Valueof } from '../typings'
 import { GetCollectionKey, GetCollectionValue, GetNewCollection } from './'
 import { getEntryKey, getEntryValue, entryToCollection, toEntries, toEntry } from './entries'
 
@@ -62,7 +62,7 @@ export function flatMapEntries<C extends Collection, V, K>(
 export function map<T, N>(arr: readonly T[], mapper: (value: T, index: number, arr: readonly T[]) => N): N[]
 export function map<O, N>(
   collection: O,
-  mapper: (value: Valueof<O>, key: SKeyof<O>, collection: O) => N
+  mapper: (value: Valueof<O>, key: Keyof<O>, collection: O) => N
 ): Record<SKeyof<O>, N>
 export function map(collection, mapCallback) {
   return isArray(collection)
