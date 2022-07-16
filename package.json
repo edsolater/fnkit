@@ -1,8 +1,9 @@
 {
   "name": "@edsolater/fnkit",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "base function tools",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "scripts": {
     "build": "tsup",
     "test": "jest",
