@@ -1,5 +1,6 @@
 import { Numberish, NumberishAtom } from '../typings/constants'
 import { NumberishOption } from './changeFormat'
+import { TenB } from './constant'
 import { toNumberishAtom } from './numberishAtom'
 
 /**
@@ -17,14 +18,14 @@ export function add(a: Numberish, b: Numberish): NumberishAtom {
     })
   } else if (denominatorA === denominatorB) {
     return toNumberishAtom({
-      numerator: numratorA * 10n ** BigInt(decimalB) + numratorB * 10n ** BigInt(decimalA),
+      numerator: numratorA * TenB ** BigInt(decimalB) + numratorB * TenB ** BigInt(decimalA),
       decimal: decimalA + decimalB,
       denominator: denominatorA
     })
   } else {
     return toNumberishAtom({
       numerator:
-        numratorA * 10n ** BigInt(decimalB) * denominatorB + numratorB * 10n ** BigInt(decimalA) * denominatorA,
+        numratorA * TenB ** BigInt(decimalB) * denominatorB + numratorB * TenB ** BigInt(decimalA) * denominatorA,
       decimal: decimalA + decimalB,
       denominator: denominatorA * denominatorB
     })
@@ -51,7 +52,7 @@ export function multiply(a: Numberish, b: Numberish): NumberishAtom {
  */
 export function reciprocal(a: Numberish): NumberishAtom {
   const { decimal: decimalA, numerator: numratorA, denominator: denominatorA } = toNumberishAtom(a)
-  return toNumberishAtom({ numerator: 10n ** BigInt(decimalA) * denominatorA, decimal: 0, denominator: numratorA })
+  return toNumberishAtom({ numerator: TenB ** BigInt(decimalA) * denominatorA, decimal: 0, denominator: numratorA })
 }
 
 /**
@@ -91,7 +92,7 @@ export function modS(...params: Parameters<typeof mod>): string {
 
 export function divideMod(a: Numberish, b: Numberish): [divisior: bigint, mod: NumberishAtom] {
   const n = divide(a, b)
-  const divisior = n.numerator / (n.denominator * 10n ** BigInt(n.decimal))
+  const divisior = n.numerator / (n.denominator * TenB ** BigInt(n.decimal))
   return [divisior, minus(a, multiply(divisior, b))]
 }
 

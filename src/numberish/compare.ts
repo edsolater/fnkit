@@ -1,5 +1,6 @@
 import { isNumber, isBigInt } from '../dataType'
 import { Numberish } from '../typings'
+import { ZeroB } from './constant'
 import { toNumberishAtom } from './numberishAtom'
 import { minus } from './operations'
 
@@ -69,7 +70,7 @@ export function equal(a: Numberish | undefined, b: Numberish | undefined): boole
   if ((isNumber(a) || isBigInt(a)) && (isNumber(b) || isBigInt(b))) return a == b
   const diff = minus(a, b)
   const ab = toNumberishAtom(diff).numerator
-  return ab === 0n
+  return ab === ZeroB
 }
 export const eq = equal
 

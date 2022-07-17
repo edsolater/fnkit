@@ -6,6 +6,7 @@
 import { isBigInt, isNumber, isObject, isString, Numberish, NumberishAtom, NumberishAtomRaw } from '..'
 import { hasProperty } from '../compare'
 import { NumberishOption, toString } from './changeFormat'
+import { OneB } from './constant'
 
 export const stringNumberRegex = /(?<sign>-?)(?<int>\d*)\.?(?<dec>\d*)/
 
@@ -62,7 +63,7 @@ export const toNumberishAtom = (from: Parameters<typeof toNumberishAtomRaw>[0]):
     ...atom,
     toString: (options?: NumberishOption) => toString(atom, options),
     decimal: atom.decimal ?? 0,
-    denominator: atom.denominator ?? 1n
+    denominator: atom.denominator ?? OneB
   }
 }
 
