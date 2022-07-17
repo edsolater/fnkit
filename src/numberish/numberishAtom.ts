@@ -15,6 +15,9 @@ const isNumberishAtomRaw = (value: any): value is NumberishAtomRaw =>
 const isNumberishAtom = (value: any): value is NumberishAtom =>
   isNumberishAtomRaw(value) && hasProperty(value, ['decimal', 'denominator', 'toString'])
 
+export function isNumberish(v: unknown): v is Numberish {
+  return isNumber(v) || isString(v) || isNumberishAtom(v) || isNumberishAtomRaw(v)
+}
 /**
  * @convention number element = decimal + getAllNumber
  * @example

@@ -132,6 +132,7 @@ export function isStringNumber(val: any): val is StringNumber {
   return isNumber(Number(val))
 }
 
+
 export function isJSON(jsonString: unknown): jsonString is string {
   if (typeof jsonString !== 'string') return false
   else {
