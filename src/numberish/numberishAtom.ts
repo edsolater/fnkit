@@ -3,23 +3,17 @@
  * @module
  */
 
-import {
-  isObject,
-  isNumber,
-  isBigInt,
-  isString,
-  Numberish,
-  NumberishAtom,
-  NumberishAtomRaw
-} from '..'
+import { isBigInt, isNumber, isObject, isString, Numberish, NumberishAtom, NumberishAtomRaw } from '..'
 import { hasProperty } from '../compare'
-import { toString } from './changeFormat'
-import { shakeTailingZero } from './utils'
+import { NumberishOption, toString } from './changeFormat'
 
 export const stringNumberRegex = /(?<sign>-?)(?<int>\d*)\.?(?<dec>\d*)/
 
+const isNumberishAtomRaw = (value: any): value is NumberishAtomRaw =>
+  isObject(value) && hasProperty(value, ['numerator'])
+
 const isNumberishAtom = (value: any): value is NumberishAtom =>
-  isObject(value) && hasProperty(value, ['decimal', 'all'])
+  isNumberishAtomRaw(value) && hasProperty(value, ['decimal', 'denominator', 'toString'])
 
 /**
  * @convention number element = decimal + getAllNumber
@@ -27,51 +21,56 @@ const isNumberishAtom = (value: any): value is NumberishAtom =>
  *  '423.12' => { decimal: 2, allNumber: '42312' }
  *  '12' => { decimal: 0, allNumber: '12' }
  */
-function toNumberishAtomRaw(
-  from: Numberish | NumberishAtom | { toNumberishAtom: () => NumberishAtom }
-): NumberishAtomRaw {
+function toNumberishAtomRaw(from: Numberish | { toNumberishAtom: () => NumberishAtom }): NumberishAtomRaw {
+  if (isNumberishAtomRaw(from)) return from
+
   if (isScientificNotation(from)) {
     const [nPart = '', ePart = ''] = String(from).split('e')
-    const nPartNumberishAtom = toNumberishAtomFromString(nPart)
-    const all = nPartNumberishAtom.all
-    const decimal = nPartNumberishAtom.decimal - Number(ePart)
-    const rawNumberishAtom = { decimal, all }
-    return { ...rawNumberishAtom }
+    const nPartNumberishAtom = toNumberishAtomRawFromString(nPart)
+    const decimal = nPartNumberishAtom.decimal ?? 0 - Number(ePart)
+    return { decimal, ...nPartNumberishAtom }
   }
-  if (isObject(from)) {
-    if ('toNumberishAtom' in from) return from.toNumberishAtom()
-  }
-  if (isNumberishAtom(from)) return from
+
   if (isNumber(from)) {
     try {
       // for scientific notation number can be format like 1.34e+24
-      return toNumberishAtomFromString(String(BigInt(from)))
+      return toNumberishAtomRawFromBigInt(BigInt(from))
     } catch {
-      return toNumberishAtomFromString(String(from))
+      return toNumberishAtomRawFromString(String(from))
     }
   }
-  if (isBigInt(from)) return toNumberishAtomFromString(String(from))
+  if (isBigInt(from)) return toNumberishAtomRawFromBigInt(from)
   else {
-    const parsedString = String(from).match(/(?<sign>-?)(?<int>\d*)\.?(?<dec>\d*)/)
-    if (!parsedString) return toNumberishAtomFromString('')
-    const { sign = '', int = '', dec = '' } = parsedString.groups ?? {}
-    const str = shakeTailingZero(dec ? `${sign}${int || '0'}.${dec}` : `${sign}${int}`)
-    return toNumberishAtomFromString(str)
+    return toNumberishAtomRawFromString(String(from))
+    // const parsedString = String(from).match(/(?<sign>-?)(?<int>\d*)\.?(?<dec>\d*)/)
+    // if (!parsedString) return toNumberishAtomRawFromString('')
+    // const { sign = '', int = '', dec = '' } = parsedString.groups ?? {}
+    // const str = shakeTailingZero(dec ? `${sign}${int || '0'}.${dec}` : `${sign}${int}`)
+    // return toNumberishAtomRawFromString(str)
   }
 }
 
 export const toNumberishAtom = (from: Parameters<typeof toNumberishAtomRaw>[0]): NumberishAtom => {
+  if (isNumberishAtom(from)) return from
+  if (isObject(from) && 'toNumberishAtom' in from) return from.toNumberishAtom()
+
   const atom = toNumberishAtomRaw(from)
-  return { ...atom, toString: () => toString(atom) }
+  return {
+    ...atom,
+    toString: (options?: NumberishOption) => toString(atom, options),
+    decimal: atom.decimal ?? 0,
+    denominator: atom.denominator ?? 1n
+  }
 }
 
-function toNumberishAtomFromString(str: string) {
+function toNumberishAtomRawFromString(str: string): NumberishAtomRaw {
   const [intPart = '', decimalPart = ''] = str.split('.')
-  const numberishAtomRaw = { decimal: decimalPart.length, all: BigInt(intPart + decimalPart) }
-  return { ...numberishAtomRaw, toString: () => toString(numberishAtomRaw) }
+  return { decimal: decimalPart.length, numerator: BigInt(intPart + decimalPart) }
+}
+function toNumberishAtomRawFromBigInt(n: bigint): NumberishAtomRaw {
+  return { numerator: n }
 }
 
 const scientificNotationRegex = /^[+-]?\d+\.?\d*e[+-]?\d+$/
-export const numberishAtom = toNumberishAtom
-export const isScientificNotation = (str: any): boolean =>
+const isScientificNotation = (str: any): boolean =>
   (isString(String(str)) || isNumber(String(str))) && scientificNotationRegex.test(String(str))

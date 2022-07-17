@@ -2,12 +2,11 @@
  * it's format content, not face like
  */
 
-import { equal } from 'assert'
 import { fall } from '../fall'
 import { Numberish } from '../typings'
+import { toString } from './changeFormat'
 import { eq, gt } from './compare'
 import { mul } from './operations'
-import { toString } from './changeFormat'
 import { toFixedDecimal } from './utils'
 
 export type FormatOptions = {

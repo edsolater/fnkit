@@ -4,13 +4,14 @@
  *
  ******************************/
 
+import { NumberishOption } from "../numberish"
 
 export type Primitive = boolean | number | string
 export type NoNullablePrimitive = NonNullable<Primitive>
 export type ObjectNotArray = { [key: string]: any }
-export type Numberish = number | string | bigint | NumberishAtom 
-export type NumberishAtom = { decimal: number; all: bigint; toString: () => string }
-export type NumberishAtomRaw = Omit<NumberishAtom, 'toString'>
+export type Numberish = number | string | bigint | NumberishAtom | NumberishAtomRaw
+export type NumberishAtom = {  toString: (options?:NumberishOption) => string } & Required<NumberishAtomRaw>
+export type NumberishAtomRaw = { decimal?: number; numerator: bigint; denominator?: bigint }
 /**
  * 任何函数
  */

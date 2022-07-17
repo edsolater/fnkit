@@ -29,11 +29,8 @@ export function sum<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
   return toFistItemType(sumValue, arr)
 }
 
-export function average<T extends Numberish>(
-  arr: readonly T[],
-  options?: { decimalPlace?: number }
-): Unliteral<T> {
-  const averageValue = divide(sum(arr), arr.length, options)
+export function average<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
+  const averageValue = divide(sum(arr), arr.length)
   return toFistItemType(averageValue, arr)
 }
 

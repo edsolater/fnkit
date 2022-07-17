@@ -13,7 +13,7 @@ export function greaterThan(a: Numberish | undefined, b: Numberish | undefined):
   if (a == null || b == null) return false
   if ((isNumber(a) || isBigInt(a)) && (isNumber(b) || isBigInt(b))) return a > b
   const diff = minus(a, b)
-  const ab = toNumberishAtom(diff).all
+  const ab = toNumberishAtom(diff).numerator
   return BigInt(ab) > BigInt(0)
 }
 export const gt = greaterThan
@@ -39,8 +39,8 @@ export function lessThan(a: Numberish | undefined, b: Numberish | undefined): bo
   if (a == null || b == null) return false
   if ((isNumber(a) || isBigInt(a)) && (isNumber(b) || isBigInt(b))) return a < b
   const diff = minus(a, b)
-  const ab = toNumberishAtom(diff).all
-  return BigInt(ab) < BigInt(0)
+  const ab = toNumberishAtom(diff).numerator
+  return ab < 0
 }
 export const lt = lessThan
 
@@ -68,8 +68,8 @@ export function equal(a: Numberish | undefined, b: Numberish | undefined): boole
   if (a == null || b == null) return false
   if ((isNumber(a) || isBigInt(a)) && (isNumber(b) || isBigInt(b))) return a == b
   const diff = minus(a, b)
-  const ab = toNumberishAtom(diff).all
-  return BigInt(ab) === BigInt(0)
+  const ab = toNumberishAtom(diff).numerator
+  return ab === 0n
 }
 export const eq = equal
 

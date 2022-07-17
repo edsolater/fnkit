@@ -3,7 +3,7 @@ import { add, minus, multiply } from './operations'
 
 test('toString', () => {
   expect(toString(3.22)).toBe('3.22')
-  expect(toString({ all: 12312n, decimal: 4 })).toBe('1.2312')
+  expect(toString({ numerator: 12312n, decimal: 4 })).toBe('1.2312')
 })
 
 test('numberish: operator', () => {
