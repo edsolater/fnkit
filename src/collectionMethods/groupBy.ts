@@ -11,21 +11,23 @@ import { toEntries } from './entries'
 export function groupBy<T extends AnyArr, GroupName extends string | number | undefined>(
   arr: T,
   predicate: (item: T[number], index: number, arr: T) => GroupName
-): Record<NonNullable<GroupName>, T | undefined>
+): Record<NonNullable<GroupName>, T>
 export function groupBy<K, V, GroupName extends string | number | undefined>(
   collection: Map<K, V>,
   predicate: (value: V, key: K, map: Map<K, V>) => GroupName
-): Record<NonNullable<GroupName>, Map<K, V> | undefined>
+): Record<NonNullable<GroupName>, Map<K, V>>
 export function groupBy<O extends AnyObj, GroupName extends string | number | undefined>(
   obj: O,
   predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => GroupName
-): Record<NonNullable<GroupName>, Partial<O> | undefined>
+): Record<NonNullable<GroupName>, Partial<O>>
 export function groupBy(collection, predicate) {
-  return isArray(collection)
-    ? jsArrayGroupBy(collection, predicate)
-    : isMap(collection)
-    ? jsMapGroupBy(collection, predicate)
-    : jsObjectGroupBy(collection, predicate)
+  return shakeNil(
+    isArray(collection)
+      ? jsArrayGroupBy(collection, predicate)
+      : isMap(collection)
+      ? jsMapGroupBy(collection, predicate)
+      : jsObjectGroupBy(collection, predicate)
+  )
 }
 
 function jsArrayGroupBy<T extends AnyArr, GroupName extends string | number | undefined>(
