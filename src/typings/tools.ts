@@ -312,3 +312,11 @@ export type Fallback<T, FallbackT> = T extends undefined ? FallbackT : T
 export type Cover<O, T> = { [K in SKeyof<O> | SKeyof<T>]: Fallback<GetValue<T, K>, GetValue<O, K>> }
 
 export type UnionCover<O, T> = T extends T ? Cover<O, T> : never
+
+/**
+ * @example
+ * ListAccess<[{ id: 'hello' }, { id: 3 }], 'id'> => ["hello", 3]
+ */
+export type ListAccess<Arr extends object[], Property extends keyof Arr[number]> = {
+  [P in keyof Arr]: Arr[P][Property]
+}
