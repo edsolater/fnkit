@@ -12,11 +12,9 @@ type ArrayLikeCollection<Value = any> =
 type ObjectLikeCollection<Value = any, Key = any> =
   | ReadonlyMap<Key, Value>
   | Map<Key, Value>
-  // @ts-expect-error if user write it in Record, Key is aready string | number | symbol
-  | Record<Key, Value>
+  | Record<Key & keyof any, Value>
   | {
-      // @ts-expect-error if user write it in Record, Key is aready string | number | symbol
-      [k in Key]: Value
+      [k in Key & keyof any]: Value
     }
 
 export type GetCollectionKey<C> = C extends ArrayLikeCollection
