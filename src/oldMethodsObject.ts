@@ -14,7 +14,7 @@ export function addDefault<T extends object, W extends Partial<T>>(initConfig: T
  * @param inputObject
  * @returns
  */
-export function deepCloneObject<T>(inputObject: T): T {
+export function deepCloneObject<O extends object>(inputObject: O): O {
   return Object.fromEntries(
     Object.entries(inputObject).map(([key, value]) => [key, isObjectLike(value) ? deepCloneObject(value) : value])
   ) as any
@@ -68,7 +68,7 @@ export function reduceObjectEntry<T extends object, R>(
 }
 
 /**
- *
+ * @deprecated
  * inspire from Immer.js @see https://immerjs.github.io/immer/
  * @example
  * produce({ a: { b: 3 } }, (draft) => { draft.a.b = 4 }) //=> { a: { b: 4 }}
@@ -77,7 +77,7 @@ export function reduceObjectEntry<T extends object, R>(
  * const foo2 = produce(foo, (d)=>{d.c.d = 6})
  * foo.a === foo2.a //=> true
  */
-export function produce<T>(target: T, producer: (darft: T) => void): T {
+export function produce<O extends object>(target: O, producer: (darft: O) => void): O {
   const object = deepCloneObject(target)
   producer(object)
   return object

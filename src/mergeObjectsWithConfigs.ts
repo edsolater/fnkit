@@ -7,7 +7,7 @@ import { ObjectNotArray } from './typings/constants'
  * @example
  * _mergeObjects([{a: 3, b: 2}, {a: 1, b: 3}], (key, v1, v2) => (key === 'a') ? [v1, v2] : v2) // {a: [3,1], b: 3}
  */
-export default function mergeObjectsWithConfigs<T extends ObjectNotArray>(
+export default function mergeObjectsWithConfigs<T extends object>(
   objs: T[],
   transformer: (payloads: { key: string; valueA: any; valueB: any; objA: T; objB: T }) => any
 ): T {

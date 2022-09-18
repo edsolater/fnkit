@@ -28,7 +28,7 @@ export function merge<T>(...values: T[]): any {
     return (...args) => values.reduce((returnResults, fn) => returnResults.concat(fn(...args)), [])
 
   if (every(values, isObject))
-    return mergeObjectsWithConfigs(values, ({ valueA: va, valueB: vb }) => merge(va, vb))
+    return mergeObjectsWithConfigs(values as object[], ({ valueA: va, valueB: vb }) => merge(va, vb))
 
   return values[(values as unknown[]).length - 1]
 }

@@ -21,7 +21,7 @@ export default function filter(collection, predicate) {
   return isArray(collection) ? collection.filter(predicate) : filterEntry(collection, ([k, v]) => predicate(v, k))
 }
 
-export function filterEntry<O, V extends Valueof<O>, K extends keyof any>(
+export function filterEntry<O extends object, V extends Valueof<O>, K extends keyof any>(
   collection: O,
   predicate: (entry: [key: SKeyof<O>, value: Valueof<O>], obj: O) => unknown
 ): { [P in K]?: V } {
@@ -32,7 +32,7 @@ export function filterEntry<O, V extends Valueof<O>, K extends keyof any>(
   }
 }
 
-export function filterKey<O, K extends keyof O>(
+export function filterKey<O extends object, K extends keyof O>(
   collection: O,
   predicate: (key: SKeyof<O>, value: Valueof<O>, obj: O) => unknown
 ): { [P in K]?: O[P] } {

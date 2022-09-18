@@ -23,13 +23,16 @@ export default function every(collection, predicate): boolean {
     : everyEntry(collection, ([key, value], collection) => predicate(value, key, collection))
 }
 
-export function everyEntry<O>(
+export function everyEntry<O extends AnyArr>(
   collection: O,
   predicate: (entry: [key: SKeyof<O>, value: Valueof<O>], obj: O) => unknown
 ): boolean {
   return Object.entries(collection).every(([key, value]) => predicate([key as SKeyof<O>, value], collection))
 }
 
-export function everyKey<O>(collection: O, predicate: (key: Keyof<O>, value: Valueof<O>, obj: O) => unknown): boolean {
+export function everyKey<O extends AnyArr>(
+  collection: O,
+  predicate: (key: Keyof<O>, value: Valueof<O>, obj: O) => unknown
+): boolean {
   return everyEntry(collection, ([key, value], collection) => predicate(key, value, collection))
 }

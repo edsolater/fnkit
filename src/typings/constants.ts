@@ -12,9 +12,6 @@ export type ObjectNotArray = { [key: string]: any }
 export type Numberish = number | string | bigint | NumberishAtom | NumberishAtomRaw
 export type NumberishAtom = {  toString: (options?:NumberishOption) => string } & Required<NumberishAtomRaw>
 export type NumberishAtomRaw = { decimal?: number; numerator: bigint; denominator?: bigint }
-/**
- * 任何函数
- */
 export type AnyFn = (...args: any[]) => any
 export type AnyObj = { [key: string]: any }
 export type AnyArr = readonly any[]
