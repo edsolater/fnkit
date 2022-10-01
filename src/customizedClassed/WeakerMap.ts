@@ -16,6 +16,7 @@ export class WeakerMap<K, V> extends Map<K, V> {
   // could find by value
   private reverseObjectKeyMap: WeakMap<WeakRef<K & object>, K & object>
   private innerStoreMap: Map<K | WeakRef<K & object>, V | WeakRef<V & object>>
+  
   constructor()
   constructor(entries?: readonly (readonly [K, V])[] | null) {
     super(entries)
@@ -24,6 +25,7 @@ export class WeakerMap<K, V> extends Map<K, V> {
     this.innerStoreMap = new Map()
     entries?.forEach(([k, v]) => this.set(k, v))
   }
+
   private getInnerKey(key: K) {
     if (isObject(key)) {
       if (!this.objectKeyMap.has(key)) {
@@ -36,16 +38,19 @@ export class WeakerMap<K, V> extends Map<K, V> {
       return key
     }
   }
-  set(key: K, value: V): this {
+
+  override set(key: K, value: V): this {
     const innerKey = this.getInnerKey(key)
     this.innerStoreMap.set(innerKey, createWrapperRefIfNeeded(value))
     return this
   }
-  get(key: K): V | undefined {
+
+  override get(key: K): V | undefined {
     const innerKey = this.getInnerKey(key)
     return derefWrapperRefIfNeeded(this.innerStoreMap.get(innerKey))
   }
-  forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void {
+
+  override forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void {
     const stillValidMap = new Map(
       [...this.innerStoreMap.entries()].filter(([innerKey, refValue]) => [
         derefWrapperRefIfNeeded(innerKey),
@@ -54,7 +59,8 @@ export class WeakerMap<K, V> extends Map<K, V> {
     )
     stillValidMap.forEach(callbackfn, thisArg)
   }
-  get size() {
+
+  override get size() {
     const stillValidMap = new Map(
       [...this.innerStoreMap.entries()].filter(([innerKey, refValue]) => [
         derefWrapperRefIfNeeded(innerKey),
@@ -63,7 +69,8 @@ export class WeakerMap<K, V> extends Map<K, V> {
     )
     return stillValidMap.size
   }
-  delete(key: K): boolean {
+
+  override delete(key: K): boolean {
     const innerKey = this.getInnerKey(key)
     if (isObject(key)) {
       const ref = this.objectKeyMap.get(key)
@@ -74,23 +81,28 @@ export class WeakerMap<K, V> extends Map<K, V> {
     }
     return this.innerStoreMap.delete(innerKey)
   }
-  clear(): void {
+
+  override clear(): void {
     return this.innerStoreMap.clear()
   }
-  has(key: K): boolean {
+
+  override has(key: K): boolean {
     return this.get(key) != null
   }
-  *keys(): IterableIterator<K> {
+
+  override *keys(): IterableIterator<K> {
     for (const [trueKey] of this.entries()) {
       yield trueKey
     }
   }
-  *values(): IterableIterator<V> {
+
+  override *values(): IterableIterator<V> {
     for (const [, trueValue] of this.entries()) {
       yield trueValue
     }
   }
-  *entries(): IterableIterator<[K, V]> {
+
+  override *entries(): IterableIterator<[K, V]> {
     for (const [innerKey, innerValue] of this.innerStoreMap.entries()) {
       if (isObject(innerKey)) {
         const trueKey = this.reverseObjectKeyMap.get(innerKey)
