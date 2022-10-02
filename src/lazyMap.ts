@@ -33,10 +33,10 @@ export function lazyMap<T, U>(setting: LazyMapSettings<T, U>) {
 }
 
 function requestIdleCallback(fn: AnyFn): number {
-  return window.requestIdleCallback?.(fn) ?? window.setTimeout?.(fn) // Safari no't support `window.requestIdleCallback()`, so have to check first
+  return globalThis.requestIdleCallback?.(fn) ?? global.setTimeout?.(fn) // Safari no't support `window.requestIdleCallback()`, so have to check first
 }
 
 function cancelIdleCallback(handleId: number): void {
   // @ts-ignore
-  window.cancelIdleCallback?.(handleId) ?? window.clearTimeout?.(handleId)
+  globalThis.cancelIdleCallback?.(handleId) ?? globalThis.clearTimeout?.(handleId)
 }
