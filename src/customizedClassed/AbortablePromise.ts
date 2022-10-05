@@ -1,5 +1,10 @@
 export class AbortablePromise<T> extends Promise<T> implements AbortController {
   private innerAbortController: AbortController
+  /**
+   * !not elegant
+   * try not to use it, just use `.then()` and `.catch()`
+   */
+  promiseState: 'pending' | 'fulfilled' | 'rejected' = 'pending'
 
   constructor(
     exector: (
@@ -11,6 +16,11 @@ export class AbortablePromise<T> extends Promise<T> implements AbortController {
   ) {
     super((resolve, reject) => exector(resolve, reject, forceAbortController.signal))
     this.innerAbortController = forceAbortController
+    this.then(() => {
+      this.promiseState = 'fulfilled'
+    }).catch(() => {
+      this.promiseState = 'rejected'
+    })
   }
 
   get aborted() {
