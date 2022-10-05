@@ -1,18 +1,27 @@
-export class AbortablePromise<T> extends Promise<T> {
-  aborted: boolean
+export class AbortablePromise<T> extends Promise<T> implements AbortController {
   private innerAbortController: AbortController
 
   constructor(
-    exector: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void,
+    exector: (
+      resolve: (value: T | PromiseLike<T>) => void,
+      reject: (reason?: any) => void,
+      abortSignal: AbortSignal
+    ) => void,
     forceAbortController: AbortController = new AbortController()
   ) {
-    super(exector)
+    super((resolve, reject) => exector(resolve, reject, forceAbortController.signal))
     this.innerAbortController = forceAbortController
-    this.aborted = forceAbortController.signal.aborted
   }
 
-  abort() {}
-}
+  get aborted() {
+    return this.innerAbortController.signal.aborted
+  }
 
-const a = new AbortablePromise((resolve, reject) => 3)
-const c = new AbortController()
+  get signal() {
+    return this.innerAbortController.signal
+  }
+
+  abort() {
+    return this.innerAbortController.abort()
+  }
+}
