@@ -52,7 +52,7 @@ export class WeakerMap<K, V> extends Map<K, V> {
 
   override forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void {
     const stillValidMap = new Map(
-      [...this.innerStoreMap.entries()].filter(([innerKey, refValue]) => [
+      [...this.innerStoreMap.entries()].map(([innerKey, refValue]) => [
         derefWrapperRefIfNeeded(innerKey),
         derefWrapperRefIfNeeded(refValue)
       ]) as unknown as Map<K, V>
@@ -62,7 +62,7 @@ export class WeakerMap<K, V> extends Map<K, V> {
 
   override get size() {
     const stillValidMap = new Map(
-      [...this.innerStoreMap.entries()].filter(([innerKey, refValue]) => [
+      [...this.innerStoreMap.entries()].map(([innerKey, refValue]) => [
         derefWrapperRefIfNeeded(innerKey),
         derefWrapperRefIfNeeded(refValue)
       ]) as unknown as Map<K, V>
