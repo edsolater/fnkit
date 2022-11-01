@@ -320,3 +320,11 @@ export type UnionCover<O, T> = T extends T ? Cover<O, T> : never
 export type ListAccess<Arr extends object[], Property extends keyof Arr[number]> = {
   [P in keyof Arr]: Arr[P][Property]
 }
+
+export type FromPrivateString<S extends string> = S extends `${infer U extends number}`
+  ? U
+  : S extends `${infer U extends bigint}`
+  ? U
+  : S extends `${infer U extends boolean}`
+  ? U
+  : S
