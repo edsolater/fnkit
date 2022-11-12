@@ -16,7 +16,7 @@ export class WeakerMap<K, V> extends Map<K, V> {
   // could find by value
   private reverseObjectKeyMap: WeakMap<WeakRef<K & object>, K & object>
   private innerStoreMap: Map<K | WeakRef<K & object>, V | WeakRef<V & object>>
-  
+
   constructor()
   constructor(entries?: readonly (readonly [K, V])[] | null) {
     super(entries)

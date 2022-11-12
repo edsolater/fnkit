@@ -1,5 +1,3 @@
-import { ObjectNotArray } from './typings/constants'
-
 /**
  * （这只是个基础框架，没多少实用价值，需要包装成更强的函数）（**只是**浅复制了一层）
  * 合并多个对象(shallow 浅复制)
@@ -7,7 +5,7 @@ import { ObjectNotArray } from './typings/constants'
  * @example
  * _mergeObjects([{a: 3, b: 2}, {a: 1, b: 3}], (key, v1, v2) => (key === 'a') ? [v1, v2] : v2) // {a: [3,1], b: 3}
  */
-export default function mergeObjectsWithConfigs<T extends object>(
+export function mergeObjectsWithConfigs<T extends object>(
   objs: T[],
   transformer: (payloads: { key: string; valueA: any; valueB: any; objA: T; objB: T }) => any
 ): T {
