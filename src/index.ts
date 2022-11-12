@@ -1,3 +1,5 @@
+export * from './customizedClasses'
+
 export * from './cache'
 export * from './changeCase'
 export * from './collectionMethods'
