@@ -21,13 +21,13 @@ export type GetCollectionKey<C> = C extends ArrayLikeCollection
   ? number
   : C extends ObjectLikeCollection<any, infer Key>
   ? Key
-  : unknown
+  : never
 
 export type GetCollectionValue<C> = C extends ArrayLikeCollection<infer V>
   ? V
   : C extends ObjectLikeCollection<infer Value>
   ? Value
-  : unknown
+  : never
 
 export type GetNewCollection<
   OldCollection,

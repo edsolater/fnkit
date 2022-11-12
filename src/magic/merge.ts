@@ -16,9 +16,7 @@ import { AnyArr, AnyFn, AnyObj } from '../typings/constants'
  * @version 0.0.1
  */
 export function merge<T extends AnyArr>(...values: T[]): Array<T[number]>
-export function merge<T extends AnyFn>(
-  ...values: T[]
-): (...params: Parameters<T>) => ReturnType<T>[]
+export function merge<T extends AnyFn>(...values: T[]): (...params: Parameters<T>) => ReturnType<T>[]
 export function merge<T extends AnyObj>(...values: T[]): T
 export function merge<T>(...values: T[]): unknown[]
 export function merge<T>(...values: T[]): any {
@@ -28,7 +26,7 @@ export function merge<T>(...values: T[]): any {
     return (...args) => values.reduce((returnResults, fn) => returnResults.concat(fn(...args)), [])
 
   if (every(values, isObject))
-    return mergeObjectsWithConfigs(values as object[], ({ valueA: va, valueB: vb }) => merge(va, vb))
+    return mergeObjectsWithConfigs(values as unknown as object[], ({ valueA: va, valueB: vb }) => merge(va, vb))
 
   return values[(values as unknown[]).length - 1]
 }
