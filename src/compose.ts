@@ -1,5 +1,6 @@
 import { pipe } from './pipe'
 
+export function compose<T>(...fns: ((v: T) => T)[]): (v: T) => T
 export function compose<T, R, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10>(
   ...fns: [
     (v: T) => M1,
@@ -70,7 +71,6 @@ export function compose<T, R, M1, M2>(...fns: [(v: T) => M1, (v: M1) => M2, (v: 
 export function compose<T, R, M1>(...fns: [(v: T) => M1, (v: M1) => R]): (v: T) => R
 export function compose<T, R>(...fns: [(v: T) => R]): (v: T) => R
 export function compose(...fns: []): () => void
-export function compose<T>(...fns: ((v: T) => T)[]): (v: T) => T
 export function compose<T>(...fns: ((v: T) => T)[]): (v: T) => T {
   return (v: T) => pipe(v, ...fns)
 }

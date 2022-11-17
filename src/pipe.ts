@@ -1,4 +1,3 @@
-
 /**
  * @deprecated use {@link pipe}
  */
@@ -34,6 +33,7 @@ export function pipeHandlers<T>(v: T, ...fn: ((v: T) => T)[]): T {
   return fn.reduce((value, fn) => fn(value), v)
 }
 
+export function pipe<T>(v: T, ...fns: ((v: T) => T)[]): T
 export function pipe<T, R, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10>(
   v: T,
   ...fns: [
@@ -109,7 +109,6 @@ export function pipe<T, R, M1, M2>(v: T, ...fns: [(v: T) => M1, (v: M1) => M2, (
 export function pipe<T, R, M1>(v: T, ...fns: [(v: T) => M1, (v: M1) => R]): R
 export function pipe<T, R>(v: T, ...fns: [(v: T) => R]): R
 export function pipe<T>(v: T): T
-export function pipe<T>(v: T, ...fns: ((v: T) => T)[]): T
 export function pipe<T>(v: T, ...fns: ((v: T) => T)[]): T {
   return fns.reduce((value, fn) => fn(value), v)
 }
