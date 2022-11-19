@@ -20,8 +20,8 @@ export class WeakerMap<K, V> extends Map<K, V> {
   constructor()
   constructor(entries?: readonly (readonly [K, V])[] | null) {
     super(entries)
-    this.reverseObjectKeyMap = new WeakerMap()
-    this.objectKeyMap = new WeakerMap()
+    this.reverseObjectKeyMap = new WeakMap()
+    this.objectKeyMap = new WeakMap()
     this.innerStoreMap = new Map()
     entries?.forEach(([k, v]) => this.set(k, v))
   }
