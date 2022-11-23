@@ -2,6 +2,7 @@
 //   hello(): string
 // }
 
+import { map } from '../collectionMethods'
 import { isObject } from '../dataType'
 
 const weakMapCache = new WeakMap<object, WeakRef<any>>()
@@ -15,16 +16,21 @@ const createWrapperRef = <T extends object>(v: T): WeakRef<T> => {
 const createWrapperRefIfNeeded = <T>(v: T) => (isObject(v) ? createWrapperRef(v) : v)
 const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() : v)
 
-/** it wont prevent GC for both key and value , and weakMap can be traverse
+/**
+ * it wont prevent GC for both key and value , and weakMap can be traverse
+ * for JS's GC rule, WeakerSet will usually be cleared  in next frame(depends on GC)
  * @todo test it!!!
  */
 export class WeakerSet<T> extends Set<T> {
-  private innerStoreSet: Set<T | WeakRef<T & object>>
+  private _innerValues: Set<T | WeakRef<T & object>>
 
-  constructor()
+  private cbCenter = {
+    onAddNewItem: [] as ((item: T) => void)[]
+  }
+
   constructor(iterable?: Iterable<T> | null) {
     super(iterable)
-    this.innerStoreSet = new Set()
+    this._innerValues = new Set()
     if (iterable) {
       for (const item of iterable) {
         this.add(item)
@@ -33,17 +39,45 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   override add(item: T): this {
-    this.innerStoreSet.add(createWrapperRefIfNeeded(item))
+    this._innerValues.add(createWrapperRefIfNeeded(item))
+    this.invokeAddNewItemCallbacks(item)
     return this
   }
 
   private getRealSet(): Set<T> {
     return new Set(
-      [...this.innerStoreSet.values()].map((item) => derefWrapperRefIfNeeded(item)).filter((i) => i !== undefined)
+      [...this._innerValues.values()].map((item) => derefWrapperRefIfNeeded(item)).filter((i) => i !== undefined)
     )
   }
-  override forEach(callbackfn: (value: T, key: T, set: Set<T>) => void, thisArg?: any): void {
-    this.getRealSet().forEach(callbackfn, thisArg)
+
+  override forEach(callback: (value: T, key: T, set: Set<T>) => void, thisArg?: any): void {
+    this.getRealSet().forEach(callback, thisArg)
+  }
+
+  map<U>(callback: (value: T) => U, thisArg?: any): WeakerSet<U> {
+    return new WeakerSet([...this.getRealSet()].map(callback, thisArg))
+  }
+
+  filter(callback: (item: T) => any, thisArg?: any): WeakerSet<T> {
+    return new WeakerSet([...this.getRealSet()].filter(callback, thisArg))
+  }
+  // TODO other Array build-in tools
+
+  private invokeAddNewItemCallbacks(item: T): void {
+    this.cbCenter.onAddNewItem.forEach((cb) => cb?.(item))
+  }
+
+  onAddNewItem(callback: (item: T) => void): this {
+    this.cbCenter.onAddNewItem.push(callback)
+    return this
+  }
+
+  /** return a new instance  */
+  clone(): WeakerSet<T> {
+    const newItem = new WeakerSet<T>()
+    newItem._innerValues = new Set(this._innerValues)
+    newItem.cbCenter = { ...map(this.cbCenter, (cbs) => [...cbs]) }
+    return newItem
   }
 
   override get size() {
@@ -51,11 +85,11 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   override delete(item: T): boolean {
-    return this.innerStoreSet.delete(createWrapperRefIfNeeded(item))
+    return this._innerValues.delete(createWrapperRefIfNeeded(item))
   }
 
   override clear(): void {
-    return this.innerStoreSet.clear()
+    return this._innerValues.clear()
   }
 
   override has(item: T): boolean {
