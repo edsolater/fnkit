@@ -28,7 +28,6 @@ export type EventCenter<T extends EventConfig> = {
 }
 
 /**
- *
  * @example
  *  // client side
  * cc.on({
@@ -45,7 +44,7 @@ export type EventCenter<T extends EventConfig> = {
  * cc.emit('change', [{ status: 'success' }])
  */
 // 💡 observable should be the core of js model. just like event target is the core of DOM
-export function EventCenter<T extends EventConfig>(
+export function createEventCenter<T extends EventConfig>(
   whenAttach?: {
     [P in keyof T as `${P & string}`]?: (utils: {
       fn: (...params: Parameters<T[P]>) => void
