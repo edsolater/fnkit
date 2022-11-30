@@ -1,12 +1,21 @@
-import { isFunction } from './dataType'
+import { isFunction, isString } from './dataType'
 import shrinkToValue from './wrapper/shrinkToValue'
 import { getLastItem } from './oldMethodsArray'
 import { Primitive, NotFunctionValue } from './typings/constants'
 
-export function assert(condition: any, msg?: string, callback?: (msg?: string) => void): asserts condition {
+export function assert(condition: any, callback?: () => void): asserts condition
+export function assert(condition: any, msg?: string, callback?: (msg: string) => void): asserts condition
+export function assert(condition: any, arg0?: string | (() => void), arg1?: (msg: string) => void): asserts condition {
   if (!condition) {
-    callback?.(msg)
-    throw new Error(msg)
+    if (arg1) {
+      arg1(arg0 as string)
+      throw new Error(arg0 as string)
+    } else if (isString(arg0)) {
+      throw new Error(arg0 as string)
+    } else {
+      arg0?.()
+      throw new Error()
+    }
   }
 }
 
@@ -69,16 +78,12 @@ export function parallelSwitch<
 >(
   value: Base,
   conditionPairs: Array<
-    [
-      is: NotFunctionValue | ((value: Base) => boolean),
-      returnValue: Value | ((value: Base) => Value)
-    ]
+    [is: NotFunctionValue | ((value: Base) => boolean), returnValue: Value | ((value: Base) => Value)]
   >,
   fallbackValue?: Value
 ): Value {
   for (const [is, returnValue] of conditionPairs) {
-    if (value === is || shrinkToValue(is, [value]) === true)
-      return shrinkToValue(returnValue, [value])
+    if (value === is || shrinkToValue(is, [value]) === true) return shrinkToValue(returnValue, [value])
   }
   return fallbackValue!
 }
