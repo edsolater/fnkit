@@ -32,4 +32,4 @@ export * from './listToMap'
 export * from './pipe'
 export * from './compose'
 
-export * from './createPropertyPicker' // FP style utils to get property easily
+export * from './pickProperty' // FP style utils to get property easily
