@@ -4,16 +4,15 @@
  *
  ******************************/
 
-import { NumberishOption } from "../numberish"
+import { NumberishOption } from '../numberish'
 
 export type Primitive = boolean | number | string
 export type NoNullablePrimitive = NonNullable<Primitive>
-export type ObjectNotArray = { [key: string]: any }
 export type Numberish = number | string | bigint | NumberishAtom | NumberishAtomRaw
-export type NumberishAtom = {  toString: (options?:NumberishOption) => string } & Required<NumberishAtomRaw>
+export type NumberishAtom = { toString: (options?: NumberishOption) => string } & Required<NumberishAtomRaw>
 export type NumberishAtomRaw = { decimal?: number; numerator: bigint; denominator?: bigint }
 export type AnyFn = (...args: any[]) => any
-export type AnyObj = { [key: string]: any }
+export type AnyObj = Record<keyof any, any>
 export type AnyArr = readonly any[]
 export type AnyMap = Map<any, any>
 export type AnySet = Set<any>
