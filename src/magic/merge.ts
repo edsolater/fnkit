@@ -10,7 +10,7 @@ import { AnyArr, AnyFn, AnyObj } from '../typings/constants'
  *
  * @example
  * merge([0, 1, 2], ['hello', 'world']) // [ 0, 1, 2, 'hello', 'world' ]
- * merge({a: 3, b: 2}, {a: 1, c: 3}) // {a: 1, b: 2}
+ * merge({a: 3, b: 2}, {a: 1, c: 3}) // { a: 1, b: 2 }
  * merge((n) => 3 + n, (n) => 4 * n, () => 5) // (n) => [3+n, 4*n, 5]
  * merge({ a: ['world'], b: 2, c: 1 }, { a: ['hello'], c: 3 }, { c: [10] }) // { a: [ 'world', 'hello' ], b: 2, c: [ 10 ] }
  * @version 0.0.1
