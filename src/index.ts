@@ -31,5 +31,6 @@ export * from './lazyMap'
 export * from './listToMap'
 export * from './pipe'
 export * from './compose'
+export * from './mergeFunctions'
 
 export * from './pickProperty' // FP style utils to get property easily
