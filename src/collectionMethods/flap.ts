@@ -9,6 +9,7 @@ import { DeMayArray, DeMayDeepArray, MayArray, MayDeepArray } from '../typings/t
  * @version 0.0.1
  */
 export default function flap<T extends MayArray<any>>(wrapValue: T, deep = 1): DeMayArray<DeMayArray<T>>[] {
+  if (wrapValue == null) return []
   //@ts-expect-error type force
   return [wrapValue].flat(deep + 1)
 }
@@ -17,4 +18,4 @@ export default function flap<T extends MayArray<any>>(wrapValue: T, deep = 1): D
  * @example
  * flatInfinity([3, [4, [5]]]) //=> [3, 4, 5]
  */
-export const flapDeep = <T extends any>(wrapValue: T): DeMayDeepArray<T>[] => [wrapValue].flat(Infinity) as any
+export const flapDeep = <T extends any>(wrapValue: T) => flap(wrapValue, Infinity) as DeMayDeepArray<T>[]
