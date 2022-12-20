@@ -34,3 +34,4 @@ export * from './compose'
 export * from './mergeFunctions'
 
 export * from './pickProperty' // FP style utils to get property easily
+export * from './bindParams' // FP style get function faster

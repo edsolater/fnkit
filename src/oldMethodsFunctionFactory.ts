@@ -35,23 +35,8 @@ export function attachArgs<F extends AnyFn, Index extends number>(
  * const testFn = bindHead(add, 3)
  * // testFn(1) === add(3, 1)
  */
-export function bindHead<T extends AnyArr, U extends AnyArr, R>(
-  fn: (...args: [...T, ...U]) => R,
-  ...headArgs: T
-) {
+export function bindHead<T extends AnyArr, U extends AnyArr, R>(fn: (...args: [...T, ...U]) => R, ...headArgs: T) {
   return (...tailArgs: U) => fn(...headArgs, ...tailArgs)
-}
-
-/**
- * 绑定函数参数，以生成一个新函数
- * @deprecated 直接写箭头函数更方便
- * @returns
- */
-export function bindParams<T extends AnyFn>(
-  fn: T | undefined,
-  params: Parameters<T>
-): () => ReturnType<T> {
-  return () => fn?.(...params)
 }
 
 /**
@@ -87,10 +72,7 @@ export function checkProp(propName: string | symbol, checker: (value: any) => bo
  * const saveFunction = safer(dosomething, (e)=>{console.log(e)})
  * const asyncSaveFunction = safer(asyncDosomething, (e)=>{console.log(e)})
  */
-export function safer<
-  F extends (...params: any[]) => any,
-  Handler extends (error: unknown) => void
->(
+export function safer<F extends (...params: any[]) => any, Handler extends (error: unknown) => void>(
   fn: F,
   handler: Handler
 ): F & {
@@ -120,10 +102,7 @@ export function safer<
  * const newFn = overwriteFunctionName(originFn, 'newName')
  * console.log(newFn.name) //=> 'newName'
  */
-export function overwriteFunctionName<F extends (...params: any[]) => any>(
-  func: F,
-  name: string
-): F {
+export function overwriteFunctionName<F extends (...params: any[]) => any>(func: F, name: string): F {
   const temp = {
     [name]: (...args: any[]) => func(...args)
   }
