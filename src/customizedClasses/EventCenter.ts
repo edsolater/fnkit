@@ -19,7 +19,12 @@ export type EventCenterOptions = {
 
 export type EventCenter<T extends EventConfig> = {
   emit<N extends keyof T>(eventName: N, parameters: Parameters<T[N]>): void
-  on<U extends Partial<T>>(subscriptionFns: U, options?: EventCenterOptions): { [P in keyof U]: Subscription }
+  registEvents<U extends Partial<T>>(subscriptionFns: U, options?: EventCenterOptions): { [P in keyof U]: Subscription }
+  on<N extends keyof T>(
+    eventName: N,
+    subscriptionFn: (...params: Parameters<T[N]>) => void,
+    options?: EventCenterOptions
+  ): Subscription
 } & {
   [P in keyof T as `on${Capitalize<P & string>}`]: (
     subscriptionFn: (...params: Parameters<T[P]>) => void,
@@ -30,12 +35,17 @@ export type EventCenter<T extends EventConfig> = {
 /**
  * @example
  *  // client side
- * cc.on({
+ * cc.registEvents({
  *   change({ status }) {
  *     // status is 'success' | 'error'
  *     // do something
  *   }
  * })
+ *
+ * cc.on('change', ({status})=>{
+ *   // status is 'success' | 'error'
+ * })
+ *
  * cc.onChange(({ status }) => {
  *   // status is 'success' | 'error'
  * })
@@ -94,14 +104,14 @@ export function createEventCenter<T extends EventConfig>(
     })
   }
 
-  const on = ((subscriptionFns, options) =>
+  const registEvents = ((subscriptionFns, options) =>
     map(
       subscriptionFns,
       (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn, options)
-    )) as EventCenter<T>['on']
+    )) as EventCenter<T>['registEvents']
 
   const eventCenter = new Proxy(
-    { on, emit, _eventCenterId },
+    { registEvents, on: singlyOn, emit, _eventCenterId },
     {
       get(target, p) {
         if (target[p] !== undefined) return target[p]
