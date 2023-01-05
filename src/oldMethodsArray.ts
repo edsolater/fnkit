@@ -22,6 +22,19 @@ export function createArray<T = undefined>(length: number, fill?: T | ((idx: num
 }
 
 /**
+ * origin `splice` is mutable , not convience to use
+ */
+export function splice<T>(arr: T[], start: number, deleteCount: number, ...items: T[]): T[] {
+  const newArr = [...arr]
+  newArr.splice(start, deleteCount, ...items)
+  return newArr
+}
+
+export function insertAt<T>(arr: T[], at: number, ...items: T[]): T[] {
+  return splice(arr, at, 0, ...items)
+}
+
+/**
  * it is like Python's build-in range
  * @param start start number
  * @param stop stop number
