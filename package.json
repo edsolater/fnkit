@@ -4,6 +4,7 @@
   "description": "base function tools",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
+  "sideEffects": false,
   "scripts": {
     "build": "tsup",
     "test": "jest",
