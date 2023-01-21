@@ -43,10 +43,8 @@ export class TreeStructure<T extends object> {
   setRoot(info: T) {
     const node = this.getNode(info)
     this.recordeNode(node)
-    assert(!this.rootNode, 'root is not empty!')
+    assert(!this.rootNode, 'root already fullfilled!')
     this.rootNode = node
-    this.readByBFC()
-    this.readByDFC()
   }
 
   addNode(info: T, parent: T) {
@@ -55,22 +53,31 @@ export class TreeStructure<T extends object> {
     this.recordeNode(node)
   }
 
-  readByBFC() {
-    throw new Error('Method not implemented.')
+  *readByBFS() {
+    assert(this.rootNode, 'root not exist!')
+    let toTravel = [this.rootNode]
+    while (toTravel.length > 0) {
+      const currentList = [...toTravel]
+      toTravel = []
+      for (const node of currentList) {
+        toTravel.push(...node.children)
+        yield node.info
+      }
+    }
   }
 
-  readByDFC() {
-    throw new Error('Method not implemented.')
+  *readByDFS() {
+    yield* this.readByBFS()
   }
 
   getPathTo(info: T): [root: T, ...middle: T[], self: T] | [root: T] {
     const self = this.getCachedNode(info)
     assert(self, 'node is not recored or is not exist')
 
-    const pathNodes = [] as TreeNode<T>[]
+    const pathNodes = [] as T[]
     let toTravel = self
     while (toTravel.parentInfo) {
-      pathNodes.unshift(toTravel)
+      pathNodes.unshift(toTravel.info)
       toTravel = toTravel.parentInfo
     }
     return pathNodes as [root: T, ...middle: T[], self: T] | [root: T]
