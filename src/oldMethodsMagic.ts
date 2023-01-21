@@ -96,7 +96,12 @@ export function parallelSwitch<
 // console.log('a: ', a)
 //#endregion
 
-export function tryCatch(tryFunction: () => any, catchFunction?: (err: unknown) => any) {
+/**
+ * simple but useful shortcut
+ */
+export function tryCatch<T>(tryFunction: () => T): T | undefined
+export function tryCatch<T, F>(tryFunction: () => T, catchFunction: (err: unknown) => F): T | F
+export function tryCatch<T>(tryFunction: () => T, catchFunction?: (err: unknown) => T) {
   try {
     return tryFunction()
   } catch (err) {
