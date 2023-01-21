@@ -14,8 +14,8 @@ export type TreeRootNode<T extends object> = TreeNode<T>
 function createTreeNode<T extends object>(info: T) {
   return {
     info: info,
-    parent: undefined, // not added yet
-    children: [] // not added yet
+    parent: undefined, // not added yet, should add `TreeStructure#updateParentChildren`
+    children: [] // not added yet, should add `TreeStructure#updateSelfParentProperty`
   } as TreeNode<T>
 }
 
@@ -59,6 +59,8 @@ export class TreeStructure<T extends object> {
   }
 
   addNode(info: T, parent: T) {
+    const alreadyRecord = Boolean(this.getCachedNode(info))
+    if (alreadyRecord) return
     const node = this.getNode(info)
     this.updateParentChildren(node, parent)
     this.updateSelfParentProperty(node, parent)
@@ -82,10 +84,9 @@ export class TreeStructure<T extends object> {
     yield* this.readByBFS()
   }
 
-  getPathTo(info: T): [root: T, ...middle: T[], self: T] | [self: T] {
+  getPathFromRoot(info: T): [root: T, ...middle: T[], self: T] | [self: T] {
     const self = this.getCachedNode(info)
     assert(self, 'node is not recored or is not exist')
-    console.log('self: ', self)
     const pathNodes = [] as T[]
     let toTravel = self
     while (true) {
