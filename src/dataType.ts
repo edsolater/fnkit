@@ -128,10 +128,13 @@ export function isIterable(val: unknown): val is Iterable<unknown> {
   return isObject(val) && typeof val[Symbol.iterator] === 'function'
 }
 
+export function isAsyncIterable(val: unknown): val is AsyncIterable<unknown> {
+  return isObject(val) && typeof val[Symbol.asyncIterator] === 'function'
+}
+
 export function isStringNumber(val: any): val is StringNumber {
   return isNumber(Number(val))
 }
-
 
 export function isJSON(jsonString: unknown): jsonString is string {
   if (typeof jsonString !== 'string') return false
