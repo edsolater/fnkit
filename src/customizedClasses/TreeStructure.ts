@@ -5,17 +5,17 @@ export type TreeNode<T extends object> = {
   /**
    * if it's root, it has no parents
    */
-  parentInfo?: TreeNode<T>
+  parent?: TreeNode<T>
   children: TreeNode<T>[]
 }
 
 export type TreeRootNode<T extends object> = TreeNode<T>
 
-function createTreeNode<T extends object>(info: T, parent?: T) {
+function createTreeNode<T extends object>(info: T) {
   return {
     info: info,
-    parentInfo: parent,
-    children: []
+    parent: undefined, // not added yet
+    children: [] // not added yet
   } as TreeNode<T>
 }
 
@@ -23,9 +23,10 @@ export class TreeStructure<T extends object> {
   rootNode: TreeRootNode<T> | undefined = undefined
   nodes: WeakMap<T, TreeNode<T>> = new WeakMap()
 
-  private getNode(info: T, parent?: T) {
-    return this.nodes.has(info) ? this.nodes.get(info)! : createTreeNode(info, parent)
+  private getNode(info: T) {
+    return this.nodes.has(info) ? this.nodes.get(info)! : createTreeNode(info)
   }
+
   private getCachedNode(info: T) {
     return this.nodes.get(info)
   }
@@ -40,16 +41,27 @@ export class TreeStructure<T extends object> {
     if (!cachedParent.children.includes(childNode)) cachedParent.children.push(childNode)
   }
 
-  setRoot(info: T) {
-    const node = this.getNode(info)
-    this.recordeNode(node)
+  private updateSelfParentProperty(node: TreeNode<T>, parentInfo: T) {
+    const cachedParent = this.getCachedNode(parentInfo)
+    assert(cachedParent, 'to avoid create multi tree, parent must exist')
+    node.parent = cachedParent
+  }
+
+  private updateRootNode(node: TreeNode<T>) {
     assert(!this.rootNode, 'root already fullfilled!')
     this.rootNode = node
   }
 
+  setRoot(info: T) {
+    const node = this.getNode(info)
+    this.recordeNode(node)
+    this.updateRootNode(node)
+  }
+
   addNode(info: T, parent: T) {
-    const node = this.getNode(info, parent)
+    const node = this.getNode(info)
     this.updateParentChildren(node, parent)
+    this.updateSelfParentProperty(node, parent)
     this.recordeNode(node)
   }
 
@@ -70,16 +82,18 @@ export class TreeStructure<T extends object> {
     yield* this.readByBFS()
   }
 
-  getPathTo(info: T): [root: T, ...middle: T[], self: T] | [root: T] {
+  getPathTo(info: T): [root: T, ...middle: T[], self: T] | [self: T] {
     const self = this.getCachedNode(info)
     assert(self, 'node is not recored or is not exist')
-
+    console.log('self: ', self)
     const pathNodes = [] as T[]
     let toTravel = self
-    while (toTravel.parentInfo) {
+    while (true) {
       pathNodes.unshift(toTravel.info)
-      toTravel = toTravel.parentInfo
+      const newToTravel = toTravel.parent
+      if (!newToTravel) break
+      toTravel = newToTravel
     }
-    return pathNodes as [root: T, ...middle: T[], self: T] | [root: T]
+    return pathNodes as [root: T, ...middle: T[], self: T] | [self: T]
   }
 }
