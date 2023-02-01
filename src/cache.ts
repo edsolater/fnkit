@@ -3,7 +3,7 @@ import { isObjectLike } from './dataType'
 
 // COUNT：使用次数 1
 type Key = string
-type ArrayHash = `__map_value_hash__${number}`
+type ArrayHash = `__hash__${number}`
 
 /**
  * like JavaScript Map , but use shallow compare
@@ -35,7 +35,7 @@ function createShallowMap<InputKey extends object | { [key: string]: unknown }, 
               const innerKey = calcKey(val, objectHashMap__inner, false)
               return `${key}${innerKey}`
             }
-            valueMap.set(val, `__map_value_hash__${++hashNumberStamp}` as const)
+            valueMap.set(val, `__hash__${++hashNumberStamp}` as const)
           })
           .join(' ')
       : String(input)
@@ -57,12 +57,12 @@ function createShallowMap<InputKey extends object | { [key: string]: unknown }, 
     }
   }
 }
-/**
- * 让函数自带缓存功能，
- */
 type AnyFunction = (...args: any[]) => void
 type CachedFunction<F extends AnyFunction> = F
 
+/**
+ * make function cacheable
+ */
 export function cache<F extends AnyFunction>(originalFn: F): CachedFunction<F> {
   const cache = createShallowMap<Parameters<F>, ReturnType<F>>()
   //@ts-expect-error

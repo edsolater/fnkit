@@ -225,8 +225,6 @@ export type SKeyof<O> = Keyof<O> & string
 
 //#endregion
 
-type A = '3' | number | symbol
-type B = Extract<A, string | number>
 type Primitive = boolean | number | string | null | undefined
 
 /**
@@ -328,3 +326,5 @@ export type FromPrivateString<S extends string> = S extends `${infer U extends n
   : S extends `${infer U extends boolean}`
   ? U
   : S
+
+export type Optional<O extends object, K extends keyof O = keyof O> = Omit<O, K> & Partial<Pick<O, K>>
