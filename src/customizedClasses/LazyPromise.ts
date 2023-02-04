@@ -17,14 +17,17 @@ import { shrinkToValue } from '../wrapper'
  *   return LazyPromise.resolve(() => 2)
  * })
  */
-export class Lazy<T> implements Promise<T> {
+export class LazyPromise<T> extends Promise<T> {
   #executor: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void
   constructor(executor: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void) {
+    super((resolve) => {
+      resolve(undefined as T)
+    })
     this.#executor = executor
   }
-
-  static resolve<T>(value: T | PromiseLike<T> | (() => T | PromiseLike<T>)) {
-    return new Lazy<T>((resolve) => {
+  
+  static resolve<T>(value?: T | PromiseLike<T> | (() => T | PromiseLike<T>)) {
+    return new LazyPromise<T>((resolve) => {
       resolve(shrinkToValue(value))
     })
   }
