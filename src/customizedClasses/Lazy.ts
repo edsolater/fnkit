@@ -60,9 +60,3 @@ export class Lazy<T> implements Promise<T> {
     return 'Lazy'
   }
 }
-
-const a = new Lazy<number>((resolve) => {
-  resolve(3)
-})
-
-const b = await a
