@@ -1,5 +1,5 @@
-import { isFunction, isNumber, isIndex, isArray, isSet } from './dataType'
-import { MayPromise, Promisify } from './typings/tools'
+import { isArray, isFunction, isNumber, isSet } from './dataType'
+import { MayPromise } from './typings/tools'
 
 /**
  * (纯函数)
@@ -217,17 +217,17 @@ export async function asyncMap<T, U>(
 export async function asyncReduce<T>(
   arr: T[],
   callbackfn: (previousValue: Awaited<T>, currentValue: Awaited<T>, currentIndex: number, array: T[]) => MayPromise<T>
-): Promisify<T>
+): Promise<Awaited<T>>
 export async function asyncReduce<T>(
   arr: T[],
   callbackfn: (previousValue: Awaited<T>, currentValue: Awaited<T>, currentIndex: number, array: T[]) => MayPromise<T>,
   initialValue: MayPromise<T>
-): Promisify<T>
+): Promise<Awaited<T>>
 export async function asyncReduce<T, U>(
   arr: T[],
   callbackfn: (previousValue: Awaited<U>, currentValue: Awaited<T>, currentIndex: number, array: T[]) => MayPromise<U>,
   initialValue: MayPromise<U>
-): Promisify<U>
+): Promise<Awaited<U>>
 export async function asyncReduce(
   arr: any[],
   callbackfn: (previousValue, currentValue, currentIndex: number, array: any[]) => any,

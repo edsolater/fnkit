@@ -29,18 +29,11 @@ export type MayObjKey<T extends MayObj<any>> = T extends Primitive ? never : T e
  */
 export type MayEnum<T> = T | (string & {})
 
-/** it's result must be one level of Promise */
-export type Promisify<T> = Promise<Awaited<T>>
-export type MayPromise<T> = Awaited<T> | Promisify<T>
+export type MayPromise<T> = Awaited<T> | Promise<Awaited<T>>
 /**
  * type I = GetRequired<{ foo: number, bar?: string }> // expected to be { foo: number }
  */
 // type GetRequired<T> = { [P in keyof T as T[P] extends Required<T>[P] ? P : never]: T[P] };
-
-/**
- * type I = GetOptional<{ foo: number, bar?: string }> // expected to be { bar?: string }
- */
-// type GetOptional<T> = {[P in keyof T as T[P] extends Required<T>[P] ? never: P]: T[P]}
 
 /**
  * get all property names with filter

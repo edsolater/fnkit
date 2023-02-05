@@ -93,6 +93,10 @@ export function isRegExp(target: unknown): target is RegExp {
   return isObject(target) && target instanceof RegExp
 }
 
+export function isPromise(target: unknown): target is Promise<unknown> {
+  return isObject(target) && target instanceof Promise
+}
+
 export function isNumber(val: any): val is number {
   return typeof val === 'number'
 }
