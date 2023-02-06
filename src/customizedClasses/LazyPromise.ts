@@ -5,7 +5,7 @@ import { shrinkToValue } from '../wrapper'
  * like promise, but
  * **only call  will make value calcuated.**
  * @example <caption>use like Promise</caption>
- * const a = LazyPromise.load(() => {
+ * const a = LazyPromise.resolve(() => {
  *   console.log('1: ', 1) // load
  *   return LazyPromise.resolve(() => 2)
  * })
@@ -13,7 +13,7 @@ import { shrinkToValue } from '../wrapper'
  * console.log('b: ', b) // load
  *
  * @example <caption>don't execute if not called</caption>
- * const c = LazyPromise.load(() => {
+ * const c = LazyPromise.resolve(() => {
  *   console.log('3: ', 3) // not load
  *   return LazyPromise.resolve(() => 2)
  * })
