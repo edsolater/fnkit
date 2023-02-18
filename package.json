@@ -2,8 +2,7 @@
   "name": "@edsolater/fnkit",
   "version": "0.1.10",
   "description": "base function tools",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./src/index.ts",
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
@@ -15,7 +14,6 @@
     "url": "git+https://github.com/edsolater/fnkit.git"
   },
   "files": [
-    "dist",
     "src"
   ],
   "author": "edsolater <edsolater@qq.com>",
