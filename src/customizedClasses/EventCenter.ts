@@ -107,7 +107,7 @@ export function createEventCenter<T extends EventConfig>(
   const registEvents = ((subscriptionFns, options) =>
     map(
       subscriptionFns,
-      (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn, options)
+      (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn as AnyFn, options)
     )) as EventCenter<T>['registEvents']
 
   const eventCenter = new Proxy(
