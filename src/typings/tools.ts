@@ -321,3 +321,9 @@ export type FromPrivateString<S extends string> = S extends `${infer U extends n
   : S
 
 export type Optional<O extends object, K extends keyof O = keyof O> = Omit<O, K> & Partial<Pick<O, K>>
+
+export type AddDefaultProperties<T extends object, D extends object> = {
+  [K in keyof T]: K extends keyof D ? NonNullable<T[K]> : T[K]
+} & {
+  [K in keyof D]: K extends keyof T ? NonNullable<T[K]> : D[K]
+}
