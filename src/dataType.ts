@@ -60,6 +60,11 @@ export const getObjType = (obj: unknown): 'Array' | 'Object' | 'Set' | 'Map' | '
 export function isArray(value: unknown): value is AnyArr {
   return Array.isArray(value)
 }
+
+export function isValuedArray(value: unknown): value is AnyArr {
+  return isArray(value) && value.length > 0
+}
+
 export function isFunction(value: unknown): value is AnyFn {
   return typeof value === 'function'
 }

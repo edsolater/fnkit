@@ -14,7 +14,7 @@ export * from './filter'
 export { default as find } from './find'
 export * from './find'
 
-export { default as flap, flapDeep } from './flap'
+export { flap, flapDeep } from './flap'
 
 export { default as forEach } from './forEach'
 export * from './forEach'
@@ -36,7 +36,6 @@ export { default as some } from './some'
 // TODO: changeCollectionType: (oldCollection, targetType: 'array' | 'object' | 'set' | 'map') => newCollection
 
 export * from './arrayEnhanceMethods'
-
 
 /** @dreprecated */
 export * from './entries'

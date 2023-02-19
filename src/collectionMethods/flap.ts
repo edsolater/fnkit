@@ -1,4 +1,4 @@
-import { DeMayArray, DeMayDeepArray, MayArray, MayDeepArray } from '../typings/tools'
+import { DeMayArray, DeMayDeepArray, MayArray } from '../typings/tools'
 
 /**
  * @example
@@ -8,7 +8,7 @@ import { DeMayArray, DeMayDeepArray, MayArray, MayDeepArray } from '../typings/t
  * flat({ a: 3, c:2,  b: {c: 4} }) //=> { a: 3, c: 4 }
  * @version 0.0.1
  */
-export default function flap<T extends MayArray<any>>(wrapValue: T, deep = 1): DeMayArray<DeMayArray<T>>[] {
+export function flap<T extends MayArray<any>>(wrapValue: T, deep = 1): DeMayArray<DeMayArray<T>>[] {
   if (wrapValue == null) return []
   //@ts-expect-error type force
   return [wrapValue].flat(deep + 1)
