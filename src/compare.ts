@@ -26,11 +26,8 @@ export function isPartOf(toJudge: AnyObj, whole: AnyObj, options?: { ignoreValue
 }
 
 // it type is not intelligent enough
-export function hasProperty<T>(obj: T, key: MayArray<keyof T | string>) {
-  if (!isObject(obj)) {
-    throw new Error(`input object: ${String(obj)} is not object for fn:${hasProperty.name}`)
-  }
-  return [key].flat().every((objKey) => Reflect.has(obj as any, objKey))
+export function hasProperty<T>(obj: T, key: MayArray<keyof T | string | symbol>) {
+  return isObject(obj) && [key].flat().every((objKey) => Reflect.has(obj as any, objKey))
 }
 
 /**
