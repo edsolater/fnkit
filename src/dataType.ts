@@ -90,6 +90,10 @@ export function isObject(val: unknown): val is Record<string | number | symbol, 
   return !(val === null) && typeof val === 'object'
 }
 
+export function isObjectLiteral(v: unknown): v is object {
+  return isObject(v) && 'constructor' in v && v['constructor'] === Object
+}
+
 export function isUndefined(val: unknown): val is undefined {
   return val === undefined
 }
