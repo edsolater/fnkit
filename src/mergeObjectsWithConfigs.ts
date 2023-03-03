@@ -1,4 +1,4 @@
-import { unified } from './collectionMethods'
+import { unifyItem } from './collectionMethods'
 
 /**
  * （这只是个基础框架，没多少实用价值，需要包装成更强的函数）（**只是**浅复制了一层）
@@ -37,5 +37,5 @@ function getValue<T extends object>(
 }
 
 function getObjKey<T extends object>(objs: T[]) {
-  return unified(objs.flatMap((obj) => Reflect.ownKeys(obj)))
+  return unifyItem(objs.flatMap((obj) => Reflect.ownKeys(obj)))
 }
