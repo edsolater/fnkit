@@ -32,7 +32,7 @@ export * from './listToMap'
 export * from './pipe'
 export * from './compose'
 export * from './mergeFunctions'
-export * from './mutateFnReturnValue'
+export * from './handleFnReturnValue'
 
 export * from './pickProperty' // FP style utils to get property easily
 export * from './bindParams' // FP style get function faster

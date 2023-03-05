@@ -3,7 +3,7 @@ import { AnyFn } from './typings/constants'
 /**
  * lazy calc fn return value
  * @example
- * changeFnReturnValue(connectWallet, (r, [wallet]) =>
+ * handleFnReturnValue(connectWallet, (r, [wallet]) =>
  *   r.then(() => {
  *     assert(wallet.adapter.publicKey, 'Wallet connected failed')
  *     store.setConnected(true)
@@ -13,7 +13,7 @@ import { AnyFn } from './typings/constants'
  * )
  * @returns new function
  */
-export function mutateFnReturnValue<T extends AnyFn, U>(
+export function handleFnReturnValue<T extends AnyFn, U>(
   fn: T,
   changer: (returnValue: ReturnType<T>, params: Parameters<T>) => U
 ): (...params: Parameters<T>) => U {
