@@ -1,15 +1,13 @@
 import { isFunction } from '../dataType'
 import { AnyFn } from '../typings'
-
-type SubscribeFn<T> = (value: T | undefined) => void | Promise<void> | ((newValue: T) => void)
+type SubscribeFn<T> = (value: T) => void | Promise<void> | ((newValue: T) => void)
 
 type Subscribable<T> = {
-  current: T | undefined
+  current: T
   subscribe: (cb: SubscribeFn<T>) => { abort(): void }
 }
 
-type Dispatcher<T> = T | ((oldValue: T | undefined) => T)
-
+type Dispatcher<T> = T | ((oldValue: T) => T)
 
 /**
  * Subscribable is a object that has subscribe method.
@@ -30,7 +28,7 @@ export function createSubscribable<T>(
   const callbacks = new Set<SubscribeFn<T>>(defaultCallbacks)
   const cleanFnMap = new Map<SubscribeFn<T>, AnyFn>()
 
-  let innerValue = defaultValue
+  let innerValue = defaultValue as T
   callbacks.forEach(invokeCallback)
 
   function changeValue(dispatcher: Dispatcher<T>) {
