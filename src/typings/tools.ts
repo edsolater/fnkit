@@ -220,10 +220,10 @@ export type SKeyof<O> = Keyof<O> & string
 
 type Primitive = boolean | number | string | null | undefined
 
+
 /**
  *
  * @example
- * ```
  * interface A {
  *   keyA: string;
  *   keyB: string;
@@ -245,16 +245,16 @@ type Primitive = boolean | number | string | null | undefined
  *   list: (number | boolean)[];
  *   keyC: number;
  * }
- * ```
  */
 export type ReplaceType<Old, From, To> = {
-  [T in keyof Old]: Old[T] extends Primitive
-    ? From extends Old[T]
-      ? Exclude<Old[T], From> | To
-      : Old[T]
-    : ReplaceType<Old[T], From, To>
+  [T in keyof Old]: Old[T] extends From // to avoid case: Old[T] is an Object,
+    ? Exclude<Old[T], From> | To // when match,  directly replace
+    : Old[T] extends Primitive // judge whether need recursively replace
+    ? From extends Old[T] // it's an Object
+      ? Exclude<Old[T], From> | To // directly replace
+      : Old[T] // stay same
+    : ReplaceType<Old[T], From, To> // recursively replace
 }
-
 /**
  * @see https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir
  * @see https://github.com/Microsoft/TypeScript/issues/27024#issuecomment-421529650
