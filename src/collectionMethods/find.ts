@@ -7,15 +7,16 @@ import { AnyArr, AnyObj, isArray } from '../'
  * console.log(find([1, 2], (v) => v > 1)) // 1
  * console.log(find({ a: 1, b: 2}, (v) => v > 1))) // 1
  */
-export default function find<T extends AnyArr>(
+export default function find<T extends AnyArr | undefined>(
   arr: T,
-  predicate: (item: T[number], index: number, arr: T) => boolean
-): T[number] | undefined
-export default function find<O extends AnyObj>(
+  predicate: (item: NonNullable<T>[number], index: number, arr: T) => boolean
+): NonNullable<T>[number] | undefined
+export default function find<O extends AnyObj | undefined>(
   collection: O,
   predicate: (value: O[keyof O], key: keyof O, obj: O) => boolean
 ): [key: keyof O, value: O[keyof O]] | undefined
 export default function find(collection, predicate) {
+  if (!collection) return
   return isArray(collection)
     ? collection.find(predicate)
     : findEntry(collection, ([k, v]) => predicate(v, k, collection))

@@ -35,3 +35,16 @@ export class AbortablePromise<T> extends Promise<T> implements AbortController {
     return this.innerAbortController.abort()
   }
 }
+
+export function createAbortableAsyncTask<T>(
+  task: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void, aborted: () => boolean) => void
+): { result: Promise<T>; abort(): void } {
+  const abortController = new AbortController()
+  const abortableTask = new Promise<T>((resolve, reject) => {
+    task(resolve, reject, () => abortController.signal.aborted)
+  })
+  return {
+    result: abortableTask,
+    abort: () => abortController.abort()
+  }
+}
