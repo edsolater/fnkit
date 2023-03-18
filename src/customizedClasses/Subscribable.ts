@@ -44,7 +44,7 @@ export function createSubscribable<T>(
       return innerValue
     },
     subscribe(cb: any) {
-      invokeCallback(cb) // immediately invoke callback
+      if (innerValue != null) invokeCallback(cb) // immediately invoke callback, if has value
       callbacks.add(cb)
       return {
         abort() {
