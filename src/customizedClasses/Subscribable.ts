@@ -1,8 +1,8 @@
 import { isFunction } from '../dataType'
 import { AnyFn } from '../typings'
-type SubscribeFn<T> = (value: T) => void | Promise<void> | ((newValue: T) => void)
+export type SubscribeFn<T> = (value: T) => void | Promise<void> | ((newValue: T) => void)
 
-type Subscribable<T> = {
+export type Subscribable<T> = {
   current: T
   subscribe: (cb: SubscribeFn<T>) => { abort(): void }
 }
