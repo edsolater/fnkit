@@ -1,6 +1,6 @@
 import { isFunction } from '../dataType'
 import { AnyFn } from '../typings'
-export type SubscribeFn<T> = (value: T) => void | Promise<void> | ((newValue: T) => void)
+export type SubscribeFn<T> = ((value: T) => void | Promise<void>) | ((newValue: T) => void)
 
 export type Subscribable<T> = {
   current: T
@@ -13,26 +13,22 @@ type Dispatcher<T> = T | ((oldValue: T) => T)
  * Subscribable is a object that has subscribe method.
  * it can be the data atom of App's store graph
  */
-export function createSubscribable<T>(): [
-  subscribable: Subscribable<T | undefined>,
-  setValue: (dispatcher: Dispatcher<T | undefined>) => void
-]
-export function createSubscribable<T>(
-  defaultValue: T,
-  defaultCallbacks?: SubscribeFn<T>[]
-): [subscribable: Subscribable<T>, setValue: (dispatcher: Dispatcher<T>) => void]
 export function createSubscribable<T>(
   defaultValue?: T,
   defaultCallbacks?: SubscribeFn<T>[]
-): [subscribable: Subscribable<T>, setValue: (dispatcher: Dispatcher<T>) => void] {
+): [subscribable: Subscribable<T>, setValue: (dispatcher: Dispatcher<T | undefined>) => void] {
   const callbacks = new Set<SubscribeFn<T>>(defaultCallbacks)
   const cleanFnMap = new Map<SubscribeFn<T>, AnyFn>()
 
   let innerValue = defaultValue as T
+
   callbacks.forEach(invokeCallback)
 
-  function changeValue(dispatcher: Dispatcher<T>) {
-    innerValue = isFunction(dispatcher) ? dispatcher(innerValue) : dispatcher
+  function changeValue(dispatcher: Dispatcher<T | undefined>) {
+    const newValue = isFunction(dispatcher) ? dispatcher(innerValue) : dispatcher
+    if (newValue != null) {
+      innerValue = newValue
+    }
     callbacks.forEach(invokeCallback)
   }
 
