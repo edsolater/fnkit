@@ -13,7 +13,7 @@ export type NumberishAtom = { toString: (options?: NumberishOption) => string } 
 export type NumberishAtomRaw = { decimal?: number; numerator: bigint; denominator?: bigint }
 export type AnyFn = (...args: any[]) => any
 export type AnyObj = Record<keyof any, any>
-export type AnyArr = readonly any[]
+export type AnyArr = any[]
 export type AnyMap = Map<any, any>
 export type AnySet = Set<any>
 export type NotFunctionValue = Exclude<any, AnyFn>
