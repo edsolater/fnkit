@@ -184,6 +184,7 @@ export function mapCollectionEntries<C extends Collection, U, K = GetCollectionK
   mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => Entry<U, K> | undefined
 ): GetNewCollection<C, U, K> {
   return isArray(collection)
+  // @ts-ignore
     ? shakeUndefinedItem(collection.map((i, idx, source) => mapCallback(i, idx, source)?.value)) // use build-in array methods if possiable
     : entryToCollection(
         toEntries(collection, (v, k) => mapCallback(v, k, collection)),
