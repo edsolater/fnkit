@@ -102,7 +102,8 @@ export function safer<F extends (...params: any[]) => any, Handler extends (erro
  * const newFn = overwriteFunctionName(originFn, 'newName')
  * console.log(newFn.name) //=> 'newName'
  */
-export function overwriteFunctionName<F extends (...params: any[]) => any>(func: F, name: string): F {
+export function overwriteFunctionName<F extends (...params: any[]) => any>(func: F, name?: string): F {
+  if (!name) return func
   const temp = {
     [name]: (...args: any[]) => func(...args)
   }
