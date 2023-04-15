@@ -113,4 +113,8 @@ export class WeakerSet<T> extends Set<T> {
       }
     }
   }
+
+  override [Symbol.iterator]() {
+    return this.values()
+  }
 }

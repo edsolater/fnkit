@@ -123,4 +123,8 @@ export class WeakerMap<K, V> extends Map<K, V> {
       }
     }
   }
+
+  override [Symbol.iterator]() {
+    return this.entries()
+  }
 }
