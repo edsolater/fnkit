@@ -37,19 +37,9 @@ export const createDate: {
     }
     return value ? new Date(value) : new Date()
   } else {
-    const [year, month, day, hours = 0, minutes = 0, seconds = 0, milliseconds = 0] = params.map(
-      (i) => Number(i)
-    )
+    const [year, month, day, hours = 0, minutes = 0, seconds = 0, milliseconds = 0] = params.map((i) => Number(i))
     const monthLength = getMonthLength(year, month)
-    return new Date(
-      year,
-      month - 1,
-      clamp(0, day, monthLength),
-      hours,
-      minutes,
-      seconds,
-      milliseconds
-    )
+    return new Date(year, month - 1, clamp(0, day, monthLength), hours, minutes, seconds, milliseconds)
   }
 }
 
@@ -72,20 +62,14 @@ export const getISO = (value?: DateParam) => createDate(value).toISOString()
 export const createCurrentDate = () => createDate()
 export const createCurrentTimestamp = () => getTime()
 
+export const isCurrentDateBefore = (timestamp: TimeStamp): boolean => isDateBefore(undefined, timestamp)
+export const isCurrentDateAfter = (timestamp: TimeStamp): boolean => isDateAfter(undefined, timestamp)
+export const isSameDate = (tested: TimeStamp, matched?: TimeStamp | undefined) => getTime(tested) === getTime(matched)
 
-export const isCurrentTimeBefore = (timestamp: TimeStamp): boolean => isBefore(undefined, timestamp)
-export const isCurrentTimeAfter = (timestamp: TimeStamp): boolean => isAfter(undefined, timestamp)
-export const isSameDate = (tested: TimeStamp, matched?: TimeStamp | undefined) =>
-  getTime(tested) === getTime(matched)
-
-export const isBefore = (
-  tested: string | number | Date | undefined,
-  matched?: string | number | Date
-): boolean => getTime(tested) < getTime(matched)
-export const isAfter = (
-  tested: string | number | Date | undefined,
-  matched?: string | number | Date
-): boolean => getTime(tested) > getTime(matched)
+export const isDateBefore = (tested: string | number | Date | undefined, matched?: string | number | Date): boolean =>
+  getTime(tested) < getTime(matched)
+export const isDateAfter = (tested: string | number | Date | undefined, matched?: string | number | Date): boolean =>
+  getTime(tested) > getTime(matched)
 
 export function offsetDateTime(
   baseDate: DateParam,
@@ -96,8 +80,7 @@ export function offsetDateTime(
   }
 ) {
   if (options?.unit === 'months' || options?.unit === 'years') {
-    const { year, month, calendarDate, hours, minutes, seconds, milliseconds } =
-      getFullDateInfo(baseDate)
+    const { year, month, calendarDate, hours, minutes, seconds, milliseconds } = getFullDateInfo(baseDate)
     const wiredTotalMonth = year * 12 + month + offset * (options?.unit === 'months' ? 1 : 12)
     const yearNumber = Math.floor(wiredTotalMonth / 12)
     const monthNumber = wiredTotalMonth % 12
@@ -202,10 +185,10 @@ export const getFullDateInfo = (date?: DateParam) => {
 }
 
 /**
- * 
+ *
  * @param date specified date or today
  * @returns currentMonthLength. (e.g. January)
- * @example 
+ * @example
  * getMonthLength(2022, 1) => 31
  * getMonthLength(2022, 2) => 29
  * getMonthLength(2022, 3) => 31
