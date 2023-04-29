@@ -25,14 +25,14 @@ export function isNumberish(v: unknown): v is Numberish {
  *  '423.12' => { numerator: 42312n, decimal: 2 }
  *  '12' => { numerator: 12n, decimal: 0 }
  */
-function toNumberishAtomRaw(from: Numberish | { toNumberishAtom: () => NumberishAtom }): NumberishAtomRaw {
+export function toNumberishAtomRaw(from: Numberish | { toNumberishAtom: () => NumberishAtom }): NumberishAtomRaw {
   if (isNumberishAtomRaw(from)) return from
 
   if (isScientificNotation(from)) {
     const [nPart = '', ePart = ''] = String(from).split(/e|E/)
     const nPartNumberishAtom = toNumberishAtomRawFromString(nPart)
     const decimal = nPartNumberishAtom.decimal ?? 0 - Number(ePart)
-    return { decimal, ...nPartNumberishAtom }
+    return decimal ? { decimal, ...nPartNumberishAtom } : nPartNumberishAtom
   }
 
   if (isNumber(from)) {
@@ -43,10 +43,10 @@ function toNumberishAtomRaw(from: Numberish | { toNumberishAtom: () => Numberish
       return toNumberishAtomRawFromString(String(from))
     }
   }
+
   if (isBigInt(from)) return toNumberishAtomRawFromBigInt(from)
-  else {
-    return toNumberishAtomRawFromString(String(from))
-  }
+
+  return toNumberishAtomRawFromString(String(from))
 }
 
 export const toNumberishAtom = (from: Parameters<typeof toNumberishAtomRaw>[0]): NumberishAtom => {
@@ -64,8 +64,11 @@ export const toNumberishAtom = (from: Parameters<typeof toNumberishAtomRaw>[0]):
 
 function toNumberishAtomRawFromString(str: string): NumberishAtomRaw {
   const [intPart = '', decimalPart = ''] = str.split('.')
-  return { decimal: decimalPart.length, numerator: BigInt(intPart + decimalPart) }
+  return decimalPart
+    ? { decimal: decimalPart.length, numerator: BigInt(intPart + decimalPart) }
+    : { numerator: BigInt(intPart) }
 }
+
 function toNumberishAtomRawFromBigInt(n: bigint): NumberishAtomRaw {
   return { numerator: n }
 }
