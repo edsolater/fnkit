@@ -10,6 +10,7 @@ export type Primitive = boolean | number | string
 export type NoNullablePrimitive = NonNullable<Primitive>
 export type Numberish = number | string | bigint | NumberishAtom | NumberishAtomRaw
 export type NumberishAtom = { toString: (options?: NumberishOption) => string } & Required<NumberishAtomRaw>
+/** value is numerator / (denominator * 10 ^ decimal) */
 export type NumberishAtomRaw = { decimal?: number; numerator: bigint; denominator?: bigint }
 export type AnyFn = (...args: any[]) => any
 export type AnyObj = Record<keyof any, any>
