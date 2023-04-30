@@ -10,10 +10,10 @@ import { OneB } from './constant'
 
 export const stringNumberRegex = /(?<sign>-?)(?<int>\d*)\.?(?<dec>\d*)/
 
-const isNumberishAtomRaw = (value: any): value is NumberishAtomRaw =>
+export const isNumberishAtomRaw = (value: any): value is NumberishAtomRaw =>
   isObject(value) && hasProperty(value, ['numerator'])
 
-const isNumberishAtom = (value: any): value is NumberishAtom =>
+export const isNumberishAtom = (value: any): value is NumberishAtom =>
   isNumberishAtomRaw(value) && hasProperty(value, ['decimal', 'denominator', 'toString'])
 
 export function isNumberish(v: unknown): v is Numberish {
@@ -56,6 +56,8 @@ export const toNumberishAtom = (from: Parameters<typeof toNumberishAtomRaw>[0]):
   const atom = toNumberishAtomRaw(from)
   return {
     ...atom,
+    //TODO: add toExpression()
+    // toExpression: () => toString(atom),
     toString: (options?: NumberishOption) => toString(atom, options),
     decimal: atom.decimal ?? 0,
     denominator: atom.denominator ?? OneB

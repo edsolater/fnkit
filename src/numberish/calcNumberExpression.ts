@@ -2,8 +2,9 @@
  * @see https://m.xp.cn/b.php/107696.html
  */
 
-import { NumberishAtomRaw } from '../typings'
-import { toNumberishAtom } from './numberishAtom'
+import { isNull } from '../dataType'
+import { Numberish, NumberishAtom, NumberishAtomRaw } from '../typings'
+import { isNumberishAtom, isNumberishAtomRaw, toNumberishAtom } from './numberishAtom'
 import { add, div, minus, mul } from './operations'
 
 function getPrioratyOfChar(value: string) {
@@ -113,8 +114,8 @@ console.time('sdf')
 console.log(toRPN('1*(-3)'))
 console.timeEnd('sdf')
 
-function parseRPN(rpn: RPNQueue): NumberishAtomRaw {
-  const numberishStack = [] as NumberishAtomRaw[]
+function parseRPN(rpn: RPNQueue): NumberishAtom {
+  const numberishStack = [] as NumberishAtom[]
   for (const item of rpn) {
     if (item.isOperator) {
       const num2 = numberishStack.pop()
@@ -150,4 +151,12 @@ function parseRPN(rpn: RPNQueue): NumberishAtomRaw {
   return numberishStack[0]
 }
 
-console.log(parseRPN(toRPN('1*(-3)')))
+function toExpression(n: Numberish) {
+  if (isNumberishAtom(n) || isNumberishAtomRaw(n)) {
+    return n.numerator + '/' + n.denominator
+  } else {
+    return String(n)
+  }
+}
+
+console.log(toExpression(parseRPN(toRPN('1*(-3)/2'))))
