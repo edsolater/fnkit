@@ -3,7 +3,7 @@
  */
 
 import { NumberishAtomRaw } from '../typings'
-import { toNumberishAtom, toNumberishAtomRaw } from './numberishAtom'
+import { toNumberishAtom } from './numberishAtom'
 import { add, div, minus, mul } from './operations'
 
 function getPrioratyOfChar(value: string) {
@@ -28,20 +28,39 @@ function isChar1PrioratyHigher(c1: string, c2: string) {
  */
 type RPNQueue = RPNItem[]
 
-type RPNItem = { isOperator: true; value: '+' | '-' | '*' | '/' } | { isOperator: false; value: NumberishAtomRaw }
+type RPNItem =
+  | { isOperator: true; value: '+' | '-' | '*' | '/' }
+  | { isOperator: false; value: number | string | bigint | NumberishAtomRaw }
+
+/**
+ * @example
+ * splitNormalQueue('1 + 2') //=> ['1', '+', '2']
+ * splitNormalQueue('1+  2.255') //=> ['1', '+', '2.255']
+ * splitNormalQueue('1-2.255') //=> ['1', '-', '2.255']
+ * splitNormalQueue('1+(-2.2)') //=> ['1', '+', '-2.2']
+ * splitNormalQueue('1*(-2.2)') //=> ['1', '*', '-2.2']
+ * splitNormalQueue('-1*2.2') //=> ['-1', '*', '2.2']
+ */
+function splitNormalQueue(exp: string) {
+  return exp
+    .replaceAll(' ', '')
+    .split(/((?<!(?:^|\())\+|(?<!(?:^|\())-|\*|\/|\(|\))/)
+    .filter(Boolean)
+}
 
 /**
  * @example
  * toRPN('1 + 2') //=> ['1', '2', '+']
  */
 function toRPN(exp: string): RPNQueue {
+  const input = splitNormalQueue(exp)
   const operatorStack = [] as string[]
   const rpn = [] as RPNQueue
 
-  for (const char of exp.replaceAll(' ', '')) {
-    switch (char) {
+  for (const i of input) {
+    switch (i) {
       case '(': {
-        operatorStack.push(char)
+        operatorStack.push(i)
         break
       }
       case ')': {
@@ -59,15 +78,15 @@ function toRPN(exp: string): RPNQueue {
       case '-':
       case '*':
       case '/': {
-        while (operatorStack.length > 0 && isChar1PrioratyHigher(char, operatorStack[operatorStack.length - 1])) {
+        while (operatorStack.length > 0 && isChar1PrioratyHigher(i, operatorStack[operatorStack.length - 1])) {
           rpn.push({ isOperator: true, value: operatorStack.pop() as '+' | '-' | '*' | '/' })
         }
-        operatorStack.push(char)
+        operatorStack.push(i)
         break
       }
 
       default: {
-        rpn.push({ isOperator: false, value: toNumberishAtomRaw(char) })
+        rpn.push({ isOperator: false, value: i })
       }
     }
   }
@@ -85,15 +104,14 @@ function toRPN(exp: string): RPNQueue {
 }
 
 console.time('sdf')
-console.log(toRPN('1 + 2'))
-console.log(toRPN('1 + 2 + 3'))
-console.log(toRPN('1 + 2 * 3'))
-console.log(toRPN('1 + 2 * 3 - 4 / 5'))
-console.log(toRPN('( 1 + 2 )'))
-console.log(toRPN('( 1 + 2 ) * ( 3 - 4 ) / 5'))
-console.log(toRPN('( 1 + 2 ) * (( 3 - 4 ) *3*       4 /  5)'))
+// console.log(toRPN('1 + 2'))
+// console.log(toRPN('1 + 2 + 3'))
+// console.log(toRPN('1 + 2 * 3'))
+// console.log(toRPN('1 + 2 * 3 - 4 / 5'))
+// console.log(toRPN('( 1 + 2 )'))
+// console.log(toRPN('( 1 + 2 ) * ( 3 - 4 ) / 5'))
+console.log(toRPN('1*(-3)'))
 console.timeEnd('sdf')
-
 
 function parseRPN(rpn: RPNQueue): NumberishAtomRaw {
   const numberishStack = [] as NumberishAtomRaw[]
@@ -123,7 +141,7 @@ function parseRPN(rpn: RPNQueue): NumberishAtomRaw {
         }
       }
     } else {
-      numberishStack.push(item.value)
+      numberishStack.push(toNumberishAtom(item.value))
     }
   }
   if (numberishStack.length > 1) {
@@ -132,4 +150,4 @@ function parseRPN(rpn: RPNQueue): NumberishAtomRaw {
   return numberishStack[0]
 }
 
-console.log(parseRPN(toRPN('( 1 + 2 ) * (( 3 - 4 ) *3*4 /     5)')))
+console.log(parseRPN(toRPN('1*(-3)')))
