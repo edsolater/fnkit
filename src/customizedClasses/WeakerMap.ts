@@ -1,7 +1,3 @@
-// interface WeakerMap<K, V> extends Map<K, V> {
-//   hello(): string
-// }
-
 import { isObject } from '../dataType'
 
 const createWrapperRef = <T extends object>(v: T) => new WeakRef(v)
