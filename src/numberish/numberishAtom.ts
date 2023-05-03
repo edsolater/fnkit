@@ -27,14 +27,12 @@ export function isNumberish(v: unknown): v is Numberish {
  */
 export function toNumberishAtomRaw(from: Numberish | { toNumberishAtom: () => NumberishAtom }): NumberishAtomRaw {
   if (isNumberishAtomRaw(from)) return from
-
   if (isScientificNotation(from)) {
     const [nPart = '', ePart = ''] = String(from).split(/e|E/)
     const nPartNumberishAtom = toNumberishAtomRawFromString(nPart)
     const decimal = nPartNumberishAtom.decimal ?? 0 - Number(ePart)
     return decimal ? { decimal, ...nPartNumberishAtom } : nPartNumberishAtom
   }
-
   if (isNumber(from)) {
     try {
       // for scientific notation number can be format like 1.34e+24
@@ -43,9 +41,7 @@ export function toNumberishAtomRaw(from: Numberish | { toNumberishAtom: () => Nu
       return toNumberishAtomRawFromString(String(from))
     }
   }
-
   if (isBigInt(from)) return toNumberishAtomRawFromBigInt(from)
-
   return toNumberishAtomRawFromString(String(from))
 }
 
