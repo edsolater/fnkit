@@ -106,7 +106,7 @@ export function isPromise(target: unknown): target is Promise<unknown> {
   return isObject(target) && target instanceof Promise
 }
 
-export function isProxy(target: unknown): boolean {
+export function isProxy(target: unknown): target is Record<string | number | symbol, any> {
   return isObject(target) && target instanceof Proxy
 }
 
