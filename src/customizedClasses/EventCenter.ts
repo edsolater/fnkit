@@ -34,6 +34,8 @@ export type EventCenter<T extends EventConfig> = {
 
 /**
  * @example
+ * 
+ * //step 1: regist events (3 ways)
  *  // client side
  * cc.registEvents({
  *   change({ status }) {
@@ -50,6 +52,7 @@ export type EventCenter<T extends EventConfig> = {
  *   // status is 'success' | 'error'
  * })
  *
+ * //step 2: emit events
  * // server side
  * cc.emit('change', [{ status: 'success' }])
  */
