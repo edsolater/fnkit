@@ -7,19 +7,24 @@ import { AnyArr, AnyObj, isArray } from '../'
  * console.log(find([1, 2], (v) => v > 1)) // 1
  * console.log(find({ a: 1, b: 2}, (v) => v > 1))) // 1
  */
-export default function find<T extends AnyArr | undefined>(
-  arr: T,
-  predicate: (item: NonNullable<T>[number], index: number, arr: T) => boolean
-): NonNullable<T>[number] | undefined
-export default function find<O extends AnyObj | undefined>(
-  collection: O,
-  predicate: (value: O[keyof O], key: keyof O, obj: O) => boolean
-): [key: keyof O, value: O[keyof O]] | undefined
-export default function find(collection, predicate) {
+export default function find<T>(arr: T[] | undefined, predicate: (item: T, index: number) => boolean): T | undefined
+export default function find<T>(set: Set<T> | undefined, predicate: (item: T, index: number) => boolean): T | undefined
+export default function find<S extends Map<any, any>>(
+  set: S | undefined,
+  predicate: (
+    item: S extends Map<any, infer F> ? F : unknown,
+    index: S extends Map<infer K, any> ? K : unknown
+  ) => boolean
+): (S extends Map<any, infer F> ? F : unknown) | undefined
+export default function find<O extends Record<any, any>>(
+  obj: O | undefined,
+  predicate: (value: O[keyof O], key: keyof O) => boolean
+): O[keyof O] | undefined
+export default function find(collection: any, predicate: any) {
   if (!collection) return
   return isArray(collection)
     ? collection.find(predicate)
-    : findEntry(collection, ([k, v]) => predicate(v, k, collection))
+    : findEntry(collection, ([k, v]) => predicate(v, k, collection))?.[1]
 }
 
 export function findEntry<O extends AnyObj>(
