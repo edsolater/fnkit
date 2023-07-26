@@ -10,8 +10,14 @@ import { DeMayArray, DeMayDeepArray, MayArray } from '../typings/tools'
  */
 export function flap<T extends MayArray<any>>(wrapValue: T, deep = 1): DeMayArray<DeMayArray<T>>[] {
   if (wrapValue == null) return []
-  //@ts-expect-error type force
-  return [wrapValue].flat(deep + 1)
+
+  if (deep === 1) {
+    //@ts-expect-error type force
+    return Array.isArray(wrapValue) ? wrapValue : [wrapValue]
+  } else {
+    //@ts-expect-error type force
+    return [wrapValue].flat(deep + 1)
+  }
 }
 
 /**

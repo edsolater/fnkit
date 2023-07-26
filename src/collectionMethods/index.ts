@@ -36,6 +36,8 @@ export { default as some } from './some'
 // TODO: changeCollectionType: (oldCollection, targetType: 'array' | 'object' | 'set' | 'map') => newCollection
 
 export * from './arrayEnhanceMethods'
+export * from './omit'
+export * from './pick'
 
 /** @dreprecated */
 export * from './entries'

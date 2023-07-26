@@ -1,11 +1,9 @@
 import { unifyItem } from './collectionMethods'
 
 /**
- * （这只是个基础框架，没多少实用价值，需要包装成更强的函数）（**只是**浅复制了一层）
- * 合并多个对象(shallow 浅复制)
- * 不考虑不可迭代的属性
+ * merge without access, you can config transformer for detail control
  * @example
- * _mergeObjects([{a: 3, b: 2}, {a: 1, b: 3}], (key, v1, v2) => (key === 'a') ? [v1, v2] : v2) // {a: [3,1], b: 3}
+ * mergeObjectsWithConfigs([{a: 3, b: 2}, {a: 1, b: 3}], (key, v1, v2) => (key === 'a') ? [v1, v2] : v2) // {a: [3,1], b: 3}
  */
 export function mergeObjectsWithConfigs<T extends object>(
   objs: T[],
@@ -13,18 +11,8 @@ export function mergeObjectsWithConfigs<T extends object>(
 ): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]!
-
-  return Object.defineProperties(
-    {},
-    getObjKey(objs).reduce((acc, key) => {
-      acc[key] = {
-        enumerable: true,
-        get() {
-          return getValue(objs, key, transformer)
-        }
-      }
-      return acc
-    }, {} as PropertyDescriptorMap)
+  return createObjectByGetters(
+    Object.fromEntries(getObjKey(objs).map((key) => [key, () => getValue(objs, key, transformer)]))
   ) as T
 }
 
@@ -38,4 +26,18 @@ function getValue<T extends object>(
 
 function getObjKey<T extends object>(objs: T[]) {
   return unifyItem(objs.flatMap((obj) => Reflect.ownKeys(obj)))
+}
+
+/**
+ *
+ * @example
+ * createObjectByGetters({ aa: () => 'hello' }) //=> { aa: 'hello' }
+ */
+function createObjectByGetters<K extends keyof any, V>(getterDescroptions: Record<K, () => V>): Record<K, V> {
+  return new Proxy(getterDescroptions, {
+    get(target, p, receiver) {
+      const rawGetter = Reflect.get(target, p, receiver)
+      return rawGetter()
+    }
+  }) as Record<K, V>
 }
