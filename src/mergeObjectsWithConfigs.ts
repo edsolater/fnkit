@@ -1,4 +1,5 @@
 import { unifyItem } from './collectionMethods'
+import { createObjectByGetters } from './createObjectByGetters';
 
 /**
  * merge without access, you can config transformer for detail control
@@ -28,16 +29,3 @@ function getObjKey<T extends object>(objs: T[]) {
   return unifyItem(objs.flatMap((obj) => Reflect.ownKeys(obj)))
 }
 
-/**
- *
- * @example
- * createObjectByGetters({ aa: () => 'hello' }) //=> { aa: 'hello' }
- */
-function createObjectByGetters<K extends keyof any, V>(getterDescroptions: Record<K, () => V>): Record<K, V> {
-  return new Proxy(getterDescroptions, {
-    get(target, p, receiver) {
-      const rawGetter = Reflect.get(target, p, receiver)
-      return rawGetter()
-    }
-  }) as Record<K, V>
-}
