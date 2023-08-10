@@ -18,6 +18,13 @@ export function mergeObjectsWithConfigs<T extends object>(
     }
   }) as T
 }
+
+/**
+ * pure merge object with proxy
+ * @param objs target objects
+ * @example
+ * mergeObjects({a: 3, b: 2}, {a: 1, b: 3}) // {a: 1, b: 3}
+ */
 export function mergeObjects<T, W>(...objs: [T, W]): T & W
 export function mergeObjects<T, W, X>(...objs: [T, W, X]): T & W & X
 export function mergeObjects<T, W, X, Y>(...objs: [T, W, X, Y]): T & W & X & Y
