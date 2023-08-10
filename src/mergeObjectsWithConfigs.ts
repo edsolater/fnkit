@@ -1,4 +1,5 @@
 import { unifyItem } from './collectionMethods'
+import { AnyObj } from './typings'
 
 /**
  * merge without access, you can config transformer for detail control
@@ -17,13 +18,25 @@ export function mergeObjectsWithConfigs<T extends object>(
     }
   }) as T
 }
-
-export function mergeObjectCoverly<T extends object>(objs: T[]): T {
+export function mergeObjects<T, W>(...objs: [T, W]): T & W
+export function mergeObjects<T, W, X>(...objs: [T, W, X]): T & W & X
+export function mergeObjects<T, W, X, Y>(...objs: [T, W, X, Y]): T & W & X & Y
+export function mergeObjects<T, W, X, Y, Z>(...objs: [T, W, X, Y, Z]): T & W & X & Y & Z
+export function mergeObjects<T extends AnyObj>(...objs: T[]): T
+export function mergeObjects<T extends object>(...objs: T[]): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]!
+  const reversedObjs = [...objs].reverse()
   return new Proxy(createEmptyObjectByOlds(objs), {
     get(target, key, receiver) {
-      return getValue(objs, key, ({ valueA, valueB }) => valueB ?? valueA)
+      for (const obj of reversedObjs) {
+        if (key in obj) {
+          const v = obj[key]
+          if (v !== undefined) {
+            return v
+          }
+        }
+      }
     }
   }) as T
 }
