@@ -1,5 +1,5 @@
 import { every, flap } from '../'
-import { mergeObjectsWithConfigs } from '../mergeObjectsWithConfigs'
+import { mergeObjectsWithConfigs } from '../mergeObjects'
 import { isArray, isFunction, isObject } from '../dataType'
 import { AnyArr, AnyFn, AnyObj } from '../typings/constants'
 
