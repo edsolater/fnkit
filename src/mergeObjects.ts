@@ -1,4 +1,4 @@
-import { unifyItem } from './collectionMethods'
+import { unifyItem } from './collectionMethods/shakeNil'
 import { AnyObj } from './typings'
 
 /**
@@ -48,9 +48,33 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
   }) as T
 }
 
+// test code
+// console.time('mergeObjects')
+// for (let i = 0; i < 1000000; i++) {
+//   const a = mergeObjects({ a: 3, b: 2 }, { a: 1, b: 3 })
+// }
+// console.timeEnd('mergeObjects')
+
+// console.time('mergeObjects2')
+// for (let i = 0; i < 1000000; i++) {
+//   const b = { ...{ a: 3, b: 2 }, ...{ a: 1, b: 3 } }
+// }
+// console.timeEnd('mergeObjects2')
+
 function createEmptyObjectByOlds(objs: (object | undefined)[]): Record<string | symbol, any> {
-  // @ts-expect-error no need worry about type
-  return objs.reduce((acc, cur) => (cur ? Object.assign(acc, Object.getOwnPropertyDescriptors(cur)) : acc), {})
+  return createObjectFromKeys(getObjKey(objs))
+}
+
+/**
+ *
+ * @param keys specifyed keys (can have duplicated keys)
+ * @returns
+ */
+function createObjectFromKeys(keys: (string | symbol)[]) {
+  return keys.reduce((acc, cur) => {
+    acc[cur] = undefined
+    return acc
+  }, {} as Record<string | symbol, any>)
 }
 
 function getValue<T extends object>(
@@ -65,6 +89,12 @@ function getValue<T extends object>(
   }, undefined)
 }
 
-function getObjKey<T extends object>(objs: T[]) {
-  return unifyItem(objs.flatMap((obj) => Reflect.ownKeys(obj)))
+function getObjKey<T extends object | undefined>(objs: T[]) {
+  return objs.reduce((acc, cur) => {
+    if (cur) {
+      // @ts-expect-error no need worry about type
+      acc.push(...Object.keys(cur))
+    }
+    return acc
+  }, []) as string[]
 }
