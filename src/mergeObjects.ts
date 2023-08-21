@@ -11,7 +11,7 @@ export function mergeObjectsWithConfigs<T extends object>(
 ): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]!
-  return new Proxy(generateEmptyObjectByCloneOlds(objs), {
+  return new Proxy(createEmptyObjectByOlds(objs), {
     get(target, key, receiver) {
       return getValue(objs, key, transformer)
     }
@@ -33,7 +33,7 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]! ?? {}
   const reversedObjs = [...objs].reverse()
-  return new Proxy(generateEmptyObjectByCloneOlds(...objs), {
+  return new Proxy(createEmptyObjectByOlds(...objs), {
     get(target, key, receiver) {
       for (const obj of reversedObjs) {
         if (obj && key in obj) {
@@ -63,31 +63,31 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
 /**
  *
  * @example
- * generateEmptyObjectByCloneOlds({a: 3, b: 2}, {a: 1, b: 3, get c() {return 4}}) // {a: undefined, b: undefined, c: undefined}
+ * createEmptyObjectByOlds({a: 3, b: 2}, {a: 1, b: 3, get c() {return 4}}) // {a: undefined, b: undefined, c: undefined}
  * @param objs old object
  * @returns new object with undefined properties
  */
-export function generateEmptyObjectByCloneOlds(): object
-export function generateEmptyObjectByCloneOlds<T extends Record<string | symbol, any>>(
+export function createEmptyObjectByOlds(): object
+export function createEmptyObjectByOlds<T extends Record<string | symbol, any>>(
   ...objs: [T]
 ): { [key in keyof T]: undefined }
-export function generateEmptyObjectByCloneOlds<
+export function createEmptyObjectByOlds<
   T extends Record<string | symbol, any>,
   U extends Record<string | symbol, any>
 >(...objs: [T, U]): { [key in keyof T | keyof U]: undefined }
-export function generateEmptyObjectByCloneOlds<
+export function createEmptyObjectByOlds<
   T extends Record<string | symbol, any>,
   U extends Record<string | symbol, any>,
   V extends Record<string | symbol, any>
 >(...objs: [T, U, V]): { [key in keyof T | keyof U | keyof V]: undefined }
-export function generateEmptyObjectByCloneOlds<
+export function createEmptyObjectByOlds<
   T extends Record<string | symbol, any>,
   U extends Record<string | symbol, any>,
   V extends Record<string | symbol, any>,
   W extends Record<string | symbol, any>
 >(...objs: [T, U, V, W]): { [key in keyof T | keyof U | keyof V | keyof W]: undefined }
-export function generateEmptyObjectByCloneOlds(...objs: (object | undefined)[]): object
-export function generateEmptyObjectByCloneOlds(...objs: (object | undefined)[]): any {
+export function createEmptyObjectByOlds(...objs: (object | undefined)[]): object
+export function createEmptyObjectByOlds(...objs: (object | undefined)[]): any {
   return objs.length ? createEmptyObject(getObjKey(objs)) : {}
 }
 
