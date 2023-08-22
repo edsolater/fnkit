@@ -32,9 +32,12 @@ export function mergeObjects<T extends AnyObj | undefined>(...objs: T[]): T
 export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]! ?? {}
-  const reversedObjs = [...objs].reverse()
+  let reversedObjs: typeof objs | undefined = undefined
   return new Proxy(createEmptyObjectByOlds(...objs), {
     get(target, key, receiver) {
+      if (!reversedObjs) {
+        reversedObjs = [...objs].reverse()
+      }
       for (const obj of reversedObjs) {
         if (obj && key in obj) {
           const v = obj[key]
@@ -71,10 +74,9 @@ export function createEmptyObjectByOlds(): object
 export function createEmptyObjectByOlds<T extends Record<string | symbol, any>>(
   ...objs: [T]
 ): { [key in keyof T]: undefined }
-export function createEmptyObjectByOlds<
-  T extends Record<string | symbol, any>,
-  U extends Record<string | symbol, any>
->(...objs: [T, U]): { [key in keyof T | keyof U]: undefined }
+export function createEmptyObjectByOlds<T extends Record<string | symbol, any>, U extends Record<string | symbol, any>>(
+  ...objs: [T, U]
+): { [key in keyof T | keyof U]: undefined }
 export function createEmptyObjectByOlds<
   T extends Record<string | symbol, any>,
   U extends Record<string | symbol, any>,
@@ -88,7 +90,7 @@ export function createEmptyObjectByOlds<
 >(...objs: [T, U, V, W]): { [key in keyof T | keyof U | keyof V | keyof W]: undefined }
 export function createEmptyObjectByOlds(...objs: (object | undefined)[]): object
 export function createEmptyObjectByOlds(...objs: (object | undefined)[]): any {
-  return objs.length ? createEmptyObject(getObjKey(objs)) : {}
+  return objs.length > 0 ? createEmptyObject(getObjKeys(...objs)) : {}
 }
 
 /**
@@ -97,10 +99,11 @@ export function createEmptyObjectByOlds(...objs: (object | undefined)[]): any {
  * @returns
  */
 export function createEmptyObject(keys: (string | symbol)[]) {
-  return keys.reduce((acc, cur) => {
-    acc[cur] = undefined
-    return acc
-  }, {} as Record<string | symbol, any>)
+  const result = {}
+  for (const key of keys) {
+    result[key] = undefined
+  }
+  return result
 }
 
 function getValue<T extends object>(
@@ -108,32 +111,23 @@ function getValue<T extends object>(
   key: string | symbol,
   valueMatchRule: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any
 ) {
-  return objs.reduce((valueA, obj) => {
+  let valueA = undefined
+  for (const obj of objs) {
     const valueB = obj[key]
-    const mergedValue = valueA != null && valueB !== null ? valueMatchRule({ key, valueA, valueB }) : valueB ?? valueA
-    return mergedValue
-  }, undefined)
+    valueA = valueA != null && valueB !== null ? valueMatchRule({ key, valueA, valueB }) : valueB ?? valueA
+  }
+  return valueA
 }
 
-function getObjKey<T extends object | undefined>(objs: T[]) {
-  return objs.reduce((acc, cur) => {
-    if (cur) {
-      // @ts-expect-error no need worry about type
-      acc.push(...Object.getOwnPropertyNames(cur))
-    }
-    return acc
-  }, []) as string[]
-}
-
-function getOwnKeys<T extends object | undefined>(...objs: T[]) {
+function getObjKeys<T extends object | undefined>(...objs: T[]) {
   if (objs.length <= 1) {
-    return Object.getOwnPropertyNames(objs[0]);
+    return Object.getOwnPropertyNames(objs[0])
   } else {
-    const result = new Set<string>();
+    const result = new Set<string>()
     for (const obj of objs) {
-      if (!obj) continue;
-      Object.getOwnPropertyNames(obj).forEach((k) => result.add(k));
+      if (!obj) continue
+      Object.getOwnPropertyNames(obj).forEach((k) => result.add(k))
     }
-    return Array.from(result);
+    return Array.from(result)
   }
 }
