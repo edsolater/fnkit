@@ -7,8 +7,8 @@ import { toPrimitiveValue } from './toPrimitiveValue'
  * very rude, just checking keys
  */
 export function isKeyInShape(toJudge: AnyObj, shape: AnyObj): boolean {
-  const targetKeys = Object.keys(toJudge)
-  const shapeKeys = Object.keys(shape)
+  const targetKeys = Object.getOwnPropertyNames(toJudge)
+  const shapeKeys = Object.getOwnPropertyNames(shape)
   return shapeKeys.every((shapeKey) => targetKeys.includes(shapeKey))
 }
 
@@ -41,7 +41,7 @@ export function hasProperty<T, K extends keyof T | string | symbol>(obj: T, key:
 export function areDeepEqual(val1: unknown, val2: unknown) {
   if (areSame(val1, val2)) return true
   if ((isObject(val1) && isObject(val2)) || (isArray(val1) && isArray(val2))) {
-    return haveSameKeys(val1, val2) ? Object.keys(val1).every((key) => areDeepEqual(val1[key], val2[key])) : false
+    return haveSameKeys(val1, val2) ? Object.getOwnPropertyNames(val1).every((key) => areDeepEqual(val1[key], val2[key])) : false
   }
   return false
 }
@@ -115,7 +115,7 @@ export function hasItem<T>(arr: T[], item: T) {
 
 export function hasKey<T extends object>(obj: T, key: keyof T) {
   //@ts-ignore
-  return isItemOf(key, Object.keys(obj))
+  return isItemOf(key, Object.getOwnPropertyNames(obj))
 }
 
 /**
@@ -126,7 +126,7 @@ export function hasKey<T extends object>(obj: T, key: keyof T) {
  * haveEqualKeys({ a: 1, b: 2, c: 3 }, { a: 7, b: 8, c: 9 }) // true
  */
 export function haveSameKeys(val1: unknown, val2: unknown) {
-  return Boolean(isObjectLike(val1) && isObjectLike(val2) && areShallowEqualArray(Object.keys(val1), Object.keys(val2)))
+  return Boolean(isObjectLike(val1) && isObjectLike(val2) && areShallowEqualArray(Object.getOwnPropertyNames(val1), Object.getOwnPropertyNames(val2)))
 }
 
 /**

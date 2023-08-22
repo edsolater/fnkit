@@ -27,7 +27,7 @@ export function deepCloneObject<O extends object>(inputObject: O): O {
  * getObjectSize({a:1, b:2}) // 2
  */
 export function getObjectSize(obj: object) {
-  return Object.keys(obj).length
+  return Object.getOwnPropertyNames(obj).length
 }
 
 /**

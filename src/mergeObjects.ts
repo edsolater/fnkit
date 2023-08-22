@@ -119,8 +119,21 @@ function getObjKey<T extends object | undefined>(objs: T[]) {
   return objs.reduce((acc, cur) => {
     if (cur) {
       // @ts-expect-error no need worry about type
-      acc.push(...Object.keys(cur))
+      acc.push(...Object.getOwnPropertyNames(cur))
     }
     return acc
   }, []) as string[]
+}
+
+function getOwnKeys<T extends object | undefined>(...objs: T[]) {
+  if (objs.length <= 1) {
+    return Object.getOwnPropertyNames(objs[0]);
+  } else {
+    const result = new Set<string>();
+    for (const obj of objs) {
+      if (!obj) continue;
+      Object.getOwnPropertyNames(obj).forEach((k) => result.add(k));
+    }
+    return Array.from(result);
+  }
 }

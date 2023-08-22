@@ -24,7 +24,7 @@ function omitMap<T extends Map<any, any>>(map: T, keys: MayArray<any>): T {
 }
 function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<U>): Omit<T, U> {
   const newObj = Object.create(Object.getPrototypeOf(obj))
-  const parsedKeys = minusArray(Object.keys(obj), flap(keys))
+  const parsedKeys = minusArray(Object.getOwnPropertyNames(obj), flap(keys))
   parsedKeys.forEach((key) => {
     Object.defineProperty(newObj, key, Object.getOwnPropertyDescriptor(obj, key)!)
   })

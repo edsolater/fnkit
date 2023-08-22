@@ -225,7 +225,7 @@ export function isPrimitive(v: unknown): v is Primitive {
 }
 
 export function isEmtyObject(obj: any): boolean {
-  return (isArray(obj) && obj.length === 0) || (isObject(obj) && Object.keys(obj).length === 0)
+  return (isArray(obj) && obj.length === 0) || (isObject(obj) && Object.getOwnPropertyNames(obj).length === 0)
 }
 
 export function isEmtyString(v: any): boolean {
@@ -251,7 +251,7 @@ export const notDefined = isNullish
  * notEmptyObject({}) //=> false
  */
 export function notEmptyObject(target: Record<string, any>): boolean {
-  return Boolean(Object.keys(target).length)
+  return Boolean(Object.getOwnPropertyNames(target).length)
 }
 
 export const notExist = isNullish
