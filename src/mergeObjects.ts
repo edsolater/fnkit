@@ -1,5 +1,3 @@
-import { AnyObj } from './typings'
-
 /**
  * merge without access, you can config transformer for detail control
  * @example
@@ -28,26 +26,57 @@ export function mergeObjects<T, W>(...objs: [T, W]): T & W
 export function mergeObjects<T, W, X>(...objs: [T, W, X]): T & W & X
 export function mergeObjects<T, W, X, Y>(...objs: [T, W, X, Y]): T & W & X & Y
 export function mergeObjects<T, W, X, Y, Z>(...objs: [T, W, X, Y, Z]): T & W & X & Y & Z
-export function mergeObjects<T extends AnyObj | undefined>(...objs: T[]): T
+export function mergeObjects<T extends object | undefined>(...objs: T[]): T
 export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]! ?? {}
   let reversedObjs: typeof objs | undefined = undefined
-  return new Proxy(createEmptyObjectByOlds(...objs), {
-    get(target, key, receiver) {
-      if (!reversedObjs) {
-        reversedObjs = [...objs].reverse()
-      }
-      for (const obj of reversedObjs) {
-        if (obj && key in obj) {
-          const v = obj[key]
-          if (v !== undefined) {
-            return v
+  let keys: string[] | undefined = undefined
+  return new Proxy(
+    {},
+    {
+      get(target, key, receiver) {
+        if (!reversedObjs) {
+          reversedObjs = [...objs].reverse()
+        }
+        for (const obj of reversedObjs) {
+          if (obj && key in obj) {
+            const v = obj[key]
+            if (v !== undefined) {
+              return v
+            }
           }
+        }
+      },
+
+      has(target, key) {
+        if (!keys) {
+          keys = getObjKeys(...objs)
+        }
+        return keys.includes(key as string)
+      },
+
+      getPrototypeOf(target) {
+        return objs[0] ? Object.getPrototypeOf(objs[0]) : null
+      },
+
+      ownKeys(target) {
+        if (!keys) {
+          keys = getObjKeys(...objs)
+        }
+        return keys
+      },
+
+      // for Object.keys to filter
+      getOwnPropertyDescriptor(target, prop) {
+        return {
+          enumerable: true,
+          configurable: true,
+          value: undefined
         }
       }
     }
-  }) as T
+  ) as T
 }
 
 // test code
