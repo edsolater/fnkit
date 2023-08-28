@@ -25,9 +25,10 @@ export function isPartOf(toJudge: AnyObj, whole: AnyObj, options?: { ignoreValue
   })
 }
 
-// it type is not intelligent enough
-export function hasProperty<T, K extends keyof T | string | symbol>(obj: T, key: MayArray<K>): boolean {
-  return isObject(obj) && [key].flat().every((objKey) => Reflect.has(obj as any, objKey))
+export function hasProperty<T, K extends keyof T | (string & {}) | symbol>(obj: T, key: MayArray<K>): boolean {
+  return (
+    isObject(obj) && (isArray(key) ? key.every((objKey) => Reflect.has(obj as any, objKey)) : Reflect.has(obj, key))
+  )
 }
 
 /**
@@ -41,7 +42,9 @@ export function hasProperty<T, K extends keyof T | string | symbol>(obj: T, key:
 export function areDeepEqual(val1: unknown, val2: unknown) {
   if (areSame(val1, val2)) return true
   if ((isObject(val1) && isObject(val2)) || (isArray(val1) && isArray(val2))) {
-    return haveSameKeys(val1, val2) ? Object.getOwnPropertyNames(val1).every((key) => areDeepEqual(val1[key], val2[key])) : false
+    return haveSameKeys(val1, val2)
+      ? Object.getOwnPropertyNames(val1).every((key) => areDeepEqual(val1[key], val2[key]))
+      : false
   }
   return false
 }
@@ -126,7 +129,11 @@ export function hasKey<T extends object>(obj: T, key: keyof T) {
  * haveEqualKeys({ a: 1, b: 2, c: 3 }, { a: 7, b: 8, c: 9 }) // true
  */
 export function haveSameKeys(val1: unknown, val2: unknown) {
-  return Boolean(isObjectLike(val1) && isObjectLike(val2) && areShallowEqualArray(Object.getOwnPropertyNames(val1), Object.getOwnPropertyNames(val2)))
+  return Boolean(
+    isObjectLike(val1) &&
+      isObjectLike(val2) &&
+      areShallowEqualArray(Object.getOwnPropertyNames(val1), Object.getOwnPropertyNames(val2))
+  )
 }
 
 /**

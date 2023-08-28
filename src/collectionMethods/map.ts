@@ -1,12 +1,11 @@
 import { Collection, Entry } from '../'
-import { isArray } from '../dataType'
 import { MayArray } from '../typings'
 import {
-  flatMapCollectionEntries,
-  forceEntry,
   GetCollectionKey,
   GetCollectionValue,
   GetNewCollection,
+  flatMapCollectionEntries,
+  forceEntry,
   mapCollection,
   mapCollectionEntries
 } from './'
@@ -50,6 +49,7 @@ export function map<C extends Collection, V, K = GetCollectionKey<C>>(
 ): GetNewCollection<C, V, K> {
   return mapCollection(collection, mapCallback)
 }
+
 
 /**
  * {@link flatMap `flatMap()`}: simliar to `array.prototype.flatMap()`
