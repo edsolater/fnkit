@@ -23,12 +23,29 @@ function omitMap<T extends Map<any, any>>(map: T, keys: MayArray<any>): T {
   return newMap as T
 }
 function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<U>): Omit<T, U> {
-  const newObj = Object.create(Object.getPrototypeOf(obj))
-  const parsedKeys = minusArray(Object.getOwnPropertyNames(obj), flap(keys))
-  parsedKeys.forEach((key) => {
-    Object.defineProperty(newObj, key, Object.getOwnPropertyDescriptor(obj, key)!)
-  })
-  return newObj
+  let ownKeys: string[] | undefined = undefined
+  function getOwnKeys() {
+    if (!ownKeys) {
+      ownKeys = []
+      const inputKeys = new Set(flap(keys))
+      for (const key of Object.getOwnPropertyNames(obj)) {
+        if (!inputKeys.has(key as any)) {
+          ownKeys.push(key)
+        }
+      }
+    }
+    return ownKeys
+  }
+  return new Proxy(obj, {
+    get(target, key, receiver) {
+      return getOwnKeys().includes(key as any) ? undefined : Reflect.get(target, key, receiver)
+    },
+    has: (target, key) => getOwnKeys().includes(key as any),
+    getPrototypeOf: (target) => Object.getPrototypeOf(obj),
+    ownKeys: (target) => getOwnKeys(),
+    // for Object.keys to filter
+    getOwnPropertyDescriptor: (target, prop) => Object.getOwnPropertyDescriptor(target, prop)
+  }) as T
 }
 function minusArray<T, U>(arr: T[], arr2: U[]): T[] {
   const arr2Set = new Set(arr2)
