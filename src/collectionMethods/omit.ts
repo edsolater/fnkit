@@ -23,14 +23,14 @@ function omitMap<T extends Map<any, any>>(map: T, keys: MayArray<any>): T {
   return newMap as T
 }
 function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<U>): Omit<T, U> {
-  let ownKeys: string[] | undefined = undefined
+  let ownKeys: Set<string> | undefined = undefined
   function getOwnKeys() {
     if (!ownKeys) {
-      ownKeys = []
+      ownKeys = new Set<string>()
       const inputKeys = new Set(flap(keys))
       for (const key of Object.getOwnPropertyNames(obj)) {
         if (!inputKeys.has(key as any)) {
-          ownKeys.push(key)
+          ownKeys.add(key)
         }
       }
     }
@@ -38,11 +38,11 @@ function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
   }
   return new Proxy(obj, {
     get(target, key, receiver) {
-      return getOwnKeys().includes(key as any) ? undefined : Reflect.get(target, key, receiver)
+      return getOwnKeys().has(key as any) ? undefined : Reflect.get(target, key, receiver)
     },
-    has: (target, key) => getOwnKeys().includes(key as any),
+    has: (target, key) => getOwnKeys().has(key as any),
     getPrototypeOf: (target) => Object.getPrototypeOf(obj),
-    ownKeys: (target) => getOwnKeys(),
+    ownKeys: (target) => Array.from(getOwnKeys()),
     // for Object.keys to filter
     getOwnPropertyDescriptor: (target, prop) => Object.getOwnPropertyDescriptor(target, prop)
   }) as T

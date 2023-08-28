@@ -23,14 +23,14 @@ function pickMap<T extends Map<any, any>>(map: T, keys: MayArray<any>): T {
   return newMap as T
 }
 function pickObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<U>): Pick<T, U> {
-  let ownKeys: U[] | undefined = undefined
-  function getOwnKeys(): U[] {
+  let ownKeys: Set<U> | undefined = undefined
+  function getOwnKeys() {
     if (!ownKeys) {
       const originalKeys = new Set(Object.getOwnPropertyNames(obj))
-      ownKeys = []
+      ownKeys = new Set<U>()
       for (const k of flap(keys)) {
         if (originalKeys.has(k as any)) {
-          ownKeys.push(k as U)
+          ownKeys.add(k as U)
         }
       }
     }
@@ -38,12 +38,12 @@ function pickObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
   }
   return new Proxy(obj, {
     get(target, key, receiver) {
-      return getOwnKeys().includes(key as any) ? undefined : Reflect.get(target, key, receiver)
+      return getOwnKeys().has(key as any) ? undefined : Reflect.get(target, key, receiver)
     },
-    has: (target, key) => getOwnKeys().includes(key as any),
+    has: (target, key) => getOwnKeys().has(key as any),
     getPrototypeOf: (target) => Object.getPrototypeOf(obj),
-    //@ts-expect-error ts check weakpoints
-    ownKeys: (target) => getOwnKeys(),
+    // @ts-expect-error ts check weakpoints
+    ownKeys: (target) => Array.from(getOwnKeys()),
     // for Object.keys to filter
     getOwnPropertyDescriptor: (target, prop) => Object.getOwnPropertyDescriptor(target, prop)
   }) as T
