@@ -1,6 +1,6 @@
-import { every, flap } from '../'
-import { mergeObjectsWithConfigs } from '../mergeObjects'
+import { every } from '../'
 import { isArray, isFunction, isObject } from '../dataType'
+import { mergeObjectsWithConfigs } from '../mergeObjects'
 import { AnyArr, AnyFn, AnyObj } from '../typings/constants'
 
 /**
@@ -20,7 +20,7 @@ export function merge<T extends AnyFn>(...values: T[]): (...params: Parameters<T
 export function merge<T extends AnyObj>(...values: T[]): T
 export function merge<T>(...values: T[]): unknown[]
 export function merge<T>(...values: T[]): any {
-  if (every(values, isArray)) return flap(values)
+  if (every(values, isArray)) return values.flat()
   if (every(values, isFunction))
     //@ts-expect-error force
     return (...args) => values.reduce((returnResults, fn) => returnResults.concat(fn(...args)), [])

@@ -2,6 +2,7 @@ import { Collection } from '../collectionMethods'
 import { AnyFn, Falsy } from './constants'
 
 export type MayArray<T> = T | Array<T>
+/** flap */
 export type DeMayArray<T> = T extends any[] ? T[number] : T
 
 export type MayFn<T, Params extends any[] = any[]> = T | ((...params: Params) => T)

@@ -1,4 +1,3 @@
-import { flap } from './collectionMethods'
 import { isObjectLike } from './dataType'
 import { AnyArr, AnyFn } from './typings/constants'
 
@@ -18,7 +17,7 @@ export function attachArgs<F extends AnyFn, Index extends number>(
 ): F {
   const partlyInvokedFunction = (...args: Parameters<F>) => {
     const oldParam = args[paramIndex]
-    const newParam = isObjectLike(oldParam) && isObjectLike(param) ? flap([oldParam, param]) : param
+    const newParam = isObjectLike(oldParam) && isObjectLike(param) ? [oldParam, param].flat() : param
     return fn(...args.slice(0, paramIndex), newParam, ...args.slice(paramIndex + 1))
   }
   //@ts-ignore
