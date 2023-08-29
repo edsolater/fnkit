@@ -36,16 +36,21 @@ function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
     }
     return ownKeys
   }
-  return new Proxy(obj, {
-    get(target, key, receiver) {
-      return getOwnKeys().has(key as any) ? undefined : Reflect.get(target, key, receiver)
-    },
-    has: (target, key) => getOwnKeys().has(key as any),
-    getPrototypeOf: (target) => Object.getPrototypeOf(obj),
-    ownKeys: (target) => Array.from(getOwnKeys()),
-    // for Object.keys to filter
-    getOwnPropertyDescriptor: (target, prop) => Object.getOwnPropertyDescriptor(target, prop)
-  }) as T
+  return new Proxy(
+    {},
+    {
+      get: (target, key, receiver) => (getOwnKeys().has(key as any) ? Reflect.get(obj, key, receiver) : undefined),
+      has: (target, key) => getOwnKeys().has(key as any),
+      getPrototypeOf: (target) => Object.getPrototypeOf(obj),
+      ownKeys: (target) => Array.from(getOwnKeys()),
+      // for Object.keys to filter
+      getOwnPropertyDescriptor: (target, prop) => ({
+        ...Object.getOwnPropertyDescriptor(obj, prop),
+        enumerable: true,
+        configurable: true
+      })
+    }
+  ) as T
 }
 function minusArray<T, U>(arr: T[], arr2: U[]): T[] {
   const arr2Set = new Set(arr2)
