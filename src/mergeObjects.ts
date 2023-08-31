@@ -5,13 +5,43 @@
  */
 export function mergeObjectsWithConfigs<T extends object>(
   objs: T[],
-  transformer: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any
+  transformer: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any = ({ valueA, valueB }) => valueB
 ): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]!
-  return new Proxy(createEmptyObjectByOlds(objs), {
+
+  let keys: (string | symbol)[] | undefined = undefined
+
+  return new Proxy(objs[0], {
     get(target, key, receiver) {
       return getValue(objs, key, transformer)
+    },
+
+    has(target, key) {
+      if (!keys) {
+        keys = getObjKeys(...objs)
+      }
+      return keys.includes(key as string)
+    },
+
+    getPrototypeOf(target) {
+      return objs[0] ? Object.getPrototypeOf(objs[0]) : null
+    },
+
+    ownKeys(target) {
+      if (!keys) {
+        keys = getObjKeys(...objs)
+      }
+      return keys
+    },
+
+    // for Object.keys to filter
+    getOwnPropertyDescriptor(target, prop) {
+      return {
+        enumerable: true,
+        configurable: true,
+        value: undefined
+      }
     }
   }) as T
 }
@@ -31,7 +61,7 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]! ?? {}
   let reversedObjs: typeof objs | undefined = undefined
-  let keys: string[] | undefined = undefined
+  let keys: (string | symbol)[] | undefined = undefined
   return new Proxy(
     {},
     {
@@ -149,13 +179,14 @@ function getValue<T extends object>(
 }
 
 function getObjKeys<T extends object | undefined>(...objs: T[]) {
-  if (objs.length <= 1) {
-    return Object.getOwnPropertyNames(objs[0])
+  if (objs.length >= 1) {
+    const obj = objs[0]
+    return obj ? Reflect.ownKeys(obj) : []
   } else {
-    const result = new Set<string>()
+    const result = new Set<string | symbol>()
     for (const obj of objs) {
       if (!obj) continue
-      Object.getOwnPropertyNames(obj).forEach((k) => result.add(k))
+      Reflect.ownKeys(obj).forEach((k) => result.add(k))
     }
     return Array.from(result)
   }
