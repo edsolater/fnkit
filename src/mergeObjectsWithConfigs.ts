@@ -12,12 +12,14 @@ export function mergeObjectsWithConfigs<T extends object>(
 ): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]!
+  // TODO: maybe proxy can deep fake without createEmptyObjectByOlds
   return new Proxy(createEmptyObjectByOlds(objs), {
     get(target, key, receiver) {
       return getValue(objs, key, transformer)
     }
   }) as T
 }
+
 
 /**
  * pure merge object with proxy
