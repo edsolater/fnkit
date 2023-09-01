@@ -251,7 +251,7 @@ export const notDefined = isNullish
  * notEmptyObject({}) //=> false
  */
 export function notEmptyObject(target: Record<string, any>): boolean {
-  return Boolean(Object.getOwnPropertyNames(target).length)
+  return Boolean(Reflect.ownKeys(target).length)
 }
 
 export const notExist = isNullish

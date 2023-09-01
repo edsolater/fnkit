@@ -44,6 +44,6 @@ export function reduceEntry<O extends AnyObj, F extends [string, any]>(
 export function reduceKey<O extends AnyObj, F>(obj: O, callbackFn: (acc: F, key: SKeyof<O>) => F, initialValue: F): F {
   return (
     // @ts-expect-error
-    Object.getOwnPropertyNames(obj).reduce((acc, key) => callbackFn(acc, key), initialValue) as F
+    Reflect.ownKeys(obj).reduce((acc, key) => callbackFn(acc, key), initialValue) as F
   )
 }

@@ -26,7 +26,7 @@ function pickObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
   let ownKeys: Set<U> | undefined = undefined
   function getOwnKeys() {
     if (!ownKeys) {
-      const originalKeys = new Set(Object.getOwnPropertyNames(obj))
+      const originalKeys = new Set(Reflect.ownKeys(obj))
       ownKeys = new Set<U>()
       for (const k of flap(keys)) {
         if (originalKeys.has(k as any)) {

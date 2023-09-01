@@ -12,35 +12,24 @@ export function mergeObjectsWithConfigs<T extends object>(
 
   let keys: (string | symbol)[] | undefined = undefined
 
+  function getOwnKeys() {
+    if (!keys) {
+      keys = getObjKeys(...objs)
+    }
+    return keys
+  }
+
   return new Proxy(objs[0], {
-    get(target, key, receiver) {
-      return getValue(objs, key, transformer)
-    },
-
-    has(target, key) {
-      if (!keys) {
-        keys = getObjKeys(...objs)
-      }
-      return keys.includes(key as string)
-    },
-
-    getPrototypeOf(target) {
-      return objs[0] ? Object.getPrototypeOf(objs[0]) : null
-    },
-
-    ownKeys(target) {
-      if (!keys) {
-        keys = getObjKeys(...objs)
-      }
-      return keys
-    },
-
+    get: (target, key, receiver) => getValue(objs, key, transformer),
+    has: (target, key) => getOwnKeys().includes(key as string),
+    getPrototypeOf: (target) => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
+    ownKeys: getOwnKeys,
     // for Object.keys to filter
-    getOwnPropertyDescriptor(target, prop) {
-      return {
-        enumerable: true,
-        configurable: true,
-        value: undefined
+    getOwnPropertyDescriptor: (target, prop) => {
+      for (const obj of objs) {
+        if (Reflect.has(obj, prop)) {
+          return Reflect.getOwnPropertyDescriptor(obj, prop)
+        }
       }
     }
   }) as T
@@ -178,8 +167,8 @@ function getValue<T extends object>(
   return valueA
 }
 
-function getObjKeys<T extends object | undefined>(...objs: T[]) {
-  if (objs.length >= 1) {
+export function getObjKeys<T extends object | undefined>(...objs: T[]) {
+  if (objs.length <= 1) {
     const obj = objs[0]
     return obj ? Reflect.ownKeys(obj) : []
   } else {

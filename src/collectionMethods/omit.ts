@@ -23,14 +23,14 @@ function omitMap<T extends Map<any, any>>(map: T, keys: MayArray<any>): T {
   return newMap as T
 }
 function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<U>): Omit<T, U> {
-  let ownKeys: Set<string> | undefined = undefined
+  let ownKeys: Set<U> | undefined = undefined
   function getOwnKeys() {
     if (!ownKeys) {
-      ownKeys = new Set<string>()
+      ownKeys = new Set<U>()
       const inputKeys = new Set(flap(keys))
-      for (const key of Object.getOwnPropertyNames(obj)) {
+      for (const key of Reflect.ownKeys(obj)) {
         if (!inputKeys.has(key as any)) {
-          ownKeys.add(key)
+          ownKeys.add(key as U)
         }
       }
     }
@@ -42,6 +42,7 @@ function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
       get: (target, key, receiver) => (getOwnKeys().has(key as any) ? Reflect.get(obj, key, receiver) : undefined),
       has: (target, key) => getOwnKeys().has(key as any),
       getPrototypeOf: (target) => Object.getPrototypeOf(obj),
+      // @ts-expect-error ts check weakpoints
       ownKeys: (target) => Array.from(getOwnKeys()),
       // for Object.keys to filter
       getOwnPropertyDescriptor: (target, prop) => ({
