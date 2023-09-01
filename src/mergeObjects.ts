@@ -20,12 +20,12 @@ export function mergeObjectsWithConfigs<T extends object>(
   }
 
   return new Proxy(objs[0], {
-    get: (target, key, receiver) => getValue(objs, key, transformer),
-    has: (target, key) => getOwnKeys().includes(key as string),
-    getPrototypeOf: (target) => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
+    get: (_target, key) => getValue(objs, key, transformer),
+    has: (_target, key) => getOwnKeys().includes(key as string),
+    getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
     ownKeys: getOwnKeys,
     // for Object.keys to filter
-    getOwnPropertyDescriptor: (target, prop) => {
+    getOwnPropertyDescriptor: (_target, prop) => {
       for (const obj of objs) {
         if (Reflect.has(obj, prop)) {
           return Reflect.getOwnPropertyDescriptor(obj, prop)
@@ -51,10 +51,16 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
   if (objs.length === 1) return objs[0]! ?? {}
   let reversedObjs: typeof objs | undefined = undefined
   let keys: (string | symbol)[] | undefined = undefined
+  function getOwnKeys() {
+    if (!keys) {
+      keys = getObjKeys(...objs)
+    }
+    return keys
+  }
   return new Proxy(
     {},
     {
-      get(target, key, receiver) {
+      get(_target, key) {
         if (!reversedObjs) {
           reversedObjs = [...objs].reverse()
         }
@@ -67,31 +73,15 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
           }
         }
       },
-
-      has(target, key) {
-        if (!keys) {
-          keys = getObjKeys(...objs)
-        }
-        return keys.includes(key as string)
-      },
-
-      getPrototypeOf(target) {
-        return objs[0] ? Object.getPrototypeOf(objs[0]) : null
-      },
-
-      ownKeys(target) {
-        if (!keys) {
-          keys = getObjKeys(...objs)
-        }
-        return keys
-      },
-
+      has: (_target, key) => getOwnKeys().includes(key as string),
+      getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
+      ownKeys: getOwnKeys,
       // for Object.keys to filter
-      getOwnPropertyDescriptor(target, prop) {
-        return {
-          enumerable: true,
-          configurable: true,
-          value: undefined
+      getOwnPropertyDescriptor: (_target, prop) => {
+        for (const obj of objs) {
+          if (obj && Reflect.has(obj, prop)) {
+            return Reflect.getOwnPropertyDescriptor(obj, prop)
+          }
         }
       }
     }

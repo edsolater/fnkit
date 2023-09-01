@@ -6,6 +6,6 @@ export default defineConfig({
   clean: true,
   dts: true,
   format: ['esm', 'cjs'],
-  target: 'es2020',
+  target: 'es2022',
   splitting: true
 })
