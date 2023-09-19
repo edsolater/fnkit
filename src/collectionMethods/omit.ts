@@ -41,6 +41,7 @@ function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
     {
       get: (target, key, receiver) => (getOwnKeys().has(key as any) ? Reflect.get(obj, key, receiver) : undefined),
       has: (target, key) => getOwnKeys().has(key as any),
+      set: (target, key, value) => Reflect.set(obj, key, value),
       getPrototypeOf: (target) => Object.getPrototypeOf(obj),
       // @ts-expect-error ts check weakpoints
       ownKeys: (target) => Array.from(getOwnKeys()),
