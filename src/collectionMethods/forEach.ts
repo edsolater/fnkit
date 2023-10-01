@@ -1,15 +1,15 @@
 import { AnyObj, isArray } from '..'
 import { AnyArr } from '../typings'
 
-export default function forEach<T extends AnyArr>(
+export function forEach<T extends AnyArr>(
   collection: T,
   predicate: (item: T[number], index: number, arr: T) => void
 ): void
-export default function forEach<O extends AnyObj>(
+export function forEach<O extends AnyObj>(
   collection: O,
   predicate: (value: O[keyof O], key: keyof O, obj: O) => void
 ): void
-export default function forEach(collection, predicate) {
+export function forEach(collection, predicate) {
   return isArray(collection) ? collection.forEach(predicate) : forEachEntry(collection, ([k, v]) => predicate(v, k))
 }
 

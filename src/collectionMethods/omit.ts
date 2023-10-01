@@ -1,5 +1,5 @@
 import { flap } from '.'
-import { AnyObj, isArray, isMap, isSet, MayArray } from '..'
+import { AnyObj, isMap, MayArray } from '..'
 
 /**
  * like typescript Omit
@@ -7,49 +7,14 @@ import { AnyObj, isArray, isMap, isSet, MayArray } from '..'
  * @example
  * console.log(omit({ a: 1, b: true }, ['a'])) //=> { b: true }
  */
-export function omit<T>(collection: T[], itemList: MayArray<T>): T[]
-export function omit<T extends Map<any, any>, U extends keyof T>(collection: T, keyList: MayArray<U>): T
-export function omit<T>(collection: Set<T>, itemList: MayArray<T>): Set<T>
 export function omit<T extends AnyObj, U extends keyof T>(collection: T, propNameList: MayArray<U>): Omit<T, U>
+export function omit<T extends Map<any, any>, U extends keyof T>(collection: T, propNameList: MayArray<U>): T
 export function omit<T extends AnyObj | Map<any, any>, U extends keyof T>(
   collection: T,
   propNameList: MayArray<U>
 ): any {
-  return isArray(collection)
-    ? omitItems(collection, propNameList)
-    : isMap(collection)
-    ? omitMap(collection, propNameList)
-    : isSet(collection)
-    ? omitSetItems(collection, propNameList)
-    : omitObject(collection, propNameList)
+  return isMap(collection) ? omitMap(collection, propNameList) : omitObject(collection, propNameList)
 }
-
-/**
- * Returns a new array with all elements of the input array except for the specified items.
- * @param arr The input array to filter.
- * @param items The item(s) to omit from the array.
- * @returns A new array with all elements of the input array except for the specified items.
- */
-function omitItems<T>(arr: T[], items: T | T[]): T[] {
-  const omitSet = new Set(Array.isArray(items) ? items : [items])
-  return arr.filter((item) => !omitSet.has(item))
-}
-
-/**
- * Returns a new array with all elements of the input array except for the specified items.
- * @param arr The input array to filter.
- * @param items The item(s) to omit from the array.
- * @returns A new array with all elements of the input array except for the specified items.
- */
-function omitSetItems<T>(set: Set<T>, items: T | T[]): Set<T> {
-  const omitSet = new Set(Array.isArray(items) ? items : [items])
-  const newSet = new Set(set)
-  for (const item of omitSet) {
-    newSet.delete(item)
-  }
-  return newSet
-}
-
 function omitMap<T extends Map<any, any>>(map: T, keys: MayArray<any>): T {
   const newMap = new Map(map)
   flap(keys).forEach((k) => {

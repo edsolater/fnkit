@@ -1,6 +1,8 @@
+import { isSet } from 'util/types'
 import { isMemberOf } from '../compare'
-import { AnyObj, ShakeNever, Valueof } from '../typings'
-import filter, { filterEntry, filterKey } from './filter'
+import { isArray } from '../dataType'
+import { AnyObj, MayArray, ShakeNever, Valueof } from '../typings'
+import { filterEntry, filterKey, filter } from './filter'
 
 type Drop<T, K> = ShakeNever<{
   [P in keyof T]: T[P] extends K ? never : T[P]
@@ -9,6 +11,7 @@ type Drop<T, K> = ShakeNever<{
 /**
  * design for arry and set, object and map
  *
+ * drop value
  * it use build-in method `Array.prototype.filter()`
  *
  * accept pairs
@@ -21,10 +24,17 @@ type Drop<T, K> = ShakeNever<{
  * console.log(drop({ a: 3, b: 5 }, 3, 5)) // {}
  * @version 0.0.1
  */
-export default function drop<T, U>(collection: T[], ...items: U[]): Exclude<T, U>[]
-export default function drop<T extends AnyObj, V>(collection: T, ...values: V[]): Drop<T, V>
-export default function drop(collection, ...values): any {
-  return filter(collection, (v) => !isMemberOf(values, v))
+export function drop<T>(array: T[], items: MayArray<T>): T[]
+export function drop<T>(map: Map<any, T>, items: MayArray<T>): Map<any, T>
+export function drop<T>(set: Set<T>, itemList: MayArray<T>): Set<T>
+export function drop<T extends AnyObj, V>(collection: T, values: MayArray<V>): Drop<T, V>
+export function drop(collection, vs): any {
+  const values = Array.isArray(vs) ? vs : [vs]
+  return isArray(collection)
+    ? dropItems(collection, values)
+    : isSet(collection)
+    ? dropSetItems(collection, values)
+    : filter(collection, (v) => !isMemberOf(values, v))
 }
 
 export function dropEntry<O extends AnyObj>(collection: O, ...values: Valueof<O>[]) {
@@ -33,4 +43,30 @@ export function dropEntry<O extends AnyObj>(collection: O, ...values: Valueof<O>
 
 export function dropKey<O extends AnyObj>(collection: O, ...keys: Valueof<O>[]) {
   return filterKey(collection, (k) => !isMemberOf(keys, k))
+}
+
+/**
+ * Returns a new array with all elements of the input array except for the specified items.
+ * @param arr The input array to filter.
+ * @param items The item(s) to drop from the array.
+ * @returns A new array with all elements of the input array except for the specified items.
+ */
+function dropItems<T>(arr: T[], items: T | T[]): T[] {
+  const dropSet = new Set(Array.isArray(items) ? items : [items])
+  return arr.filter((item) => !dropSet.has(item))
+}
+
+/**
+ * Returns a new array with all elements of the input array except for the specified items.
+ * @param arr The input array to filter.
+ * @param items The item(s) to drop from the array.
+ * @returns A new array with all elements of the input array except for the specified items.
+ */
+function dropSetItems<T>(set: Set<T>, items: T | T[]): Set<T> {
+  const dropSet = new Set(Array.isArray(items) ? items : [items])
+  const newSet = new Set(set)
+  for (const item of dropSet) {
+    newSet.delete(item)
+  }
+  return newSet
 }

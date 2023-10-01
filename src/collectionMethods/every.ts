@@ -9,15 +9,15 @@ import { AnyArr, Keyof, SKeyof, Valueof } from '../typings'
  * console.log(every(new Map([ ['a', 1], ['b', 2] ]), (v) => v >= 1 )) // true
  * console.log(every({ a: 1, b: 2 }, (v) => v >= 1)) // true
  */
-export default function every<T extends AnyArr, U>(
+export function every<T extends AnyArr, U>(
   arr: T,
   predicate: (item: T[number], idx: number, arr: T) => unknown
 ): boolean
-export default function every<O extends AnyObj, V>(
+export function every<O extends AnyObj, V>(
   collection: O,
   predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => unknown
 ): boolean
-export default function every(collection, predicate): boolean {
+export function every(collection, predicate): boolean {
   return isArray(collection)
     ? collection.every(predicate)
     : everyEntry(collection, ([key, value], collection) => predicate(value, key, collection))

@@ -14,7 +14,7 @@ import { isFunction, isNumber } from '../dataType'
  * console.log(insert([3, 4], 1, 55)) //=> [3, 55, 4]
  * console.log(insert([3, 4], (i) => i === 4, 55)) //=> [3, 55, 4] // use function
  */
-export default function insert<T extends ReadonlyArray<any>, V extends ReadonlyArray<any>>(
+export function insert<T extends ReadonlyArray<any>, V extends ReadonlyArray<any>>(
   arr: T,
   before: number | ((item: T[number], index: number, arr: T) => boolean) | T[number],
   ...newItems: V

@@ -9,15 +9,15 @@ import { AnyArr, AnyObj, SKeyof, Valueof } from '../typings'
  * console.log(filter({ a: 1, b: 2 }, (v) => v > 1)) // { b: 2 }
  * @version 0.0.1
  */
-export default function filter<T extends AnyArr>(
+export function filter<T extends AnyArr>(
   collection: T,
   predicate: (item: T[number], index: number, arr: T) => unknown
 ): T
-export default function filter<O extends AnyObj>(
+export function filter<O extends AnyObj>(
   collection: O,
   predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => unknown
 ): O
-export default function filter(collection, predicate) {
+export function filter(collection, predicate) {
   return isArray(collection) ? collection.filter(predicate) : filterEntry(collection, ([k, v]) => predicate(v, k))
 }
 
