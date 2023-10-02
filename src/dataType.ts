@@ -257,7 +257,7 @@ export function notEmptyObject(target: Record<string, any>): boolean {
 export const notExist = isNullish
 
 /**
- * @param value 被检测的值
+ * @param value to be checked
  * @example
  * notNullish('') // true
  * notNullish(undefined) // false

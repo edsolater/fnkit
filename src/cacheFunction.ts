@@ -3,6 +3,7 @@ import { AnyFn, AnyObj } from "./typings"
 /**
  * invoke only once, return the cached result when invoke again
  */
+//TODO: imply feature: same input have same output
 export function createCachedFunction<F extends AnyFn>(fn: F): F {
   let cachedResult: ReturnType<F> | undefined = undefined
   return function (...args: Parameters<F>) {
