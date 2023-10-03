@@ -28,7 +28,7 @@ export function merge<T>(...values: T[]): any {
   if (every(values, isObject))
     return mergeObjectsWithConfigs(values as unknown as object[], ({ valueA: va, valueB: vb }) => merge(va, vb))
 
-  return values[(values as unknown[]).length - 1]
+  return values.at(-1)
 }
 
 export function isEither<T>(...conditions: ((item: T) => boolean)[]): (item: T) => boolean {
