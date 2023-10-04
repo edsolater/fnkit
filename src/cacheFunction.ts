@@ -1,16 +1,19 @@
-import { AnyFn, AnyObj } from "./typings"
+import { AnyFn, AnyObj } from './typings'
 
 /**
  * invoke only once, return the cached result when invoke again
  */
-//TODO: imply feature: same input have same output
-export function createCachedFunction<F extends AnyFn>(fn: F): F {
-  let cachedResult: ReturnType<F> | undefined = undefined
+export function createCachedFunction<F extends AnyFn>(
+  fn: F,
+  getCacheIdByParams: (...args: Parameters<F>) => any = ((p1) => p1) as any
+): F {
+  let cachedResult: Map<any, ReturnType<F>> = new Map()
   return function (...args: Parameters<F>) {
-    if (cachedResult == null) {
-      cachedResult = fn(...args)
+    const key = getCacheIdByParams(...args)
+    if (!cachedResult.has(key)) {
+      cachedResult.set(key, fn(...args))
     }
-    return cachedResult
+    return cachedResult.get(key) as ReturnType<F>
   } as F
 }
 
