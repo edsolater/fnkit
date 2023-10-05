@@ -4,10 +4,10 @@ export type SubscribeFn<T> = ((value: T) => void | Promise<void>) | ((newValue: 
 
 export type Subscribable<T> = {
   current: T
-  subscribe: (cb: SubscribeFn<T>) => { abort(): void }
+  subscribe: (cb: SubscribeFn<T>) => { unsubscribe(): void }
 }
 
-type Dispatcher<T> = T | ((oldValue: T) => T)
+type SubscribableSetValueDispatcher<T> = T | ((oldValue: T) => T)
 
 /**
  * Subscribable is a object that has subscribe method.
@@ -16,7 +16,7 @@ type Dispatcher<T> = T | ((oldValue: T) => T)
 export function createSubscribable<T>(
   defaultValue?: T,
   defaultCallbacks?: SubscribeFn<T>[]
-): [subscribable: Subscribable<T>, setValue: (dispatcher: Dispatcher<T | undefined>) => void] {
+): [subscribable: Subscribable<T>, setValue: (dispatcher: SubscribableSetValueDispatcher<T | undefined>) => void] {
   const callbacks = new Set<SubscribeFn<T>>(defaultCallbacks)
   const cleanFnMap = new Map<SubscribeFn<T>, AnyFn>()
 
@@ -24,7 +24,7 @@ export function createSubscribable<T>(
 
   callbacks.forEach(invokeCallback)
 
-  function changeValue(dispatcher: Dispatcher<T | undefined>) {
+  function changeValue(dispatcher: SubscribableSetValueDispatcher<T | undefined>) {
     const newValue = isFunction(dispatcher) ? dispatcher(innerValue) : dispatcher
     if (newValue != null) {
       innerValue = newValue
@@ -47,7 +47,7 @@ export function createSubscribable<T>(
       if (innerValue != null) invokeCallback(cb) // immediately invoke callback, if has value
       callbacks.add(cb)
       return {
-        abort() {
+        unsubscribe() {
           callbacks.delete(cb)
         }
       }
@@ -55,4 +55,16 @@ export function createSubscribable<T>(
   }
 
   return [subscribable, changeValue]
+}
+
+
+export function createSubscribableFromPromise<T>(
+  promise: Promise<T>,
+  /* used when promise is pending */
+  defaultValue?: T,
+  defaultCallbacks?: SubscribeFn<T>[],
+): [subscribable: Subscribable<T>, setValue: (dispatcher: SubscribableSetValueDispatcher<T | undefined>) => void] {
+  const [subscribable, setValue] = createSubscribable(defaultValue, defaultCallbacks)
+  promise.then(setValue)
+  return [subscribable, setValue]
 }
