@@ -18,7 +18,7 @@ type WithOnMethods<T extends Record<any, any>> = T & {
  *
  * add `on` property to monitor all property and methods
  *
- * ! it will automaticly attach setters and getters for object method's inner change
+ * ! it will automaticly attach setters(proxy) and getters(proxy) for object method's inner change
  *
  * @param obj if property already Start with `on`, it will be ignored
  * @example <caption>case 1:</caption>

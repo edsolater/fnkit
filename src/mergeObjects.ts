@@ -21,21 +21,30 @@ export function mergeObjectsWithConfigs<T extends object>(
     return { s: keys, a: keysArray }
   }
 
-  return new Proxy(objs[0], {
-    get: (_target, key) => getValue(objs, key, transformer),
-    set: (_target, key, value) => Reflect.set(_target, key, value),
-    has: (_target, key) => getOwnKeys().s.has(key as string),
-    getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
-    ownKeys: () => getOwnKeys().a,
-    // for Object.keys to filter
-    getOwnPropertyDescriptor: (_target, prop) => {
-      for (const obj of objs) {
-        if (prop in obj) {
-          return Reflect.getOwnPropertyDescriptor(obj, prop)
+  return new Proxy(
+    {},
+    {
+      get: (target, key) => {
+        if (key in target) return target[key]
+        if (!getOwnKeys().s.has(key)) return undefined
+        const v = getValueByConfig(objs, key, transformer)
+        Reflect.set(target, key, v)
+        return v
+      },
+      set: (_target, key, value) => Reflect.set(_target, key, value),
+      has: (_target, key) => getOwnKeys().s.has(key as string),
+      getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
+      ownKeys: () => getOwnKeys().a,
+      // for Object.keys to filter
+      getOwnPropertyDescriptor: (_target, prop) => {
+        for (const obj of objs) {
+          if (prop in obj) {
+            return Reflect.getOwnPropertyDescriptor(obj, prop)
+          }
         }
       }
     }
-  }) as T
+  ) as T
 }
 
 /**
@@ -63,21 +72,28 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
     }
     return { s: keys, a: keysArray }
   }
+  function getValue(key: string | symbol) {
+    if (!reversedObjs) {
+      reversedObjs = [...objs].reverse()
+    }
+    for (const obj of reversedObjs) {
+      if (obj && key in obj) {
+        const v = obj[key]
+        if (v !== undefined) {
+          return v
+        }
+      }
+    }
+  }
   return new Proxy(
     {},
     {
-      get(_target, key) {
-        if (!reversedObjs) {
-          reversedObjs = [...objs].reverse()
-        }
-        for (const obj of reversedObjs) {
-          if (obj && key in obj) {
-            const v = obj[key]
-            if (v !== undefined) {
-              return v
-            }
-          }
-        }
+      get(target, key) {
+        if (key in target) return target[key]
+        if (!getOwnKeys().s.has(key)) return undefined
+        const v = getValue(key)
+        Reflect.set(target, key, v)
+        return v
       },
       has: (_target, key) => getOwnKeys().s.has(key as string),
       set: (_target, key, value) => Reflect.set(_target, key, value),
@@ -151,7 +167,7 @@ export function createEmptyObject(keys: (string | symbol)[]) {
   return result
 }
 
-function getValue<T extends object>(
+function getValueByConfig<T extends object>(
   objs: T[],
   key: string | symbol,
   valueMatchRule: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any
