@@ -1,5 +1,6 @@
 import { isFunction } from '../dataType'
 import { AnyFn } from '../typings'
+import { shrinkFn } from '../wrapper'
 export type SubscribeFn<T> = ((value: T) => void | Promise<void>) | ((newValue: T) => void)
 
 export type Subscribable<T> = {
@@ -12,15 +13,27 @@ type SubscribableSetValueDispatcher<T> = T | ((oldValue: T) => T)
 /**
  * Subscribable is a object that has subscribe method.
  * it can be the data atom of App's store graph
+ * @param defaultValue value or a function that returns value, which means it only be called when needed
  */
 export function createSubscribable<T>(
-  defaultValue?: T,
+  defaultValue: T | (() => T),
+  defaultCallbacks?: SubscribeFn<T>[]
+): [subscribable: Subscribable<T>, setValue: (dispatcher: SubscribableSetValueDispatcher<T>) => void]
+export function createSubscribable<T>(
+  defaultValue?: T | undefined | (() => T | undefined),
+  defaultCallbacks?: SubscribeFn<T | undefined>[]
+): [
+  subscribable: Subscribable<T | undefined>,
+  setValue: (dispatcher: SubscribableSetValueDispatcher<T | undefined>) => void
+]
+export function createSubscribable<T>(
+  defaultValue?: T | (() => T),
   defaultCallbacks?: SubscribeFn<T>[]
 ): [subscribable: Subscribable<T>, setValue: (dispatcher: SubscribableSetValueDispatcher<T | undefined>) => void] {
   const callbacks = new Set<SubscribeFn<T>>(defaultCallbacks)
   const cleanFnMap = new Map<SubscribeFn<T>, AnyFn>()
 
-  let innerValue = defaultValue as T
+  let innerValue = shrinkFn(defaultValue) as T
 
   callbacks.forEach(invokeCallback)
 
@@ -57,13 +70,30 @@ export function createSubscribable<T>(
   return [subscribable, changeValue]
 }
 
-
+export function createSubscribableFromPromise<T>(
+  promise: Promise<T>,
+  /* used when promise is pending */
+  defaultValue: T,
+  defaultCallbacks?: SubscribeFn<T>[]
+): [subscribable: Subscribable<T>, setValue: (dispatcher: SubscribableSetValueDispatcher<T>) => void]
 export function createSubscribableFromPromise<T>(
   promise: Promise<T>,
   /* used when promise is pending */
   defaultValue?: T,
-  defaultCallbacks?: SubscribeFn<T>[],
-): [subscribable: Subscribable<T>, setValue: (dispatcher: SubscribableSetValueDispatcher<T | undefined>) => void] {
+  defaultCallbacks?: SubscribeFn<T | undefined>[]
+): [
+  subscribable: Subscribable<T | undefined>,
+  setValue: (dispatcher: SubscribableSetValueDispatcher<T | undefined>) => void
+]
+export function createSubscribableFromPromise<T>(
+  promise: Promise<T>,
+  /* used when promise is pending */
+  defaultValue?: T | undefined,
+  defaultCallbacks?: SubscribeFn<T | undefined>[]
+): [
+  subscribable: Subscribable<T | undefined>,
+  setValue: (dispatcher: SubscribableSetValueDispatcher<T | undefined>) => void
+] {
   const [subscribable, setValue] = createSubscribable(defaultValue, defaultCallbacks)
   promise.then(setValue)
   return [subscribable, setValue]
