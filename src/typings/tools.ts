@@ -30,7 +30,7 @@ export type MayObjKey<T extends MayObj<any>> = T extends Primitive ? never : T e
  */
 export type MayEnum<T> = T | (string & {})
 
-export type MayPromise<T> = Awaited<T> | Promise<Awaited<T>>
+export type MayPromise<T> = T | Promise<Awaited<T>>
 /**
  * type I = GetRequired<{ foo: number, bar?: string }> // expected to be { foo: number }
  */
@@ -220,7 +220,6 @@ export type SKeyof<O> = Keyof<O> & string
 //#endregion
 
 type Primitive = boolean | number | string | null | undefined
-
 
 /**
  *
