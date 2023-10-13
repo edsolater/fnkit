@@ -5,9 +5,11 @@ import { shrinkFn } from '../wrapper'
 export type SubscribeFn<T> = ((value: T) => void | Promise<void>) | ((newValue: T, prevValue: T | undefined) => void)
 
 export type Subscribable<T> = {
+  /** @deprecated pleause use `value()` instead, to be more  */
   current: T
   value: () => T
   subscribe: (cb: SubscribeFn<T>) => { unsubscribe(): void }
+  /** can not export this property by type */
   set(dispatcher: SubscribableSetValueDispatcher<T>): void
 }
 
@@ -27,24 +29,24 @@ export function createSubscribable<T>(
   defaultValue?: T | (() => T),
   defaultCallbacks?: SubscribeFn<T>[]
 ): Subscribable<T | undefined> {
-  const callbacks = new Set<SubscribeFn<T>>(defaultCallbacks)
+  const subscribeFns = new Set<SubscribeFn<T>>(defaultCallbacks)
   const cleanFnMap = new Map<SubscribeFn<T>, AnyFn>()
 
   let innerValue = shrinkFn(defaultValue) as T
 
-  callbacks.forEach((cb) => invokeCallback(cb, innerValue, undefined))
+  subscribeFns.forEach((cb) => invokeCallback(cb, innerValue, undefined))
 
   function changeValue(dispatcher: SubscribableSetValueDispatcher<T | undefined>) {
     const newValue = isFunction(dispatcher) ? dispatcher(innerValue) : dispatcher
     if (isPromise(newValue)) {
       newValue.then((value) => {
-        callbacks.forEach((cb) => invokeCallback(cb, value, innerValue))
+        subscribeFns.forEach((cb) => invokeCallback(cb, value, innerValue))
         if (value != null) {
           innerValue = value
         }
       })
     } else {
-      callbacks.forEach((cb) => invokeCallback(cb, newValue, innerValue))
+      subscribeFns.forEach((cb) => invokeCallback(cb, newValue, innerValue))
       if (newValue != null) {
         innerValue = newValue
       }
@@ -70,10 +72,10 @@ export function createSubscribable<T>(
     },
     subscribe(cb: any) {
       if (innerValue != null) invokeCallback(cb, innerValue, undefined) // immediately invoke callback, if has value
-      callbacks.add(cb)
+      subscribeFns.add(cb)
       return {
         unsubscribe() {
-          callbacks.delete(cb)
+          subscribeFns.delete(cb)
         }
       }
     },
