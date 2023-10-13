@@ -5,6 +5,7 @@ export type SubscribeFn<T> = ((value: T) => void | Promise<void>) | ((newValue: 
 
 export type Subscribable<T> = {
   current: T
+  value: () => T
   subscribe: (cb: SubscribeFn<T>) => { unsubscribe(): void }
 }
 
