@@ -1,14 +1,14 @@
-import { isPromise } from 'util/types'
-import { isFunction } from '../dataType'
+import { isFunction, isPromise } from '../dataType'
 import { AnyFn, MayPromise } from '../typings'
 import { shrinkFn } from '../wrapper'
-export type SubscribeFn<T> = ((value: T) => void | Promise<void>) | ((newValue: T, prevValue: T | undefined) => void)
+
+export type SubscribeFn<T> = (value: T, prevValue: T | undefined) => void
 
 export type Subscribable<T> = {
   /** @deprecated pleause use `value()` instead, to be more  */
   current: T
   value: () => T
-  subscribe: (cb: SubscribeFn<T>) => { unsubscribe(): void }
+  subscribe: (cb: SubscribeFn<NonNullable<T>>) => { unsubscribe(): void }
   /** can not export this property by type */
   set(dispatcher: SubscribableSetValueDispatcher<T>): void
 }
