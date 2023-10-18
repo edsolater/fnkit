@@ -1,6 +1,5 @@
-import { isSet } from 'util/types'
 import { isMemberOf } from '../compare'
-import { isArray } from '../dataType'
+import { isArray, isSet } from '../dataType'
 import { AnyObj, MayArray, ShakeNever, Valueof } from '../typings'
 import { filterEntry, filterKey, filter } from './filter'
 
