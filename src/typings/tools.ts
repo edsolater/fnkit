@@ -327,3 +327,11 @@ export type AddDefaultProperties<T extends object, D extends object> = {
 } & {
   [K in keyof D]: K extends keyof T ? NonNullable<T[K]> : D[K]
 }
+
+/**
+ * 
+ * @example
+ * Promisify<Promise<string>> // Promise<string>
+ * Promisify<string> // Promise<string>
+ */
+export type Promisify<T> = T extends Promise<any> ? T : Promise<T>
