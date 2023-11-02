@@ -54,7 +54,4 @@ function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
     }
   ) as T
 }
-function minusArray<T, U>(arr: T[], arr2: U[]): T[] {
-  const arr2Set = new Set(arr2)
-  return arr.filter((item) => !arr2Set.has(item as any))
-}
+

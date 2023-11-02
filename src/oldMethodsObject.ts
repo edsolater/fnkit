@@ -117,3 +117,25 @@ export function containKey<T extends string | number | symbol>(
 ): obj is { [K in T]: unknown } {
   return isObject(obj) && flap(keys).every((key: string | number | symbol) => key in obj) // TODO: flap's type should be smarter
 }
+
+/**
+ *  shallow clone like {...obj}, but don't access it's getter
+ *  @example
+ * cloneObject({get a() {return 1}}) //=> {get a() {return 1}}
+ */
+export function cloneObject<T extends AnyObj>(original: T): T {
+  return new Proxy(
+    {},
+    {
+      get: (target, key, receiver) =>
+        key in target ? Reflect.get(target, key, receiver) : Reflect.get(original, key, receiver),
+      has: (target, key) => key in target || key in original,
+      set: (target, key, value) => Reflect.set(target, key, value),
+      getPrototypeOf: () => Object.getPrototypeOf(original),
+      ownKeys: (target) => Reflect.ownKeys(target).concat(Reflect.ownKeys(original)),
+      // for Object.keys to filter
+      getOwnPropertyDescriptor: (target, key) =>
+        key in target ? Object.getOwnPropertyDescriptor(target, key) : Object.getOwnPropertyDescriptor(original, key)
+    }
+  ) as T
+}
