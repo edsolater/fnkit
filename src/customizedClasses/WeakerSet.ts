@@ -45,13 +45,20 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   private getRealSet(): Set<T> {
+    //📝 3 loop , this may cause is slow performance
     return new Set(
       [...this._innerValues.values()].map((item) => derefWrapperRefIfNeeded(item)).filter((i) => i !== undefined)
     )
   }
 
   override forEach(callback: (value: T, key: T, set: Set<T>) => void, thisArg?: any): void {
-    this.getRealSet().forEach(callback, thisArg)
+    this._innerValues.forEach((v) => {
+      if (!v) return
+      const realValue = derefWrapperRefIfNeeded(v)
+      if (!realValue) return
+
+      callback.call(thisArg, realValue, realValue, this)
+    }, thisArg)
   }
 
   map<U>(callback: (value: T) => U, thisArg?: any): WeakerSet<U> {
