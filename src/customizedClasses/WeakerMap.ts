@@ -18,7 +18,7 @@ export class WeakerMap<K, V> extends Map<K, V> {
     super(entries)
     this.reverseObjectKeyMap = new WeakMap()
     this.objectKeyMap = new WeakMap()
-    this.innerStoreMap = new Map()
+    this.innerStoreMap = new Map() // so it is still strong reference
     entries?.forEach(([k, v]) => this.set(k, v))
   }
 

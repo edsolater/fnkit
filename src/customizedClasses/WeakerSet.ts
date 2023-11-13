@@ -44,11 +44,13 @@ export class WeakerSet<T> extends Set<T> {
     return this
   }
 
-  private getRealSet(): Set<T> {
-    //📝 3 loop , this may cause is slow performance
-    return new Set(
-      [...this._innerValues.values()].map((item) => derefWrapperRefIfNeeded(item)).filter((i) => i !== undefined)
-    )
+  private *getRealItems(): IterableIterator<T> {
+    for (const item of this._innerValues) {
+      if (!item) continue
+      const realValue = derefWrapperRefIfNeeded(item)
+      if (!realValue) continue
+      yield realValue
+    }
   }
 
   override forEach(callback: (value: T, key: T, set: Set<T>) => void, thisArg?: any): void {
@@ -62,11 +64,25 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   map<U>(callback: (value: T) => U, thisArg?: any): WeakerSet<U> {
-    return new WeakerSet([...this.getRealSet()].map(callback, thisArg))
+    const getRealSet = this.getRealItems.bind(this)
+    const mappedIterable = function* () {
+      for (const item of getRealSet()) {
+        yield callback.call(thisArg, item)
+      }
+    }
+    return new WeakerSet(mappedIterable())
   }
 
   filter(callback: (item: T) => any, thisArg?: any): WeakerSet<T> {
-    return new WeakerSet([...this.getRealSet()].filter(callback, thisArg))
+    const getRealSet = this.getRealItems.bind(this)
+    const filteredIterable = function* () {
+      for (const item of getRealSet()) {
+        if (callback.call(thisArg, item)) {
+          yield item
+        }
+      }
+    }
+    return new WeakerSet(filteredIterable())
   }
   // TODO other Array build-in tools
 
@@ -88,7 +104,7 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   override get size() {
-    return this.getRealSet().size
+    return new Set(this.getRealItems()).size
   }
 
   override delete(item: T): boolean {
@@ -100,7 +116,7 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   override has(item: T): boolean {
-    return this.getRealSet().has(item)
+    return new Set(this.getRealItems()).has(item)
   }
 
   override *keys(): IterableIterator<T> {
@@ -108,11 +124,11 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   override *values(): IterableIterator<T> {
-    yield* this.getRealSet()
+    yield* this.getRealItems()
   }
 
   override *entries(): IterableIterator<[T, T]> {
-    for (const item of this.getRealSet()) {
+    for (const item of this.getRealItems()) {
       if (item != null) {
         yield [item, item]
       } else {
