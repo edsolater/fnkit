@@ -8,28 +8,31 @@ const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() :
  * @todo test it!!!
  */
 export class WeakerMap<K, V> extends Map<K, V> {
-  private objectKeyMap: WeakMap<K & object, WeakRef<K & object>>
+  private innerKeys: WeakMap<K & object, WeakRef<K & object>>
   // could find by value
-  private reverseObjectKeyMap: WeakMap<WeakRef<K & object>, K & object>
-  private innerStoreMap: Map<K | WeakRef<K & object>, V | WeakRef<V & object>>
+  private reverseInnerKeys: WeakMap<WeakRef<K & object>, K & object>
+
+  // if key is object , it wrap weakRef to allow GC
+  private innerMap: Map<K | WeakRef<K & object>, V | WeakRef<V & object>> // must have a Map to looply access key
 
   constructor()
   constructor(entries?: readonly (readonly [K, V])[] | null) {
     super(entries)
-    this.reverseObjectKeyMap = new WeakMap()
-    this.objectKeyMap = new WeakMap()
-    this.innerStoreMap = new Map() // so it is still strong reference
+    this.reverseInnerKeys = new WeakMap()
+    this.innerKeys = new WeakMap()
+    this.innerMap = new Map() // so it is still strong reference
     entries?.forEach(([k, v]) => this.set(k, v))
   }
 
+  /** if it's object, result is weakRef  */
   private getInnerKey(key: K) {
     if (isObject(key)) {
-      if (!this.objectKeyMap.has(key)) {
+      if (!this.innerKeys.has(key)) {
         const refedValue = createWrapperRef(key)
-        this.objectKeyMap.set(key, refedValue)
-        this.reverseObjectKeyMap.set(refedValue, key)
+        this.innerKeys.set(key, refedValue)
+        this.reverseInnerKeys.set(refedValue, key)
       }
-      return this.objectKeyMap.get(key)!
+      return this.innerKeys.get(key)!
     } else {
       return key
     }
@@ -37,49 +40,50 @@ export class WeakerMap<K, V> extends Map<K, V> {
 
   override set(key: K, value: V): this {
     const innerKey = this.getInnerKey(key)
-    this.innerStoreMap.set(innerKey, createWrapperRefIfNeeded(value))
+    this.innerMap.set(innerKey, createWrapperRefIfNeeded(value))
     return this
   }
 
   override get(key: K): V | undefined {
     const innerKey = this.getInnerKey(key)
-    return derefWrapperRefIfNeeded(this.innerStoreMap.get(innerKey))
+    return derefWrapperRefIfNeeded(this.innerMap.get(innerKey))
   }
 
   override forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void {
-    const stillValidMap = new Map(
-      [...this.innerStoreMap.entries()].map(([innerKey, refValue]) => [
-        derefWrapperRefIfNeeded(innerKey),
-        derefWrapperRefIfNeeded(refValue)
-      ]) as unknown as Map<K, V>
-    )
-    stillValidMap.forEach(callbackfn, thisArg)
+    for (const [innerKey, refVlue] of this.innerMap.entries()) {
+      const trueKey = derefWrapperRefIfNeeded(innerKey)
+      const trueValue = derefWrapperRefIfNeeded(refVlue)
+      if (trueKey != null) {
+        callbackfn(trueValue, trueKey, thisArg ?? this)
+      }
+    }
   }
 
   override get size() {
-    const stillValidMap = new Map(
-      [...this.innerStoreMap.entries()].map(([innerKey, refValue]) => [
-        derefWrapperRefIfNeeded(innerKey),
-        derefWrapperRefIfNeeded(refValue)
-      ]) as unknown as Map<K, V>
-    )
-    return stillValidMap.size
+    let count = 0
+    for (const innerKey of this.innerMap.keys()) {
+      const trueKey = derefWrapperRefIfNeeded(innerKey)
+      if (trueKey != null) {
+        count++
+      }
+    }
+    return count
   }
 
   override delete(key: K): boolean {
     const innerKey = this.getInnerKey(key)
     if (isObject(key)) {
-      const ref = this.objectKeyMap.get(key)
+      const ref = this.innerKeys.get(key)
       if (ref) {
-        this.reverseObjectKeyMap.delete(ref)
+        this.reverseInnerKeys.delete(ref)
       }
-      this.objectKeyMap.delete(key)
+      this.innerKeys.delete(key)
     }
-    return this.innerStoreMap.delete(innerKey)
+    return this.innerMap.delete(innerKey)
   }
 
   override clear(): void {
-    return this.innerStoreMap.clear()
+    return this.innerMap.clear()
   }
 
   override has(key: K): boolean {
@@ -99,9 +103,9 @@ export class WeakerMap<K, V> extends Map<K, V> {
   }
 
   override *entries(): IterableIterator<[K, V]> {
-    for (const [innerKey, innerValue] of this.innerStoreMap.entries()) {
+    for (const [innerKey, innerValue] of this.innerMap.entries()) {
       if (isObject(innerKey)) {
-        const trueKey = this.reverseObjectKeyMap.get(innerKey)
+        const trueKey = this.reverseInnerKeys.get(innerKey)
         if (!trueKey) continue
         const trueValue = derefWrapperRefIfNeeded(innerValue)
         if (trueValue != null) {

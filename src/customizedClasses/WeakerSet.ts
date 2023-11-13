@@ -22,7 +22,7 @@ const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() :
  * @todo test it!!!
  */
 export class WeakerSet<T> extends Set<T> {
-  private _innerValues: Set<T | WeakRef<T & object>>
+  private innerSet: Set<T | WeakRef<T & object>>
 
   private cbCenter = {
     onAddNewItem: [] as ((item: T) => void)[]
@@ -30,7 +30,7 @@ export class WeakerSet<T> extends Set<T> {
 
   constructor(iterable?: Iterable<T> | null) {
     super(iterable)
-    this._innerValues = new Set()
+    this.innerSet = new Set()
     if (iterable) {
       for (const item of iterable) {
         this.add(item)
@@ -39,13 +39,13 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   override add(item: T): this {
-    this._innerValues.add(createWrapperRefIfNeeded(item))
+    this.innerSet.add(createWrapperRefIfNeeded(item))
     this.invokeAddNewItemCallbacks(item)
     return this
   }
 
   private *getRealItems(): IterableIterator<T> {
-    for (const item of this._innerValues) {
+    for (const item of this.innerSet) {
       if (!item) continue
       const realValue = derefWrapperRefIfNeeded(item)
       if (!realValue) continue
@@ -54,7 +54,7 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   override forEach(callback: (value: T, key: T, set: Set<T>) => void, thisArg?: any): void {
-    this._innerValues.forEach((v) => {
+    this.innerSet.forEach((v) => {
       if (!v) return
       const realValue = derefWrapperRefIfNeeded(v)
       if (!realValue) return
@@ -98,7 +98,7 @@ export class WeakerSet<T> extends Set<T> {
   /** return a new instance  */
   clone(): WeakerSet<T> {
     const newItem = new WeakerSet<T>()
-    newItem._innerValues = new Set(this._innerValues)
+    newItem.innerSet = new Set(this.innerSet)
     newItem.cbCenter = { ...map(this.cbCenter, (cbs) => [...cbs]) }
     return newItem
   }
@@ -108,11 +108,11 @@ export class WeakerSet<T> extends Set<T> {
   }
 
   override delete(item: T): boolean {
-    return this._innerValues.delete(createWrapperRefIfNeeded(item))
+    return this.innerSet.delete(createWrapperRefIfNeeded(item))
   }
 
   override clear(): void {
-    return this._innerValues.clear()
+    return this.innerSet.clear()
   }
 
   override has(item: T): boolean {
