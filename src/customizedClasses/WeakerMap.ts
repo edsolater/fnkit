@@ -8,23 +8,23 @@ const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() :
  * @todo test it!!!
  */
 export class WeakerMap<K, V> extends Map<K, V> {
-  private innerKeys: WeakMap<K & object, WeakRef<K & object>>
+  private innerKeys: WeakMap<K & object, WeakRef<K & object>> = new WeakMap()
   // could find by value
-  private reverseInnerKeys: WeakMap<WeakRef<K & object>, K & object>
+  private reverseInnerKeys: WeakMap<WeakRef<K & object>, K & object> = new WeakMap()
 
   // if key is object , it wrap weakRef to allow GC
-  private innerMap: Map<K | WeakRef<K & object>, V | WeakRef<V & object>> // must have a Map to looply access key
+  private innerMap: Map<K | WeakRef<K & object>, V | WeakRef<V & object>> = new Map() // must have a Map to looply access key
 
   constructor()
   constructor(entries?: readonly (readonly [K, V])[] | null) {
     super(entries)
-    this.reverseInnerKeys = new WeakMap()
-    this.innerKeys = new WeakMap()
-    this.innerMap = new Map() // so it is still strong reference
     entries?.forEach(([k, v]) => this.set(k, v))
   }
 
-  /** if it's object, result is weakRef  */
+  /** 
+   * if it's object, result is weakRef
+   * may be ref
+   */
   private getInnerKey(key: K) {
     if (isObject(key)) {
       if (!this.innerKeys.has(key)) {

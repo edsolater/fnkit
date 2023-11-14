@@ -22,7 +22,7 @@ const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() :
  * @todo test it!!!
  */
 export class WeakerSet<T> extends Set<T> {
-  private innerSet: Set<T | WeakRef<T & object>>
+  private innerSet: Set<T | WeakRef<T & object>> = new Set()
 
   private cbCenter = {
     onAddNewItem: [] as ((item: T) => void)[]
@@ -30,7 +30,6 @@ export class WeakerSet<T> extends Set<T> {
 
   constructor(iterable?: Iterable<T> | null) {
     super(iterable)
-    this.innerSet = new Set()
     if (iterable) {
       for (const item of iterable) {
         this.add(item)
