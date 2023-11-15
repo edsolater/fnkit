@@ -21,15 +21,13 @@ const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() :
  * for JS's GC rule, WeakerSet will usually be cleared  in next frame(depends on GC)
  * @todo test it!!!
  */
-export class WeakerSet<T> extends Set<T> {
-  private innerSet: Set<T | WeakRef<T & object>> = new Set()
-
+export class WeakerSet<T> implements Set<T> {
+  private inner: Set<T | WeakRef<T & object>> = new Set()
   private cbCenter = {
     onAddNewItem: [] as ((item: T) => void)[]
   }
 
   constructor(iterable?: Iterable<T> | null) {
-    super(iterable)
     if (iterable) {
       for (const item of iterable) {
         this.add(item)
@@ -37,14 +35,14 @@ export class WeakerSet<T> extends Set<T> {
     }
   }
 
-  override add(item: T): this {
-    this.innerSet.add(createWrapperRefIfNeeded(item))
+  add(item: T): this {
+    this.inner.add(createWrapperRefIfNeeded(item))
     this.invokeAddNewItemCallbacks(item)
     return this
   }
 
   private *getRealItems(): IterableIterator<T> {
-    for (const item of this.innerSet) {
+    for (const item of this.inner) {
       if (!item) continue
       const realValue = derefWrapperRefIfNeeded(item)
       if (!realValue) continue
@@ -52,8 +50,8 @@ export class WeakerSet<T> extends Set<T> {
     }
   }
 
-  override forEach(callback: (value: T, key: T, set: Set<T>) => void, thisArg?: any): void {
-    this.innerSet.forEach((v) => {
+  forEach(callback: (value: T, key: T, set: Set<T>) => void, thisArg?: any): void {
+    this.inner.forEach((v) => {
       if (!v) return
       const realValue = derefWrapperRefIfNeeded(v)
       if (!realValue) return
@@ -97,36 +95,36 @@ export class WeakerSet<T> extends Set<T> {
   /** return a new instance  */
   clone(): WeakerSet<T> {
     const newItem = new WeakerSet<T>()
-    newItem.innerSet = new Set(this.innerSet)
+    newItem.inner = new Set(this.inner)
     newItem.cbCenter = { ...map(this.cbCenter, (cbs) => [...cbs]) }
     return newItem
   }
 
-  override get size() {
+  get size() {
     return new Set(this.getRealItems()).size
   }
 
-  override delete(item: T): boolean {
-    return this.innerSet.delete(createWrapperRefIfNeeded(item))
+  delete(item: T): boolean {
+    return this.inner.delete(createWrapperRefIfNeeded(item))
   }
 
-  override clear(): void {
-    return this.innerSet.clear()
+  clear(): void {
+    return this.inner.clear()
   }
 
-  override has(item: T): boolean {
+  has(item: T): boolean {
     return new Set(this.getRealItems()).has(item)
   }
 
-  override *keys(): IterableIterator<T> {
+  *keys(): IterableIterator<T> {
     yield* this.values()
   }
 
-  override *values(): IterableIterator<T> {
+  *values(): IterableIterator<T> {
     yield* this.getRealItems()
   }
 
-  override *entries(): IterableIterator<[T, T]> {
+  *entries(): IterableIterator<[T, T]> {
     for (const item of this.getRealItems()) {
       if (item != null) {
         yield [item, item]
@@ -136,7 +134,11 @@ export class WeakerSet<T> extends Set<T> {
     }
   }
 
-  override [Symbol.iterator]() {
+  [Symbol.iterator]() {
     return this.values()
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'WeakerSet'
   }
 }
