@@ -321,6 +321,7 @@ export type FromPrivateString<S extends string> = S extends `${infer U extends n
   : S
 
 export type Optional<O extends object, K extends keyof O = keyof O> = Omit<O, K> & Partial<Pick<O, K>>
+export type PartRequired<O extends object, K extends keyof O = keyof O> = Omit<O, K> & Required<Pick<O, K>>
 
 export type AddDefaultProperties<T extends object, D extends object> = {
   [K in keyof T]: K extends keyof D ? NonNullable<T[K]> : T[K]
@@ -329,7 +330,7 @@ export type AddDefaultProperties<T extends object, D extends object> = {
 }
 
 /**
- * 
+ *
  * @example
  * Promisify<Promise<string>> // Promise<string>
  * Promisify<string> // Promise<string>
