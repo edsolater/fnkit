@@ -1,6 +1,6 @@
 {
   "name": "@edsolater/fnkit",
-  "version": "0.1.55",
+  "version": "0.1.56",
   "description": "base function tools",
   "type": "module",
   "main": "./dist/index.js",
