@@ -60,7 +60,7 @@ export function isArray(v: unknown): v is AnyArr {
   return Array.isArray(v)
 }
 
-export function isvdArray(v: unknown): v is AnyArr {
+export function isMeanfulArray(v: unknown): v is AnyArr {
   return isArray(v) && v.length > 0
 }
 
