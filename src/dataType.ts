@@ -1,4 +1,3 @@
-import { SKeyof } from './typings'
 import { AnyArr, AnyFn, Primitive, StringNumber } from './typings/constants'
 
 /**
@@ -22,7 +21,7 @@ import { AnyArr, AnyFn, Primitive, StringNumber } from './typings/constants'
  * getType(new Date()) // 'Date'
  */
 export function getType(
-  val: unknown
+  v: unknown
 ):
   | 'null'
   | 'undefined'
@@ -35,19 +34,19 @@ export function getType(
   | ReturnType<typeof getObjType>
   | 'unknown' {
   // @ts-ignore
-  return isNull(val)
+  return isNull(v)
     ? 'null'
-    : isArray(val)
+    : isArray(v)
     ? 'Array'
-    : isFunction(val)
+    : isFunction(v)
     ? 'function'
-    : isSet(val)
+    : isSet(v)
     ? 'Set'
-    : isMap(val)
+    : isMap(v)
     ? 'Map'
-    : typeof val === 'object'
-    ? getObjType(val) ?? 'unknown'
-    : typeof val
+    : typeof v === 'object'
+    ? getObjType(v) ?? 'unknown'
+    : typeof v
 }
 
 export const getObjType = (obj: unknown): 'Array' | 'Object' | 'Set' | 'Map' | 'WeakSet' | 'WeakMap' | 'Date' => {
@@ -57,48 +56,48 @@ export const getObjType = (obj: unknown): 'Array' | 'Object' | 'Set' | 'Map' | '
   return typeString
 }
 
-export function isArray(value: unknown): value is AnyArr {
-  return Array.isArray(value)
+export function isArray(v: unknown): v is AnyArr {
+  return Array.isArray(v)
 }
 
-export function isValuedArray(value: unknown): value is AnyArr {
-  return isArray(value) && value.length > 0
+export function isvdArray(v: unknown): v is AnyArr {
+  return isArray(v) && v.length > 0
 }
 
-export function isFunction(value: unknown): value is AnyFn {
-  return typeof value === 'function'
+export function isFunction(v: unknown): v is AnyFn {
+  return typeof v === 'function'
 }
 
-export function isSet(value: unknown): value is Set<unknown> {
-  return value instanceof Set
+export function isSet(v: unknown): v is Set<unknown> {
+  return v instanceof Set
 }
 
-export function isMap(value: unknown): value is Map<unknown, unknown> {
-  return value instanceof Map
+export function isMap(v: unknown): v is Map<unknown, unknown> {
+  return v instanceof Map
 }
 
-export function isWeakSet(value: unknown): value is WeakSet<any> {
-  return value instanceof WeakSet
+export function isWeakSet(v: unknown): v is WeakSet<any> {
+  return v instanceof WeakSet
 }
 
-export function isWeakMap(value: unknown): value is WeakMap<any, unknown> {
-  return value instanceof WeakMap
+export function isWeakMap(v: unknown): v is WeakMap<any, unknown> {
+  return v instanceof WeakMap
 }
 
 /**
- * value can't be function, if need so, should use {@link isObjectLike}
- * value may both be object or array
+ * v can't be function, if need so, should use {@link isObjectLike}
+ * v may both be object or array
  */
-export function isObject(val: unknown): val is object {
-  return !(val === null) && typeof val === 'object'
+export function isObject(v: unknown): v is object {
+  return !(v === null) && typeof v === 'object'
 }
 
 export function isObjectLiteral(v: unknown): v is object {
   return isObject(v) && 'constructor' in v && v['constructor'] === Object
 }
 
-export function isUndefined(val: unknown): val is undefined {
-  return val === undefined
+export function isUndefined(v: unknown): v is undefined {
+  return v === undefined
 }
 
 export function isRegExp(target: unknown): target is RegExp {
@@ -113,21 +112,21 @@ export function isProxy(target: unknown): target is object {
   return isObject(target) && target instanceof Proxy
 }
 
-export function isNumber(val: any): val is number {
-  return typeof val === 'number' && !Number.isNaN(val)
+export function isNumber(v: any): v is number {
+  return typeof v === 'number' && !Number.isNaN(v)
 }
 
-export function isFinite(val: unknown): val is number {
-  return Number.isFinite(val)
+export function isFinite(v: unknown): v is number {
+  return Number.isFinite(v)
 }
 export const isTrueNumber = isFinite
 
-export function isNaN(val: unknown): val is number {
-  return Number.isNaN(val)
+export function isNaN(v: unknown): v is number {
+  return Number.isNaN(v)
 }
 
-export function isBoolean(val: any): val is boolean {
-  return typeof val === 'boolean'
+export function isBoolean(v: any): v is boolean {
+  return typeof v === 'boolean'
 }
 
 /**
@@ -136,24 +135,24 @@ export function isBoolean(val: any): val is boolean {
  * isBigInt(Bigint(3)) //=> true
  * isBigInt('3') //=> false
  */
-export function isBigInt(val: unknown): val is bigint {
-  return typeof val === 'bigint'
+export function isBigInt(v: unknown): v is bigint {
+  return typeof v === 'bigint'
 }
 
-export function isString(val: unknown): val is string {
-  return typeof val === 'string'
+export function isString(v: unknown): v is string {
+  return typeof v === 'string'
 }
 
-export function isIterable(val: unknown): val is Iterable<unknown> {
-  return isObject(val) && typeof val[Symbol.iterator] === 'function'
+export function isIterable(v: unknown): v is Iterable<unknown> {
+  return isObject(v) && typeof v[Symbol.iterator] === 'function'
 }
 
-export function isAsyncIterable(val: unknown): val is AsyncIterable<unknown> {
-  return isObject(val) && typeof val[Symbol.asyncIterator] === 'function'
+export function isAsyncIterable(v: unknown): v is AsyncIterable<unknown> {
+  return isObject(v) && typeof v[Symbol.asyncIterator] === 'function'
 }
 
-export function isStringNumber(val: any): val is StringNumber {
-  return isNumber(Number(val))
+export function isStringNumber(v: any): v is StringNumber {
+  return isNumber(Number(v))
 }
 
 export function isJSON(jsonString: unknown): jsonString is string {
@@ -168,33 +167,33 @@ export function isJSON(jsonString: unknown): jsonString is string {
   }
 }
 
-export function isEmpty(val: unknown): boolean {
-  return isEmptyString(val) || isEmptyArray(val) || isEmptyObject(val)
+export function isEmpty(v: unknown): boolean {
+  return isEmptyString(v) || isEmptyArray(v) || isEmptyObject(v)
 }
 
-export function isEmptyArray(val: unknown): boolean {
-  return isArray(val) && val.length === 0
+export function isEmptyArray(v: unknown): boolean {
+  return isArray(v) && v.length === 0
 }
 
-export function isEmptyObject(val: unknown): boolean {
-  return isObjectLike(val) && Reflect.ownKeys(val).length === 0
+export function isEmptyObject(v: unknown): boolean {
+  return isObjectLike(v) && Reflect.ownKeys(v).length === 0
 }
 
-export function isEmptyString(val: unknown): val is '' {
-  return val === ''
+export function isEmptyString(v: unknown): v is '' {
+  return v === ''
 }
 
 export const isExist = notNullish
 
-export function isFalse(val: unknown): val is false {
-  return val === false
+export function isFalse(v: unknown): v is false {
+  return v === false
 }
 
-export function isFalsy(val: unknown) {
-  return !isTruthy(val)
+export function isFalsy(v: unknown) {
+  return !isTruthy(v)
 }
 
-function isIndexNumber(n: any): boolean {
+export function isIndexNumber(n: any): boolean {
   return Number.isInteger(n) && n >= 0
 }
 export function isIndex(index: any, ofArr?: any[]): index is number {
@@ -207,18 +206,20 @@ export function isKey(key: keyof any, ofObj?: object): key is keyof any {
   return isExist(ofObj) ? isExist(ofObj[key]) : isString(key) || isInterger(key) || isSymbol(key)
 }
 
-export function isNull(val: unknown): val is null {
-  return val === null
+export function isNull(v: unknown): v is null {
+  return v === null
 }
 
-export function isNullish(value: unknown): value is undefined | null {
-  return !notNullish(value)
+export function isNullish(v: unknown): v is undefined | null {
+  return !notNullish(v)
 }
 
-/** val can be array | object | function  */
-export function isObjectLike(val: unknown): val is object | AnyFn {
-  return isObject(val) || isFunction(val)
+/** v can be array | object | function  */
+export function isObjectLike(v: unknown): v is object | AnyFn {
+  return isObject(v) || isFunction(v)
 }
+
+export const notPrimitive = isObjectLike
 
 export function isPrimitive(v: unknown): v is Primitive {
   return isBoolean(v) || isNumber(v) || isBigInt(v) || isString(v) || isSymbol(v) || isNullish(v)
@@ -237,16 +238,16 @@ export function isEmtyString(v: any): boolean {
   return v === ''
 }
 
-export function isSymbol(val: unknown): val is symbol {
-  return typeof val === 'symbol'
+export function isSymbol(v: unknown): v is symbol {
+  return typeof v === 'symbol'
 }
 
-export function isTrue(val: unknown): val is true {
-  return val === true
+export function isTrue(v: unknown): v is true {
+  return v === true
 }
 
-export function isTruthy(val1: unknown) {
-  return Boolean(val1)
+export function isTruthy(v1: unknown) {
+  return Boolean(v1)
 }
 
 export const notDefined = isNullish
@@ -262,18 +263,18 @@ export function notEmptyObject(target: Record<string, any>): boolean {
 export const notExist = isNullish
 
 /**
- * @param value to be checked
+ * @param v to be checked
  * @example
  * notNullish('') // true
  * notNullish(undefined) // false
  * notNullish([]) // true
  */
-export function notNullish<T>(value: T): value is NonNullable<T> {
-  return value !== undefined && value !== null
+export function notNullish<T>(v: T): v is NonNullable<T> {
+  return v !== undefined && v !== null
 }
 
-export function notUndefined<T>(val: T): val is T extends undefined ? never : T {
-  return val !== undefined
+export function notUndefined<T>(v: T): v is T extends undefined ? never : T {
+  return v !== undefined
 }
 
 /**
