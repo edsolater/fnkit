@@ -130,4 +130,18 @@ export class WeakerMap<K, V> implements Map<K, V> {
   get [Symbol.toStringTag]() {
     return 'WeakerMap'
   }
+
+  get [Symbol.species]() {
+    return WeakerMap
+  }
+}
+
+/**
+ *
+ * check if v is a WeakerMap
+ * @param v to be checked value
+ * @returns boolean
+ */
+export function isWeakerMap(v: any): v is WeakerMap<any, any> {
+  return v instanceof WeakerMap
 }

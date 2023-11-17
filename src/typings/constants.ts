@@ -6,7 +6,7 @@
 
 import { NumberishOption } from '../numberish'
 
-export type Primitive = boolean | number | string
+export type Primitive = boolean | number | string | bigint | symbol | null | undefined  
 export type NoNullablePrimitive = NonNullable<Primitive>
 export type Numberish = number | string | bigint | NumberishAtom | NumberishAtomRaw
 export type NumberishAtom = { toString: (options?: NumberishOption) => string } & Required<NumberishAtomRaw>

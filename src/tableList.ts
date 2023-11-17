@@ -1,4 +1,4 @@
-import { isPrimitive, isArray, isObjectLike } from './dataType'
+import { isPrimitive, isArray, isObjectLike, isSymbol, isValuablePrimitive } from './dataType'
 import { MayArray } from './typings/tools'
 
 type SortOptions<T extends object> = MayArray<{
@@ -13,14 +13,11 @@ type FilterOptions<T extends object> = MayArray<(value: T) => boolean | undefine
  * @see https://www.notion.so/Intro-to-databases-fd8cd2d212f74c50954c11086d85997e#f9b40d60db734c05b7e9a207f889b0a0
  */
 export function sortTableList<T extends object>(target: T[], settings: SortOptions<T>) {
-  function getSorter<T extends object>(
-    [a, b]: [T, T],
-    setting: { key: keyof T; direction: string }[]
-  ): 0 | -1 | 1 {
+  function getSorter<T extends object>([a, b]: [T, T], setting: { key: keyof T; direction: string }[]): 0 | -1 | 1 {
     for (const { key, direction } of setting) {
       const valueA = a[key]
       const valueB = b[key]
-      if (isPrimitive(valueA) && isPrimitive(valueB)) {
+      if (isValuablePrimitive(valueA) && isValuablePrimitive(valueB)) {
         if (valueA === valueB) continue
         if (valueA < valueB) return (-1 * (direction === 'ascending' ? 1 : -1)) as 1 | -1
         if (valueA > valueB) return (1 * (direction === 'ascending' ? 1 : -1)) as 1 | -1

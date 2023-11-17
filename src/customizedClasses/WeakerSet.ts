@@ -141,4 +141,16 @@ export class WeakerSet<T> implements Set<T> {
   get [Symbol.toStringTag]() {
     return 'WeakerSet'
   }
+  get [Symbol.species]() {
+    return WeakerSet
+  }
+}
+
+/**
+ * check if target is an instance of WeakerSet
+ * @param v to be checked value
+ * @returns boolean
+ */
+export function isWeakerSet(v: unknown): v is WeakerSet<any> {
+  return v instanceof WeakerSet
 }

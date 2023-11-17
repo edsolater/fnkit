@@ -85,8 +85,11 @@ export function isWeakMap(value: unknown): value is WeakMap<any, unknown> {
   return value instanceof WeakMap
 }
 
-/** value can't be array or function  */
-export function isObject(val: unknown): val is Record<string | number | symbol, any> {
+/**
+ * value can't be function, if need so, should use {@link isObjectLike}
+ * value may both be object or array
+ */
+export function isObject(val: unknown): val is object {
   return !(val === null) && typeof val === 'object'
 }
 
@@ -106,7 +109,7 @@ export function isPromise(target: unknown): target is Promise<unknown> {
   return isObject(target) && target instanceof Promise
 }
 
-export function isProxy(target: unknown): target is Record<string | number | symbol, any> {
+export function isProxy(target: unknown): target is object {
   return isObject(target) && target instanceof Proxy
 }
 
@@ -212,16 +215,18 @@ export function isNullish(value: unknown): value is undefined | null {
   return !notNullish(value)
 }
 
-export function isObjectLikeOrFunction(val: any): val is object | AnyFn {
-  return isObjectLike(val) || isFunction(val)
-}
-
-export function isObjectLike(val: unknown): val is object {
-  return typeof val === 'object' && val !== null
+/** val can be array | object | function  */
+export function isObjectLike(val: unknown): val is object | AnyFn {
+  return isObject(val) || isFunction(val)
 }
 
 export function isPrimitive(v: unknown): v is Primitive {
-  return isBoolean(v) || isNumber(v) || isString(v)
+  return isBoolean(v) || isNumber(v) || isBigInt(v) || isString(v) || isSymbol(v) || isNullish(v)
+}
+
+/** primitive without symbol or null or undefined */
+export function isValuablePrimitive(v: unknown): v is boolean | number | string | bigint {
+  return isBoolean(v) || isNumber(v) || isBigInt(v) || isString(v)
 }
 
 export function isEmtyObject(obj: any): boolean {
