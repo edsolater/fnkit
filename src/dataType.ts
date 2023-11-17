@@ -93,7 +93,7 @@ export function isObject(v: unknown): v is object {
 }
 
 export function isObjectLiteral(v: unknown): v is object {
-  return isObject(v) && 'constructor' in v && v['constructor'] === Object
+  return isObject(v) && Object.getPrototypeOf(v) === Object.prototype
 }
 
 export function isUndefined(v: unknown): v is undefined {

@@ -139,7 +139,7 @@ export class WeakerSet<T> implements Set<T> {
   }
 
   get [Symbol.toStringTag]() {
-    return 'WeakerSet'
+    return `WeakerSet<${this.size}>`
   }
   get [Symbol.species]() {
     return WeakerSet

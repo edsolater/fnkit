@@ -128,7 +128,7 @@ export class WeakerMap<K, V> implements Map<K, V> {
   }
 
   get [Symbol.toStringTag]() {
-    return 'WeakerMap'
+    return `WeakerMap<${this.size}>`
   }
 
   get [Symbol.species]() {
