@@ -1,7 +1,9 @@
 import { AnyFn, AnyObj } from './typings'
+import { cache } from './cache'
 
 /**
  * invoke only once, return the cached result when invoke again
+ * @deprecated just use {@link cache} instead
  */
 export function createCachedFunction<F extends AnyFn>(
   fn: F,
