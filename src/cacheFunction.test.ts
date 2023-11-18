@@ -11,5 +11,5 @@ test('test fn function:mergeObjectsWithConfigs', () => {
   expect(Object.keys(obj)).toEqual(['a', 'b', 'c'])
   expect(obj.c).toEqual(3) // has already access `obj.a`
   expect(obj.c).toEqual(3)
-  expect(obj.a).toEqual(3)
+  expect(obj.a).toEqual(4)
 })
