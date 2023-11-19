@@ -108,9 +108,10 @@ export function isPromise(target: unknown): target is Promise<unknown> {
   return isObject(target) && target instanceof Promise
 }
 
-export function isProxy(target: unknown): target is object {
-  return isObject(target) && target instanceof Proxy
-}
+/** It is impossible to detect if something is a Proxy according to the JS language specification. */
+// export function isProxy(target: unknown): target is object {
+//   return isObject(target) && target instanceof Proxy
+// }
 
 export function isNumber(v: any): v is number {
   return typeof v === 'number' && !Number.isNaN(v)
