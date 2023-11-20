@@ -29,9 +29,10 @@ export default function shrinkToValue<T extends MayFn<any>>(mayValue: T, params?
  * @param params the parameters that will be passed in mayValue(if it's function)
  * @returns a pure value which can't be a function
  */
-export function shrinkFn<T extends MayFn<any>>(mayValue: undefined, params?: MayParameters<T>): undefined
-export function shrinkFn<T extends MayFn<any>>(mayValue: T, params?: MayParameters<T>): MayReturn<T>
-export function shrinkFn<T extends MayFn<any>>(mayValue: T, params?: MayParameters<T>): MayReturn<T> {
+export function shrinkFn<T extends MayFn<any>>(
+  mayValue: T,
+  params?: MayParameters<T>
+): T extends undefined ? undefined : MayReturn<T> {
   return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue
 }
 

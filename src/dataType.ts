@@ -115,7 +115,7 @@ export function isPromise(target: unknown): target is Promise<unknown> {
 
 export function isNumber(v: any): v is number {
   return typeof v === 'number' && !Number.isNaN(v)
-}
+} 
 
 export function isFinite(v: unknown): v is number {
   return Number.isFinite(v)
