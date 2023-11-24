@@ -25,20 +25,16 @@ export function throttle<F extends (...args: any[]) => void>(
   // @ts-expect-error force
   return (...args: Parameters<F>) => {
     middleParams.push(args)
-
     const currentTimestamp = createCurrentTimestamp()
-
     if (currentTimoutId) {
       clearTimeout(currentTimoutId)
       remainDelayTime -= prevDurationTimestamp ? currentTimestamp - prevDurationTimestamp : 0
     }
-
     if (remainDelayTime <= 0) {
       invokeFn()
     } else {
       currentTimoutId = setTimeout(invokeFn, remainDelayTime)
     }
-
     prevDurationTimestamp = currentTimestamp
   }
 }

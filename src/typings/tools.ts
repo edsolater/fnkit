@@ -1,3 +1,4 @@
+import { type } from 'os'
 import { Collection } from '../collectionMethods'
 import { AnyFn, Falsy } from './constants'
 
@@ -336,3 +337,22 @@ export type AddDefaultProperties<T extends object, D extends object> = {
  * Promisify<string> // Promise<string>
  */
 export type Promisify<T> = T extends Promise<any> ? T : Promise<T>
+
+/**
+ * @example
+ *
+ * class Test {
+ *   a: string = '1'
+ *   b = 1
+ *   c = 2
+ *   t1(d: StringKey<this, number>) {
+ *     type C = keyof this
+ *     type D = C extends string ? true : false
+ *     this.t2(d)
+ *   }
+ *   t2(dd: number) {}
+ * }
+ *
+ * type A = StringKey<Test, number> // 'b' | 'c'
+ */
+export type StringKey<O extends object, IS = any> = keyof { [K in keyof O as O[K] extends IS ? K : never]: O[K] }
