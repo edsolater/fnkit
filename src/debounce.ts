@@ -62,6 +62,19 @@ export function debounce<F extends (...args: any[]) => void>(
     })
 }
 
+/**
+ * debounce do: a method that use debounce to directly handle effect
+ */
+export function debounceDo<F extends (...args: any[]) => void>(
+  fn: F,
+  options?: {
+    /** default is function self as key, any value that can be used as a key  */
+    key?: any
+    delay?: number
+  }
+) {
+  throw new Error('TODO')
+}
 // /** TODO */
 // /** 防抖（前置型） */
 // export function debounce<F extends (...args: any[]) => any>(fn: F): F {

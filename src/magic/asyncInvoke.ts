@@ -1,6 +1,12 @@
 import { AnyFn } from '../typings'
 
 const actionStack = new Map<any, AnyFn>()
+/**
+ *
+ * @param cb multi time callbacks will only be invoked once
+ * @param options
+ *
+ */
 export function asyncInvoke(
   cb: AnyFn,
   options?: {
