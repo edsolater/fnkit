@@ -41,4 +41,4 @@ export * from './bindParams' // FP style get function faster
 export * from './promisify' // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
 export * from './cacheFunction'
 export * from './callStack' // for debug, should only use it in development mode
-export * from './pipeline' // FP utils : give opportunity to handle/change value in parallel
+export * from './iife'
