@@ -1,22 +1,31 @@
-import { AnyFn } from '../typings'
+import { WeakerMap } from "../customizedClasses/WeakerMap"
+import { AnyFn } from "../typings"
 
-const actionStack = new Map<any, AnyFn>()
+// hold fn in map, so can cover if input the same key
+const queueTask = new WeakerMap<any, AnyFn>()
+
 /**
+ * invoke function in micro task queue
  *
- * @param cb multi time callbacks will only be invoked once
+ * **same** task will only invoke **once**
+ * @param fn task
  * @param options
- *
+ * @returns
  */
-export function asyncInvoke(
-  cb: AnyFn,
+export async function asyncInvoke<T>(
+  fn: () => T,
   options?: {
-    /** for register's Map key */
-    key?: any
-  }
-) {
-  actionStack.set(options?.key ?? {}, cb)
-  Promise.resolve().then(() => {
-    actionStack.forEach((cb) => cb())
-    actionStack.clear()
-  })
+    /**
+     * same key tasks will only invoke once in one event loop
+     * by default, it is the function itself
+     */
+    key?: unknown
+  },
+): Promise<T> {
+  const key = options?.key ?? fn
+  queueTask.set(key, fn)
+  await Promise.resolve()
+  const cb = queueTask.get(key)
+  queueTask.delete(key)
+  return cb?.()
 }
