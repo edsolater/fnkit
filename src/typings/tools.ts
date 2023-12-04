@@ -1,6 +1,6 @@
 import { type } from 'os'
 import { Collection } from '../collectionMethods'
-import { AnyFn, Falsy } from './constants'
+import { AnyFn, Falsy, Primitive } from './constants'
 
 export type MayArray<T> = T | Array<T>
 /** flap */
@@ -219,8 +219,6 @@ export type Valueof<O> = O extends Collection<infer V> ? V : unknown
 export type SKeyof<O> = Keyof<O> & string
 
 //#endregion
-
-type Primitive = boolean | number | string | null | undefined
 
 /**
  *
