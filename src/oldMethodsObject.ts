@@ -1,4 +1,4 @@
-import { flap } from './collectionMethods'
+import { flap, unifyItem } from './collectionMethods'
 import { isObjectLike, isFunction, isObject } from './dataType'
 import { AnyObj } from './typings/constants'
 import { SKeyof, Valueof } from './typings/tools'
@@ -117,25 +117,24 @@ export function containKey<T extends string | number | symbol>(
 ): obj is { [K in T]: unknown } {
   return isObject(obj) && flap(keys).every((key: string | number | symbol) => key in obj) // TODO: flap's type should be smarter
 }
-
 /**
  *  shallow clone like {...obj}, but don't access it's getter
  *  @example
  * cloneObject({get a() {return 1}}) //=> {get a() {return 1}}
  */
 export function cloneObject<T extends AnyObj>(original: T): T {
-  return new Proxy(
-    {},
-    {
-      get: (target, key, receiver) =>
-        key in target ? Reflect.get(target, key, receiver) : Reflect.get(original, key, receiver),
-      has: (target, key) => key in target || key in original,
-      set: (target, key, value) => Reflect.set(target, key, value),
-      getPrototypeOf: () => Object.getPrototypeOf(original),
-      ownKeys: (target) => Reflect.ownKeys(target).concat(Reflect.ownKeys(original)),
-      // for Object.keys to filter
-      getOwnPropertyDescriptor: (target, key) =>
-        key in target ? Object.getOwnPropertyDescriptor(target, key) : Object.getOwnPropertyDescriptor(original, key)
-    }
-  ) as T
+  const cloneCache = {}
+  return new Proxy(original, {
+    get: (_target, key, receiver) =>
+      key in cloneCache ? Reflect.get(cloneCache, key, receiver) : Reflect.get(original, key, receiver),
+    has: (_target, key) => key in cloneCache || key in original,
+    set: (_target, key, value) => Reflect.set(cloneCache, key, value),
+    getPrototypeOf: () => Object.getPrototypeOf(original),
+    ownKeys: (_target) => unifyItem(Reflect.ownKeys(cloneCache).concat(Reflect.ownKeys(original))),
+    // for Object.keys to filter
+    getOwnPropertyDescriptor: (_target, key) =>
+      key in cloneCache
+        ? Object.getOwnPropertyDescriptor(cloneCache, key)
+        : Object.getOwnPropertyDescriptor(original, key)
+  }) as T
 }

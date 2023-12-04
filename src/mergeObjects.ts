@@ -1,3 +1,6 @@
+import { isFunction } from './dataType'
+import { AnyFn } from './typings'
+
 /**
  * merge without access, you can config transformer for detail control
  * @example
@@ -21,30 +24,31 @@ export function mergeObjectsWithConfigs<T extends object>(
     return { s: keys, a: keysArray }
   }
 
-  return new Proxy(
-    {},
-    {
-      get: (target, key) => {
-        if (key in target) return target[key]
-        if (!getOwnKeys().s.has(key)) return undefined
-        const v = getValueByConfig(objs, key, transformer)
-        Reflect.set(target, key, v)
-        return v
-      },
-      set: (_target, key, value) => Reflect.set(_target, key, value),
-      has: (_target, key) => getOwnKeys().s.has(key as string),
-      getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
-      ownKeys: () => getOwnKeys().a,
-      // for Object.keys to filter
-      getOwnPropertyDescriptor: (_target, prop) => {
-        for (const obj of objs) {
-          if (prop in obj) {
-            return Reflect.getOwnPropertyDescriptor(obj, prop)
-          }
+  return new Proxy(objs.some(isFunction) ? () => {} : {}, {
+    apply(target, thisArg, argArray) {
+      const fn = objs.findLast(isFunction)
+      return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
+    },
+    get: (target, key) => {
+      if (key in target) return target[key]
+      if (!getOwnKeys().s.has(key)) return undefined
+      const v = getValueByConfig(objs, key, transformer)
+      Reflect.set(target, key, v)
+      return v
+    },
+    set: (_target, key, value) => Reflect.set(_target, key, value),
+    has: (_target, key) => getOwnKeys().s.has(key as string),
+    getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
+    ownKeys: () => getOwnKeys().a,
+    // for Object.keys to filter
+    getOwnPropertyDescriptor: (_target, prop) => {
+      for (const obj of objs) {
+        if (prop in obj) {
+          return Reflect.getOwnPropertyDescriptor(obj, prop)
         }
       }
     }
-  ) as T
+  }) as T
 }
 
 /**
@@ -85,30 +89,31 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
       }
     }
   }
-  return new Proxy(
-    {},
-    {
-      get(target, key) {
-        if (key in target) return target[key]
-        if (!getOwnKeys().s.has(key)) return undefined
-        const v = getValue(key)
-        Reflect.set(target, key, v)
-        return v
-      },
-      has: (_target, key) => getOwnKeys().s.has(key as string),
-      set: (_target, key, value) => Reflect.set(_target, key, value),
-      getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
-      ownKeys: () => getOwnKeys().a,
-      // for Object.keys to filter
-      getOwnPropertyDescriptor: (_target, prop) => {
-        for (const obj of objs) {
-          if (obj && prop in obj) {
-            return Reflect.getOwnPropertyDescriptor(obj, prop)
-          }
+  return new Proxy(objs.some(isFunction) ? () => {} : {}, {
+    apply(target, thisArg, argArray) {
+      const fn = objs.findLast(isFunction)
+      return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
+    },
+    get(target, key) {
+      if (key in target) return target[key]
+      if (!getOwnKeys().s.has(key)) return undefined
+      const v = getValue(key)
+      Reflect.set(target, key, v)
+      return v
+    },
+    has: (_target, key) => getOwnKeys().s.has(key as string),
+    set: (_target, key, value) => Reflect.set(_target, key, value),
+    getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
+    ownKeys: () => getOwnKeys().a,
+    // for Object.keys to filter
+    getOwnPropertyDescriptor: (_target, prop) => {
+      for (const obj of objs) {
+        if (obj && prop in obj) {
+          return Reflect.getOwnPropertyDescriptor(obj, prop)
         }
       }
     }
-  ) as T
+  }) as T
 }
 
 // test code
