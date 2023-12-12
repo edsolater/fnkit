@@ -1,5 +1,4 @@
 import { isArray, isMap, isFunction } from './dataType'
-import { AnyFn } from './typings'
 import { shrinkFn } from './wrapper'
 
 /**
@@ -8,6 +7,16 @@ import { shrinkFn } from './wrapper'
  * @param rules if match, return the defined value; match rule can be function return value
  * @param getDefaultValue if none matched, return the value returned by this function. If not provided, return undefined
  */
+export function switchCase<T, R>(
+  key: T,
+  rules: Partial<Map<T | ((key: T) => boolean), R | ((key: T) => R)>> /** only invoked if none matched */,
+  getDefaultValue?: R | ((key: T) => R)
+): R | undefined
+export function switchCase<T, R>(
+  key: T,
+  rules: [matchCase: T | ((key: T) => boolean), returnValue: R | ((key: T) => R)][] /** only invoked if none matched */,
+  getDefaultValue?: R | ((key: T) => R)
+): R | undefined
 export function switchCase<T extends keyof any, R>(
   key: T,
   rules: Partial<Record<T, R | ((key: T) => R)>> /** only invoked if none matched */,
@@ -15,23 +24,8 @@ export function switchCase<T extends keyof any, R>(
 ): R | undefined
 export function switchCase<T, R>(
   key: T,
-  rules: Partial<
-    Map<Exclude<T, AnyFn> | ((key: T) => boolean), R | ((key: T) => R)>
-  > /** only invoked if none matched */,
-  getDefaultValue?: R | ((key: T) => R)
-): R | undefined
-export function switchCase<T, R>(
-  key: T,
-  rules: [
-    matchCase: Exclude<T, AnyFn> | ((key: T) => boolean),
-    returnValue: R | ((key: T) => R)
-  ][] /** only invoked if none matched */,
-  getDefaultValue?: R | ((key: T) => R)
-): R | undefined
-export function switchCase<T, R>(
-  key: T,
   rules:
-    | [matchCase: Exclude<T, AnyFn> | ((key: T) => boolean), returnValue: R | ((key: T) => R)][]
+    | [matchCase: T | ((key: T) => boolean), returnValue: R | ((key: T) => R)][]
     | Partial<Map<T, R>>
     | Partial<Record<T & keyof any, R>>,
   /** only invoked if none matched */
