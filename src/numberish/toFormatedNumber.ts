@@ -27,11 +27,11 @@ export type FormatOptions = {
    * how many fraction number. (if there is noting, 0 will be added )
    * @default 2
    * @example
-   * formatNumber(100.2, { fractionLength: 3 }) // result: '100.200'
-   * formatNumber(100.2, { fractionLength: auto }) // result: '100.2'
-   * formatNumber(100.1234, { fractionLength: 6 }) // result: '100.123400'
+   * formatNumber(100.2, { decimals: 3 }) // result: '100.200'
+   * formatNumber(100.2, { decimals: auto }) // result: '100.2'
+   * formatNumber(100.1234, { decimals: 6 }) // result: '100.123400'
    */
-  fractionLength?: number | 'auto'
+  decimals?: number | 'auto'
 }
 
 /**
@@ -39,16 +39,16 @@ export type FormatOptions = {
  * @example
  * formatNumber(undefined) // '0'
  * formatNumber(7000000.2) // result: '7,000,000.20'
- * formatNumber(8800.1234, { seperator: '', fractionLength: 6 }) // result: '8,800.123400'
- * formatNumber(100.1234, { fractionLength: 3 }) // result: '100.123'
+ * formatNumber(8800.1234, { seperator: '', decimals: 6 }) // result: '8,800.123400'
+ * formatNumber(100.1234, { decimals: 3 }) // result: '100.123'
  */
 export function toFormatedNumber(
   n: Numberish | undefined,
-  { groupSeparator = ',', fractionLength = 2, groupSize = 3 }: FormatOptions = {}
+  { groupSeparator = ',', decimals = 2, groupSize = 3 }: FormatOptions = {}
 ): string {
   if (n === undefined) return '0'
   return fall(n, [
-    (n) => (fractionLength === 'auto' ? toString(n) : toFixedDecimal(toString(n), fractionLength)),
+    (n) => (decimals === 'auto' ? toString(n) : toFixedDecimal(toString(n), decimals)),
     (str) => {
       const [, sign = '', int = '', dec = ''] = str.match(/(-?)(\d*)\.?(\d*)/) ?? []
       const newIntegerPart = [...int].reduceRight((acc, cur, idx, strN) => {
@@ -72,3 +72,6 @@ export function parseFormatedNumberString(numberString: string): number {
   const pureNumberString = [...numberString].reduce((acc, char) => acc + (/\d|\.|-/.test(char) ? char : ''), '')
   return Number(pureNumberString)
 }
+
+
+
