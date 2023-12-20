@@ -1,7 +1,7 @@
-import { toString } from './changeFormat'
+import { toString } from './changeFormats'
 import { add, minus, multiply } from './operations'
 
-test('toString', () => {
+test('numberish: toString', () => {
   expect(toString(3.22)).toBe('3.22')
   expect(toString({ numerator: 12312n, decimal: 4 })).toBe('1.2312')
 })

@@ -41,19 +41,20 @@ type RPNItem =
  * splitNormalQueue('1*(-2.2)') //=> ['1', '*', '-2.2']
  * splitNormalQueue('-1*2.2') //=> ['-1', '*', '2.2']
  */
-function splitNormalQueue(exp: string) {
+export function splitFromNormalString(exp: string) {
   return exp
-    .replaceAll(' ', '')
+    .replace(/\s+/g, '')
     .split(/((?<!(?:^|\())\+|(?<!(?:^|\())-|\*|\/|\(|\))/)
     .filter(Boolean)
 }
 
 /**
  * @example
- * toRPN('1 + 2') //=> ['1', '2', '+']
- */
+ * toRPN('1 + 2') //=> [{isOperator: false, value: '1'}, {isOperator: false, value: '2'}, {isOperator: true, value: '+'}]
+*/
+// TODO: math priority system .e.g. toRPN('4 * 2 ** 5')
 export function toRPN(exp: string): RPNQueue {
-  const input = splitNormalQueue(exp)
+  const input = splitFromNormalString(exp)
   const operatorStack = [] as string[]
   const rpn = [] as RPNQueue
 
@@ -93,7 +94,7 @@ export function toRPN(exp: string): RPNQueue {
 
   if (operatorStack.length > 0) {
     if (operatorStack.includes(')') || operatorStack.includes('(')) {
-      throw 'error: unmatched ()'
+      throw 'error: unmatched (), there still be an isolated `(` or `)`'
     }
     while (operatorStack.length > 0) {
       rpn.push({ isOperator: true, value: operatorStack.pop() as '+' | '-' | '*' | '/' })
@@ -103,17 +104,7 @@ export function toRPN(exp: string): RPNQueue {
   return rpn
 }
 
-console.time('toRPN')
-// console.log(toRPN('1 + 2'))
-// console.log(toRPN('1 + 2 + 3'))
-// console.log(toRPN('1 + 2 * 3'))
-// console.log(toRPN('1 + 2 * 3 - 4 / 5'))
-// console.log(toRPN('( 1 + 2 )'))
-// console.log(toRPN('( 1 + 2 ) * ( 3 - 4 ) / 5'))
-console.log(toRPN('1*(-3)'))
-console.timeEnd('toRPN')
-
-export function parseRPN(rpn: RPNQueue): NumberishAtom {
+export function parseRPNToNumberish(rpn: RPNQueue): NumberishAtom {
   const numberishStack = [] as NumberishAtom[]
   for (const item of rpn) {
     if (item.isOperator) {
@@ -147,15 +138,18 @@ export function parseRPN(rpn: RPNQueue): NumberishAtom {
   if (numberishStack.length > 1) {
     throw 'error: invalid rpn'
   }
-  return numberishStack[0]
+  const resultN = numberishStack[0]
+  return resultN
 }
 
-export function toExpression(n: Numberish) {
+export function fromRPNtoExpressionString(RPN: RPNQueue): string {
+  return RPN.map((item) => (item.isOperator ? item.value : fromNumberishtoExpressionString(item.value))).join(' ')
+}
+
+export function fromNumberishtoExpressionString(n: Numberish): string {
   if (isNumberishAtom(n) || isNumberishAtomRaw(n)) {
     return n.numerator + '/' + n.denominator
   } else {
     return String(n)
   }
 }
-
-console.log(toExpression(parseRPN(toRPN('1*(-302)/2'))))

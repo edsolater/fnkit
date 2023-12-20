@@ -1,6 +1,6 @@
 import { Numberish } from '../typings'
 import { stringNumberRegex } from './numberishAtom'
-import { toString } from './changeFormat'
+import { toString } from './changeFormats'
 
 /**
  *

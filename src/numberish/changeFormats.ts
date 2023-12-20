@@ -1,5 +1,5 @@
 import { Numberish, NumberishAtom } from '../typings'
-import { OneB, TenB } from './constant'
+import { OneBigint, TenBigint } from './constant'
 import { toNumberishAtom } from './numberishAtom'
 import { padZeroR, shakeTailingZero } from './utils'
 
@@ -24,7 +24,7 @@ export type NumberishOption = {
  */
 export function toString(from: Numberish, options?: NumberishOption): string {
   const { decimal, numerator, denominator } = toNumberishAtom(from)
-  if (denominator === OneB) {
+  if (denominator === OneBigint) {
     if (decimal === 0) return String(numerator)
     if (decimal < 0) return padZeroR(String(numerator), -decimal)
     return shakeTailingZero(
@@ -34,8 +34,8 @@ export function toString(from: Numberish, options?: NumberishOption): string {
     )
   } else {
     const decimalPlace = options?.maxDecimalPlace ?? 6
-    const finalNumerator = numerator * TenB ** BigInt(decimalPlace)
-    const finalDenominator = TenB ** BigInt(decimal) * denominator
+    const finalNumerator = numerator * TenBigint ** BigInt(decimalPlace)
+    const finalDenominator = TenBigint ** BigInt(decimal) * denominator
     const finalN = String(finalNumerator / finalDenominator)
     return shakeTailingZero(`${finalN.slice(0, -decimalPlace)}.${finalN.slice(-decimalPlace)}`)
   }

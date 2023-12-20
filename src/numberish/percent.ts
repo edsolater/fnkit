@@ -1,5 +1,5 @@
 import { Numberish } from '../typings'
-import { toString } from './changeFormat'
+import { toString } from './changeFormats'
 import { eq, gt } from './compare'
 import { mul } from './operations'
 import { toFixedDecimal } from './utils'

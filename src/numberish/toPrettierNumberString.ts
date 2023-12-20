@@ -4,7 +4,7 @@
 
 import { fall } from '../fall'
 import { Numberish } from '../typings'
-import { toString } from './changeFormat'
+import { toString } from './changeFormats'
 import { toFixedDecimal } from './utils'
 
 export type FormatOptions = {
@@ -37,12 +37,12 @@ export type FormatOptions = {
 /**
  * to formated number string
  * @example
- * formatNumber(undefined) // '0'
- * formatNumber(7000000.2) // result: '7,000,000.20'
- * formatNumber(8800.1234, { seperator: '', decimals: 6 }) // result: '8,800.123400'
- * formatNumber(100.1234, { decimals: 3 }) // result: '100.123'
+ * toPrettierNumberString(undefined) // '0'
+ * toPrettierNumberString(7000000.2) // result: '7,000,000.20'
+ * toPrettierNumberString(8800.1234, { seperator: '', decimals: 6 }) // result: '8,800.123400'
+ * toPrettierNumberString(100.1234, { decimals: 3 }) // result: '100.123'
  */
-export function toFormatedNumber(
+export function toPrettierNumberString(
   n: Numberish | undefined,
   { groupSeparator = ',', decimals = 2, groupSize = 3 }: FormatOptions = {}
 ): string {
@@ -63,12 +63,12 @@ export function toFormatedNumber(
 /**
  * parse a string
  *
- * it a function that reverse the result of {@link toFormatedNumber}
+ * it a function that reverse the result of {@link toPrettierNumberString}
  * @param numberString a string represent a number. e.g. -70,000.050
  * @example
- * parseFormatedNumberString('-70,000.050') // result: -70000.05
+ * parsePrettierNumberString('-70,000.050') // result: -70000.05
  */
-export function parseFormatedNumberString(numberString: string): number {
+export function parsePrettierNumberString(numberString: string): number {
   const pureNumberString = [...numberString].reduce((acc, char) => acc + (/\d|\.|-/.test(char) ? char : ''), '')
   return Number(pureNumberString)
 }

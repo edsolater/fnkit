@@ -1,6 +1,6 @@
 import { Numberish, NumberishAtom } from '../typings/constants'
-import { NumberishOption } from './changeFormat'
-import { TenB } from './constant'
+import { NumberishOption } from './changeFormats'
+import { TenBigint } from './constant'
 import { toNumberishAtom } from './numberishAtom'
 
 /**
@@ -18,14 +18,15 @@ export function add(a: Numberish, b: Numberish): NumberishAtom {
     })
   } else if (denominatorA === denominatorB) {
     return toNumberishAtom({
-      numerator: numratorA * TenB ** BigInt(decimalB) + numratorB * TenB ** BigInt(decimalA),
+      numerator: numratorA * TenBigint ** BigInt(decimalB) + numratorB * TenBigint ** BigInt(decimalA),
       decimal: decimalA + decimalB,
       denominator: denominatorA
     })
   } else {
     return toNumberishAtom({
       numerator:
-        numratorA * TenB ** BigInt(decimalB) * denominatorB + numratorB * TenB ** BigInt(decimalA) * denominatorA,
+        numratorA * TenBigint ** BigInt(decimalB) * denominatorB +
+        numratorB * TenBigint ** BigInt(decimalA) * denominatorA,
       decimal: decimalA + decimalB,
       denominator: denominatorA * denominatorB
     })
@@ -48,11 +49,16 @@ export function multiply(a: Numberish, b: Numberish): NumberishAtom {
 }
 
 /**
+ *  2 => 1/2
  * @see https://en.wikipedia.org/wiki/Multiplicative_inverse
  */
 export function reciprocal(a: Numberish): NumberishAtom {
   const { decimal: decimalA, numerator: numratorA, denominator: denominatorA } = toNumberishAtom(a)
-  return toNumberishAtom({ numerator: TenB ** BigInt(decimalA) * denominatorA, decimal: 0, denominator: numratorA })
+  return toNumberishAtom({
+    numerator: TenBigint ** BigInt(decimalA) * denominatorA,
+    decimal: 0,
+    denominator: numratorA
+  })
 }
 
 /**
@@ -92,7 +98,7 @@ export function modS(...params: Parameters<typeof mod>): string {
 
 export function divideMod(a: Numberish, b: Numberish): [divisior: bigint, mod: NumberishAtom] {
   const n = divide(a, b)
-  const divisior = n.numerator / (n.denominator * TenB ** BigInt(n.decimal))
+  const divisior = n.numerator / (n.denominator * TenBigint ** BigInt(n.decimal))
   return [divisior, minus(a, multiply(divisior, b))]
 }
 

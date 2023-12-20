@@ -5,10 +5,10 @@
 
 import { isBigInt, isNumber, isObject, isString, Numberish, NumberishAtom, NumberishAtomRaw } from '..'
 import { hasProperty } from '../compare'
-import { NumberishOption, toString } from './changeFormat'
-import { OneB } from './constant'
+import { NumberishOption, toString } from './changeFormats'
+import { OneBigint } from './constant'
 
-export const stringNumberRegex = /(?<sign>-?)(?<int>\d*)\.?(?<dec>\d*)/
+export const stringNumberRegex = /(?<sign>-|\+?)(?<int>\d*)\.?(?<dec>\d*)/
 
 export const isNumberishAtomRaw = (value: any): value is NumberishAtomRaw =>
   isObject(value) && hasProperty(value, ['numerator'])
@@ -45,6 +45,9 @@ export function toNumberishAtomRaw(from: Numberish | { toNumberishAtom: () => Nu
   return toNumberishAtomRawFromString(String(from))
 }
 
+/**
+ * toNumberishAtom(1e13) //=> { numerator: 10000000000000n, decimal: 0, denominator: 1n , toString: () => '10000000000000' }
+ */
 export const toNumberishAtom = (from: Parameters<typeof toNumberishAtomRaw>[0]): NumberishAtom => {
   if (isNumberishAtom(from)) return from
   if (isObject(from) && 'toNumberishAtom' in from) return from.toNumberishAtom()
@@ -56,7 +59,7 @@ export const toNumberishAtom = (from: Parameters<typeof toNumberishAtomRaw>[0]):
     // toExpression: () => toString(atom),
     toString: (options?: NumberishOption) => toString(atom, options),
     decimal: atom.decimal ?? 0,
-    denominator: atom.denominator ?? OneB
+    denominator: atom.denominator ?? OneBigint
   }
 }
 
