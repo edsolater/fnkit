@@ -1,4 +1,4 @@
-import { fromNumberishtoExpressionString, parseRPNToNumberish, splitFromNormalString, toRPN } from './calcNumberExpression'
+import { fromNumberishtoExpressionString, parseRPNToNumberish, splitFromNormalString, toRPN } from './numberExpression'
 
 test('numberish: expression', () => {
   expect(parseRPNToNumberish(toRPN('1*(-302)/2'))).toEqual({ 'numerator': -302n, denominator: 2n, decimal: 0 })
