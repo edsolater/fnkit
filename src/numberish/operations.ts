@@ -1,13 +1,14 @@
-import { Numberish, NumberishAtom } from '../typings/constants'
+import { BasicNumberish, Numberish, NumberishAtom } from '../typings/constants'
 import { NumberishOption, toBigint, toNumber } from './changeFormats'
 import { isInt, isZero } from './selfIs'
 import { TenBigint } from './constant'
-import { toNumberishAtom } from './numberishAtom'
+import { toNumberishAtom, toNumberishAtomRaw } from './numberishAtom'
 
 /**
  * 1 + 2 = 3
  * @example
  * add('9007199254740991.4', '112.4988') //=> '9007199254741103.8988'
+ * @todo should just add virculy
  */
 export function add(a: Numberish, b: Numberish): NumberishAtom {
   const { decimal: decimalA, numerator: numratorA, denominator: denominatorA } = toNumberishAtom(a)
@@ -26,6 +27,33 @@ export function add(a: Numberish, b: Numberish): NumberishAtom {
     })
   } else {
     return toNumberishAtom({
+      numerator:
+        numratorA * TenBigint ** BigInt(decimalB) * denominatorB +
+        numratorB * TenBigint ** BigInt(decimalA) * denominatorA,
+      decimal: decimalA + decimalB,
+      denominator: denominatorA * denominatorB
+    })
+  }
+}
+
+/** add immediately */
+export function basicAdd(a: BasicNumberish, b: BasicNumberish): BasicNumberish {
+  const { decimal: decimalA, numerator: numratorA, denominator: denominatorA } = toNumberishAtomRaw(a)
+  const { decimal: decimalB, numerator: numratorB, denominator: denominatorB } = toNumberishAtomRaw(b)
+
+  if (denominatorA === denominatorB && decimalA === 0 && decimalB === 0) {
+    return toNumberishAtomRaw({
+      numerator: numratorA + numratorB,
+      denominator: denominatorA
+    })
+  } else if (denominatorA === denominatorB) {
+    return toNumberishAtomRaw({
+      numerator: numratorA * TenBigint ** BigInt(decimalB) + numratorB * TenBigint ** BigInt(decimalA),
+      decimal: decimalA + decimalB,
+      denominator: denominatorA
+    })
+  } else {
+    return toNumberishAtomRaw({
       numerator:
         numratorA * TenBigint ** BigInt(decimalB) * denominatorB +
         numratorB * TenBigint ** BigInt(decimalA) * denominatorA,

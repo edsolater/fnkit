@@ -1,7 +1,7 @@
 import { switchCase } from '../switchCase'
-import { NumberishAtom, NumberishAtomRaw } from '../typings'
+import { MathExpression, NumberishAtom, NumberishAtomRaw } from '../typings'
 import { toNumberishAtom } from './numberishAtom'
-import { add, div, minus, mul } from './operations'
+import { add, div, minus, mul, pow } from './operations'
 
 type Operator = '+' | '-' | '*' | '/' | '^' | (string & {})
 type NumberToken = string
@@ -22,22 +22,6 @@ type RPNQueue = RPNItem[]
 type RPNItem =
   | { isOperator: true; value: Operator }
   | { isOperator: false; value: number | NumberToken | bigint | NumberishAtomRaw }
-
-/**
- * @example
- * splitNormalQueue('1 + 2') //=> ['1', '+', '2']
- * splitNormalQueue('1+  2.255') //=> ['1', '+', '2.255']
- * splitNormalQueue('1-2.255') //=> ['1', '-', '2.255']
- * splitNormalQueue('1+(-2.2)') //=> ['1', '+', '-2.2']
- * splitNormalQueue('1*(-2.2)') //=> ['1', '*', '-2.2']
- * splitNormalQueue('-1*2.2') //=> ['-1', '*', '2.2']
- */
-export function splitNumberExpression(exp: string) {
-  return exp
-    .replace(/\s+/g, '')
-    .split(/((?<!(?:^|\())\+|(?<!(?:^|\())-|\*|\/|\(|\))/) // to complicated
-    .filter(Boolean)
-}
 
 export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
   const rpnLengthIsValid = rpn.length % 2 === 1
@@ -71,7 +55,7 @@ export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
           break
         }
         case '^': {
-          numberishStack.push(mul(num1, num2))
+          numberishStack.push(pow(num1, num2))
           break
         }
       }
@@ -86,7 +70,7 @@ export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
   return resultN
 }
 
-export function toRPN(expression: string): RPNQueue {
+export function toRPN(expression: MathExpression): RPNQueue {
   const operatorStack: string[] = []
   const rpnQueue: RPNQueue = []
   function recordToRPNQueue(value: string | undefined, options?: { isOperator?: boolean; onAfterPush?(): void }) {
