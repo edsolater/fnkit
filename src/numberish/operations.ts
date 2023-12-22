@@ -4,6 +4,7 @@ import { TenBigint } from './constant'
 import { toNumberishAtom } from './numberishAtom'
 
 /**
+ * 1 + 2 = 3
  * @example
  * add('9007199254740991.4', '112.4988') //=> '9007199254741103.8988'
  */
@@ -34,6 +35,14 @@ export function add(a: Numberish, b: Numberish): NumberishAtom {
 }
 
 /**
+ * {@link add} + toString
+ */
+export function addS(...params: Parameters<typeof add>): string {
+  return add(...params).toString()
+}
+
+/**
+ * 2 * 3 = 6
  * @example
  * multiply('1.22', '112.3') //=> '137.006'
  * multiply('9007199254740991.4', '112.4988') //=> '1013299107519255843.31032'
@@ -47,6 +56,12 @@ export function multiply(a: Numberish, b: Numberish): NumberishAtom {
     denominator: denominatorA * denominatorB
   })
 }
+
+export var mul = multiply
+export function multiplyS(...params: Parameters<typeof multiply>): string {
+  return multiply(...params).toString()
+}
+export var mulS = multiplyS
 
 /**
  *  2 => 1/2
@@ -62,6 +77,7 @@ export function reciprocal(a: Numberish): NumberishAtom {
 }
 
 /**
+ * 1 - 2 = -1
  * @example
  * minus('1.22', '112.3') //=> '-111.08'
  * minus('1.22', '-112.3') //=> '113.52'
@@ -70,11 +86,16 @@ export function reciprocal(a: Numberish): NumberishAtom {
 export function minus(a: Numberish, b: Numberish): NumberishAtom {
   return add(a, multiply(-1, b))
 }
+
+/**
+ * {@link minus} + toString
+ */
 export function minusS(...params: Parameters<typeof minus>): string {
   return minus(...params).toString()
 }
 
 /**
+ * 1 / 2 = 0.5
  * @example
  * divide('1.22', '112.3') //=> '0.010863'
  * divide('1.22', '-112.3') //=> '-0.010863'
@@ -84,30 +105,39 @@ export function divide(a: Numberish, b: Numberish): NumberishAtom {
 }
 export var div = divide
 
+/**
+ * {@link divide} + toString
+ */
 export function divideS(a: Numberish, b: Numberish, options?: NumberishOption): string {
   return divide(a, b).toString(options)
 }
 export var divS = divideS
 
+/**
+ * 1 % 2 = 1
+ * @example
+ * mod('1.22', '112.3') //=> '1.22'
+ * mod('1.22', '-112.3') //=> '1.22'
+ */
 export function mod(a: Numberish, b: Numberish): NumberishAtom {
   return divideMod(a, b)[1]
 }
+
+/**
+ * {@link mod} + toString
+ */
 export function modS(...params: Parameters<typeof mod>): string {
   return mod(...params).toString()
 }
 
+/**
+ * {@link divide} + {@link mod}
+ * @example
+ * divideMod('1.22', '112.3') //=> ['0', '1.22']
+ * divideMod('1.22', '-112.3') //=> ['-0', '1.22']
+ */
 export function divideMod(a: Numberish, b: Numberish): [divisior: bigint, mod: NumberishAtom] {
   const n = divide(a, b)
   const divisior = n.numerator / (n.denominator * TenBigint ** BigInt(n.decimal))
   return [divisior, minus(a, multiply(divisior, b))]
 }
-
-export function addS(...params: Parameters<typeof add>): string {
-  return add(...params).toString()
-}
-
-export var mul = multiply
-export function multiplyS(...params: Parameters<typeof multiply>): string {
-  return multiply(...params).toString()
-}
-export var mulS = multiplyS

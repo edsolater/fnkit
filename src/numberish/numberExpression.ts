@@ -1,28 +1,10 @@
-/**
- * @see https://m.xp.cn/b.php/107696.html
- */
-
 import { switchCase } from '../switchCase'
 import { Numberish, NumberishAtom, NumberishAtomRaw } from '../typings'
 import { isNumberishAtom, isNumberishAtomRaw, toNumberishAtom } from './numberishAtom'
 import { add, div, minus, mul } from './operations'
 
-function getPrioratyOfChar(value: string) {
-  switch (value) {
-    case '+':
-    case '-':
-      return 1
-    case '*':
-    case '/':
-      return 2
-    default:
-      return 0
-  }
-}
-
-function isChar1PrioratyHigher(c1: string, c2: string) {
-  return getPrioratyOfChar(c1) <= getPrioratyOfChar(c2)
-}
+type Operator = '+' | '-' | '*' | '/' | '^' | (string & {})
+type NumberToken = string
 
 /**
  * @see https://zh.wikipedia.org/wiki/%E9%80%86%E6%B3%A2%E5%85%B0%E8%A1%A8%E7%A4%BA%E6%B3%95
@@ -30,8 +12,8 @@ function isChar1PrioratyHigher(c1: string, c2: string) {
 type RPNQueue = RPNItem[]
 
 type RPNItem =
-  | { isOperator: true; value: '+' | '-' | '*' | '/' }
-  | { isOperator: false; value: number | string | bigint | NumberishAtomRaw }
+  | { isOperator: true; value: Operator }
+  | { isOperator: false; value: number | NumberToken | bigint | NumberishAtomRaw }
 
 /**
  * @example
@@ -42,77 +24,26 @@ type RPNItem =
  * splitNormalQueue('1*(-2.2)') //=> ['1', '*', '-2.2']
  * splitNormalQueue('-1*2.2') //=> ['-1', '*', '2.2']
  */
-export function splitFromNormalString(exp: string) {
+export function splitNumberExpression(exp: string) {
   return exp
     .replace(/\s+/g, '')
     .split(/((?<!(?:^|\())\+|(?<!(?:^|\())-|\*|\/|\(|\))/) // to complicated
     .filter(Boolean)
 }
 
-// /**
-//  * @example
-//  * toRPN('1 + 2') //=> [{isOperator: false, value: '1'}, {isOperator: false, value: '2'}, {isOperator: true, value: '+'}]
-//  */
-// // TODO: math priority system .e.g. toRPN('4 * 2 ** 5')
-// export function toRPN(exp: string): RPNQueue {
-//   const input = splitFromNormalString(exp)
-//   const operatorStack = [] as string[]
-//   const rpn = [] as RPNQueue
-
-//   for (const i of input) {
-//     switch (i) {
-//       case '(': {
-//         operatorStack.push(i)
-//         break
-//       }
-//       case ')': {
-//         let operator = operatorStack.pop()
-//         while (operator != '(' && operatorStack.length > 0) {
-//           rpn.push({ isOperator: true, value: operator as '+' | '-' | '*' | '/' })
-//           operator = operatorStack.pop()
-//         }
-//         if (operator != '(') {
-//           throw 'error: unmatched ()'
-//         }
-//         break
-//       }
-//       case '+':
-//       case '-':
-//       case '*':
-//       case '/': {
-//         while (operatorStack.length > 0 && isChar1PrioratyHigher(i, operatorStack[operatorStack.length - 1])) {
-//           rpn.push({ isOperator: true, value: operatorStack.pop() as '+' | '-' | '*' | '/' })
-//         }
-//         operatorStack.push(i)
-//         break
-//       }
-
-//       default: {
-//         rpn.push({ isOperator: false, value: i })
-//       }
-//     }
-//   }
-
-//   if (operatorStack.length > 0) {
-//     if (operatorStack.includes(')') || operatorStack.includes('(')) {
-//       throw 'error: unmatched (), there still be an isolated `(` or `)`'
-//     }
-//     while (operatorStack.length > 0) {
-//       rpn.push({ isOperator: true, value: operatorStack.pop() as '+' | '-' | '*' | '/' })
-//     }
-//   }
-
-//   return rpn
-// }
-
 export function parseRPNToNumberish(rpn: RPNQueue): NumberishAtom {
+  const rpnLengthIsValid = rpn.length % 2 === 1
+  if (!rpnLengthIsValid) {
+    throw `invalid rpn length, so can't parse`
+  }
+
   const numberishStack = [] as NumberishAtom[]
   for (const item of rpn) {
     if (item.isOperator) {
       const num2 = numberishStack.pop()
       const num1 = numberishStack.pop()
       if (num1 == undefined || num2 == undefined) {
-        throw 'error: invalid rpn'
+        throw `invalid rpn, can't parse`
       }
       switch (item.value) {
         case '+': {
@@ -129,6 +60,10 @@ export function parseRPNToNumberish(rpn: RPNQueue): NumberishAtom {
         }
         case '/': {
           numberishStack.push(div(num1, num2))
+          break
+        }
+        case '^': {
+          numberishStack.push(mul(num1, num2))
           break
         }
       }
@@ -157,32 +92,41 @@ export function fromNumberishtoExpressionString(n: Numberish): string {
   }
 }
 
-/** 💩: still wrong */
-export function toRPN(expression: string): string[] {
-  type Word = '+' | '-' | '*' | '/' | '^'
-  type Priority = number
-  const operators: Record<Word, Priority> = {
-    '+': 1,
-    '-': 1,
-    '*': 2,
-    '/': 2,
-    '^': 3
-  }
+type Priority = number
+const operators: Record<Operator, Priority> = {
+  '+': 1,
+  '-': 1,
+  '*': 2,
+  '/': 2,
+  '^': 3
+}
 
+export function toRPN(expression: string): RPNQueue {
   const operatorStack: string[] = []
-  const rpn: string[] = []
+  const rpnQueue: RPNQueue = []
+  function recordToRPNQueue(value: string | undefined, options?: { isOperator?: boolean; onAfterPush?(): void }) {
+    if (value) {
+      rpnQueue.push({ isOperator: Boolean(options?.isOperator), value: value })
+      options?.onAfterPush?.()
+    }
+  }
   let currentToken = ''
-
-  const charIsPartOfNumber = (char: string) => /\d|\./.test(char)
-  const handlePartOfNumber = (char: string) => (currentToken += char)
-
+  const recordNumberTokenToRPNQueue = () =>
+    recordToRPNQueue(currentToken, { isOperator: false, onAfterPush: () => (currentToken = '') })
+  const recordLastOperatorToRPNQueue = () =>
+    operatorStack.length > 0 && recordToRPNQueue(operatorStack.pop()!, { isOperator: true })
+  const charIsNumberToken = (char: string) => /\d|\./.test(char)
+  const handleNumberToken = (char: string) => (currentToken += char)
   const charIsSpace = (char: string) => /\s/.test(char)
-  const handleSpace = (char: string) => currentToken !== '' && rpn.push(currentToken) && (currentToken = '')
-
-  const charIsOperator = (char: string) => operators.hasOwnProperty(char)
+  const handleSpace = (char: string) => recordNumberTokenToRPNQueue()
+  const charIsOperator = (char: string) => {
+    const isKnownOperator = operators.hasOwnProperty(char)
+    return isKnownOperator
+  }
   const handleOperator = (char: string) => {
+    recordNumberTokenToRPNQueue()
     while (operatorStack.length > 0 && operators[operatorStack[operatorStack.length - 1]] >= operators[char]) {
-      rpn.push(operatorStack.pop()!)
+      recordLastOperatorToRPNQueue()
     }
     operatorStack.push(char)
   }
@@ -193,7 +137,7 @@ export function toRPN(expression: string): string[] {
   const charIsRightParenthesis = (char: string) => char === ')'
   const handleRightParenthesis = (char: string) => {
     while (operatorStack[operatorStack.length - 1] !== '(') {
-      rpn.push(operatorStack.pop()!)
+      recordLastOperatorToRPNQueue()
     }
     // now the top of the stack is '('
     operatorStack.pop()
@@ -201,7 +145,7 @@ export function toRPN(expression: string): string[] {
 
   for (const char of expression) {
     switchCase(char, [
-      [charIsPartOfNumber, handlePartOfNumber],
+      [charIsNumberToken, handleNumberToken],
       [charIsSpace, handleSpace],
       [charIsOperator, handleOperator],
       [charIsLeftParenthesis, handleLeftParenthesis],
@@ -209,12 +153,12 @@ export function toRPN(expression: string): string[] {
     ])
   }
 
-  rpn.push(currentToken) // 将最后一个数字添加到输出队列中
+  recordNumberTokenToRPNQueue() // 将最后一个数字添加到输出队列中
 
   // 将栈中剩余的操作符弹出并添加到输出队列中
   while (operatorStack.length > 0) {
-    rpn.push(operatorStack.pop()!) // 使用非空断言，因为栈中至少有一个元素
+    recordLastOperatorToRPNQueue()
   }
 
-  return rpn // 返回逆波兰表示法的数组形式
+  return rpnQueue // 返回逆波兰表示法的数组形式
 }
