@@ -25,7 +25,7 @@ export function isNumberish(v: unknown): v is Numberish {
  *  '423.12' => { numerator: 42312n, decimal: 2 }
  *  '12' => { numerator: 12n, decimal: 0 }
  */
-export function toNumberishAtomRaw(from: Numberish | { toNumberishAtom: () => NumberishAtom }): NumberishAtomRaw {
+function toNumberishAtomRaw(from: Numberish | { toNumberishAtom: () => NumberishAtom }): NumberishAtomRaw {
   if (isNumberishAtomRaw(from)) return from
   if (isScientificNotation(from)) {
     const [nPart = '', ePart = ''] = String(from).split(/e|E/)

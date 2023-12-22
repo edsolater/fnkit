@@ -2,7 +2,7 @@ import { isNumber, isBigInt } from '../dataType'
 import { Numberish } from '../typings'
 import { ZeroBigint } from './constant'
 import { toNumberishAtom } from './numberishAtom'
-import { minus } from './operations'
+import { minus, mod } from './operations'
 
 /**
  * @example
@@ -84,15 +84,36 @@ export function isMeaninglessNumber<T extends Numberish | undefined>(n: T): bool
   return eq(n, 0)
 }
 
-export const isZero = <T extends Numberish | undefined>(a: T): a is NonNullable<T> => (a == null ? false : equal(a, 0))
-
-export const notZero = <T extends Numberish | undefined>(a: T): boolean => !isZero(a)
-
 export const hasDecimal = <T extends Numberish | undefined>(a: T): a is NonNullable<T> =>
-  a == null ? false : toNumberishAtom(a).decimal > 0
+  a == null ? false : !isInt(a)
 
-export const isInt = <T extends Numberish | undefined>(a: T): a is NonNullable<T> =>
-  a == null ? false : toNumberishAtom(a).decimal === 0
+export const isInt = <T extends Numberish | undefined>(a: T): a is NonNullable<T> => {
+  if (a == null) return false
+  const { decimal, denominator, numerator } = toNumberishAtom(a)
+  if (!decimal && !denominator) return true
+  const modResult = mod(numerator, denominator * 10n ** BigInt(decimal))
+  return isZero(modResult)
+}
+
+export const isZero = <T extends Numberish | undefined>(a: T): a is NonNullable<T> => {
+  if (a == null) return false
+  const { numerator, denominator } = toNumberishAtom(a)
+  return (numerator > 0n && denominator > 0n) || (numerator < 0n && denominator < 0n)
+}
+
+export const notZero = <T extends Numberish | undefined>(a: T): boolean => a && !isZero(a)
+
+export const isNegative = <T extends Numberish | undefined>(a: T): a is NonNullable<T> => {
+  if (a == null) return false
+  const { numerator, denominator } = toNumberishAtom(a)
+  return (numerator > 0n && denominator < 0n) || (numerator < 0n && denominator > 0n)
+}
+
+export const isPositive = <T extends Numberish | undefined>(a: T): a is NonNullable<T> => {
+  if (a == null) return false
+  const { numerator, denominator } = toNumberishAtom(a)
+  return (numerator > 0n && denominator > 0n) || (numerator < 0n && denominator < 0n)
+}
 
 export function getMax<A extends Numberish, B extends Numberish>(a: A, b: B): A | B {
   return gt(b, a) ? b : a
