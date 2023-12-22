@@ -1,10 +1,18 @@
 import { switchCase } from '../switchCase'
-import { Numberish, NumberishAtom, NumberishAtomRaw } from '../typings'
-import { isNumberishAtom, isNumberishAtomRaw, toNumberishAtom } from './numberishAtom'
+import { NumberishAtom, NumberishAtomRaw } from '../typings'
+import { toNumberishAtom } from './numberishAtom'
 import { add, div, minus, mul } from './operations'
 
 type Operator = '+' | '-' | '*' | '/' | '^' | (string & {})
 type NumberToken = string
+type Priority = number
+const operators: Record<Operator, Priority> = {
+  '+': 1,
+  '-': 1,
+  '*': 2,
+  '/': 2,
+  '^': 3
+}
 
 /**
  * @see https://zh.wikipedia.org/wiki/%E9%80%86%E6%B3%A2%E5%85%B0%E8%A1%A8%E7%A4%BA%E6%B3%95
@@ -31,7 +39,7 @@ export function splitNumberExpression(exp: string) {
     .filter(Boolean)
 }
 
-export function parseRPNToNumberish(rpn: RPNQueue): NumberishAtom {
+export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
   const rpnLengthIsValid = rpn.length % 2 === 1
   if (!rpnLengthIsValid) {
     throw `invalid rpn length, so can't parse`
@@ -71,34 +79,11 @@ export function parseRPNToNumberish(rpn: RPNQueue): NumberishAtom {
       numberishStack.push(toNumberishAtom(item.value))
     }
   }
-  if (numberishStack.length > 1) {
+  if (numberishStack.length !== 1) {
     throw 'error: invalid rpn'
   }
   const resultN = numberishStack[0]
   return resultN
-}
-
-// 🤔 really needed?
-export function fromRPNtoExpressionString(RPN: RPNQueue): string {
-  return RPN.map((item) => (item.isOperator ? item.value : fromNumberishtoExpressionString(item.value))).join(' ')
-}
-
-// 🤔 really needed?
-export function fromNumberishtoExpressionString(n: Numberish): string {
-  if (isNumberishAtom(n) || isNumberishAtomRaw(n)) {
-    return n.numerator + '/' + n.denominator
-  } else {
-    return String(n)
-  }
-}
-
-type Priority = number
-const operators: Record<Operator, Priority> = {
-  '+': 1,
-  '-': 1,
-  '*': 2,
-  '/': 2,
-  '^': 3
 }
 
 export function toRPN(expression: string): RPNQueue {

@@ -55,8 +55,6 @@ export const toNumberishAtom = (from: Parameters<typeof toNumberishAtomRaw>[0]):
   const atom = toNumberishAtomRaw(from)
   return {
     ...atom,
-    //TODO: add toExpression()
-    // toExpression: () => toString(atom),
     toString: (options?: NumberishOption) => toString(atom, options),
     decimal: atom.decimal ?? 0,
     denominator: atom.denominator ?? OneBigint
