@@ -1,6 +1,6 @@
 import { Numberish, NumberishAtom } from '../typings/constants'
 import { NumberishOption, toBigint, toNumber } from './changeFormats'
-import { isInt, isZero } from './compare'
+import { isInt, isZero } from './selfIs'
 import { TenBigint } from './constant'
 import { toNumberishAtom } from './numberishAtom'
 
@@ -150,8 +150,10 @@ export function divideMod(a: Numberish, b: Numberish): [divisior: bigint, mod: N
  * @param b if b is int or zero, always ok. or it must can cover to js pure number
  */
 export function pow(a: Numberish, b: Numberish): NumberishAtom {
-  const bIsZero = isZero(b)
-  if (bIsZero) return toNumberishAtom(1)
+  if (a === 1 || a === 1n || a === '1') return toNumberishAtom(1)
+  if (a === 0 || a === 0n || a === '0') return toNumberishAtom(0)
+  if (b === 1 || b === 1n || b === '1') return toNumberishAtom(a)
+  if (b === 0 || b === 0n || b === '0') return toNumberishAtom(1)
 
   const bIsInt = isInt(b)
 

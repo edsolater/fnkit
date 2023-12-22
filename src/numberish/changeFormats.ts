@@ -1,3 +1,4 @@
+import { isNumber } from '../dataType'
 import { Numberish, NumberishAtom } from '../typings'
 import { OneBigint, TenBigint } from './constant'
 import { toNumberishAtom } from './numberishAtom'
@@ -56,7 +57,7 @@ export function toBigint(from: Numberish | NumberishAtom): bigint {
  *
  */
 export function toNumber(from: Numberish | NumberishAtom): number {
-  const n = Number(toString(from))
+  const n = isNumber(from) ? from : Number(toString(from))
   if (n > Number.MAX_SAFE_INTEGER) {
     console.error('toNumber error, bigger than MAX_SAFE_INTEGER')
     return Number.MAX_SAFE_INTEGER

@@ -3,7 +3,7 @@ import { NumberishOption } from '../numberish'
 export type Primitive = boolean | number | string | bigint | symbol | null | undefined
 export type StringNumber = string
 export type NoNullablePrimitive = NonNullable<Primitive>
-export type Numberish = number | string | bigint | NumberishAtom | NumberishAtomRaw
+export type Numberish = number | string | bigint | NumberishAtom | NumberishAtomRaw | { toNumberish: () => Numberish }
 export type NumberishAtom = { toString: (options?: NumberishOption) => string } & Required<NumberishAtomRaw>
 /** value is numerator / (denominator * 10 ^ decimal) */
 export type NumberishAtomRaw = { decimal?: number; numerator: bigint; denominator?: bigint }
