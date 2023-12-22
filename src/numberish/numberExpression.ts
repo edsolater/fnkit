@@ -2,6 +2,7 @@
  * @see https://m.xp.cn/b.php/107696.html
  */
 
+import { switchCase } from '../switchCase'
 import { Numberish, NumberishAtom, NumberishAtomRaw } from '../typings'
 import { isNumberishAtom, isNumberishAtomRaw, toNumberishAtom } from './numberishAtom'
 import { add, div, minus, mul } from './operations'
@@ -44,7 +45,7 @@ type RPNItem =
 export function splitFromNormalString(exp: string) {
   return exp
     .replace(/\s+/g, '')
-    .split(/((?<!(?:^|\())\+|(?<!(?:^|\())-|\*|\/|\(|\))/)
+    .split(/((?<!(?:^|\())\+|(?<!(?:^|\())-|\*|\/|\(|\))/) // to complicated
     .filter(Boolean)
 }
 
@@ -142,10 +143,12 @@ export function parseRPNToNumberish(rpn: RPNQueue): NumberishAtom {
   return resultN
 }
 
+// 🤔 really needed?
 export function fromRPNtoExpressionString(RPN: RPNQueue): string {
   return RPN.map((item) => (item.isOperator ? item.value : fromNumberishtoExpressionString(item.value))).join(' ')
 }
 
+// 🤔 really needed?
 export function fromNumberishtoExpressionString(n: Numberish): string {
   if (isNumberishAtom(n) || isNumberishAtomRaw(n)) {
     return n.numerator + '/' + n.denominator
@@ -156,7 +159,9 @@ export function fromNumberishtoExpressionString(n: Numberish): string {
 
 /** 💩: still wrong */
 export function toRPN(expression: string): string[] {
-  const operators = {
+  type Word = '+' | '-' | '*' | '/' | '^'
+  type Priority = number
+  const operators: Record<Word, Priority> = {
     '+': 1,
     '-': 1,
     '*': 2,
@@ -164,42 +169,52 @@ export function toRPN(expression: string): string[] {
     '^': 3
   }
 
-  const stack: string[] = []
-  const output: string[] = []
+  const operatorStack: string[] = []
+  const rpn: string[] = []
   let currentToken = ''
 
-  for (const char of expression) {
-    const charIsPartOfNumber = /\d/.test(char)
-    if (charIsPartOfNumber) {
-      currentToken += char
-    } else if (/\s/.test(char)) {
-      // 如果是空格字符，则检查当前令牌是否为有效数字，并将其添加到输出队列中
-      if (currentToken !== '') {
-        output.push(currentToken)
-        currentToken = ''
-      }
-    } else if (operators.hasOwnProperty(char)) {
-      // 如果是操作符，则将其与栈顶操作符进行比较，直到栈顶操作符的优先级低于或等于当前操作符的优先级为止
-      while (stack.length > 0 && operators[stack[stack.length - 1]] >= operators[char]) {
-        output.push(stack.pop()!) // 使用非空断言，因为栈中至少有一个元素
-      }
-      stack.push(char) // 将当前操作符压入栈中
-    } else if (char === '(') {
-      // 如果是左括号，则将其压入栈中
-      stack.push(char)
-    } else if (char === ')') {
-      // 如果是右括号，则将栈顶操作符弹出并添加到输出队列中，直到遇到左括号为止
-      while (stack[stack.length - 1] !== '(') {
-        output.push(stack.pop()!) // 使用非空断言，因为栈中至少有一个元素
-      }
-      stack.pop() // 弹出左括号，但不将其添加到输出队列中
+  const charIsPartOfNumber = (char: string) => /\d|\./.test(char)
+  const handlePartOfNumber = (char: string) => (currentToken += char)
+
+  const charIsSpace = (char: string) => /\s/.test(char)
+  const handleSpace = (char: string) => currentToken !== '' && rpn.push(currentToken) && (currentToken = '')
+
+  const charIsOperator = (char: string) => operators.hasOwnProperty(char)
+  const handleOperator = (char: string) => {
+    while (operatorStack.length > 0 && operators[operatorStack[operatorStack.length - 1]] >= operators[char]) {
+      rpn.push(operatorStack.pop()!)
     }
+    operatorStack.push(char)
   }
+
+  const charIsLeftParenthesis = (char: string) => char === '('
+  const handleLeftParenthesis = (char: string) => operatorStack.push(char)
+
+  const charIsRightParenthesis = (char: string) => char === ')'
+  const handleRightParenthesis = (char: string) => {
+    while (operatorStack[operatorStack.length - 1] !== '(') {
+      rpn.push(operatorStack.pop()!)
+    }
+    // now the top of the stack is '('
+    operatorStack.pop()
+  }
+
+  for (const char of expression) {
+    switchCase(char, [
+      [charIsPartOfNumber, handlePartOfNumber],
+      [charIsSpace, handleSpace],
+      [charIsOperator, handleOperator],
+      [charIsLeftParenthesis, handleLeftParenthesis],
+      [charIsRightParenthesis, handleRightParenthesis]
+    ])
+  }
+
+  rpn.push(currentToken) // 将最后一个数字添加到输出队列中
 
   // 将栈中剩余的操作符弹出并添加到输出队列中
-  while (stack.length > 0) {
-    output.push(stack.pop()!) // 使用非空断言，因为栈中至少有一个元素
+  while (operatorStack.length > 0) {
+    rpn.push(operatorStack.pop()!) // 使用非空断言，因为栈中至少有一个元素
   }
 
-  return output // 返回逆波兰表示法的数组形式
+  return rpn // 返回逆波兰表示法的数组形式
 }
