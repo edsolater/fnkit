@@ -1,11 +1,12 @@
 import { BasicNumberish, Numberish, NumberishAtom, NumberishAtomRaw } from '../typings/constants'
 import { NumberishOption, toBigint, toNumber } from './changeFormats'
-import { isInt, isZero } from './selfIs'
 import { TenBigint } from './constant'
 import { toNumberishAtom, toNumberishAtomRaw, toString } from './numberishAtom'
+import { isInt } from './selfIs'
 
 /**
  * 1 + 2 = 3
+ * @todo should test performance
  * @example
  * add('9007199254740991.4', '112.4988') //=> '9007199254741103.8988'
  * @todo should just add virculy
