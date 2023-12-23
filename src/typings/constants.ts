@@ -8,7 +8,7 @@ export type Numberish =
   | number
   | bigint
   | StringNumber
-  // | MathExpression
+  | MathExpression
   | NumberishAtom
   | Omit<NumberishAtomRaw, 'denominator' | 'decimal'>
   | { toNumberish: () => Numberish }
@@ -22,17 +22,25 @@ export type BasicNumberish =
   | Omit<NumberishAtomRaw, 'denominator' | 'decimal'>
   | { toNumberish: () => Numberish }
 
-type NumberishAction = {
-  operator: '+' /* basicAdd */ | '-' /* basicMinus */ | '*' /* basicMul */ | '/' /* basicDivide */ | '^' /* basicPow */
-  tokenB: Numberish
-}
+export type NumberishAction =
+  | {
+      type:
+        | 'add' /* basicAdd */
+        | 'minus' /* basicMinus */
+        | 'multiply' /* basicMul */
+        | 'divide' /* basicDivide */
+        | 'pow' /* basicPow */
+      numberishB: Numberish
+    }
+  | {
+      type: 'reciprocal' /* basicReciprocal */
+    }
 export type NumberishAtom = {
   decimal: number
   numerator: bigint
   denominator: bigint
   /** RPN-like */
-  cachedOperations: NumberishAction[]
-  toString: (options?: NumberishOption) => string
+  carriedOperations?: NumberishAction[]
 }
 
 /** value is numerator / (denominator * 10 ^ decimal) */

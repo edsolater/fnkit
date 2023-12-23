@@ -4,7 +4,7 @@
 
 import { fall } from '../fall'
 import { Numberish } from '../typings'
-import { toString } from './changeFormats'
+import { toString } from './numberishAtom'
 import { toFixedDecimal } from './utils'
 
 export type FormatOptions = {

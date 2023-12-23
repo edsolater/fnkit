@@ -1,6 +1,7 @@
+import { isString } from '../dataType'
 import { switchCase } from '../switchCase'
 import { MathExpression, NumberishAtom, NumberishAtomRaw } from '../typings'
-import { toNumberishAtom } from './numberishAtom'
+import { toNumberishAtom, toNumberishAtomRaw } from './numberishAtom'
 import { add, div, minus, mul, pow } from './operations'
 
 type Operator = '+' | '-' | '*' | '/' | '^' | (string & {})
@@ -29,7 +30,7 @@ export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
     throw `invalid rpn length, so can't parse`
   }
 
-  const numberishStack = [] as NumberishAtom[]
+  const numberishStack: NumberishAtom[] = []
   for (const item of rpn) {
     if (item.isOperator) {
       const num2 = numberishStack.pop()
@@ -60,7 +61,7 @@ export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
         }
       }
     } else {
-      numberishStack.push(toNumberishAtom(item.value))
+      numberishStack.push(toNumberishAtomRaw(item.value))
     }
   }
   if (numberishStack.length !== 1) {
@@ -84,15 +85,18 @@ export function toRPN(expression: MathExpression): RPNQueue {
     recordToRPNQueue(currentToken, { isOperator: false, onAfterPush: () => (currentToken = '') })
   const recordLastOperatorToRPNQueue = () =>
     operatorStack.length > 0 && recordToRPNQueue(operatorStack.pop()!, { isOperator: true })
-  const charIsNumberToken = (char: string) => /\d|\./.test(char)
-  const handleNumberToken = (char: string) => (currentToken += char)
-  const charIsSpace = (char: string) => /\s/.test(char)
-  const handleSpace = (char: string) => recordNumberTokenToRPNQueue()
-  const charIsOperator = (char: string) => {
+  type charLoopParams = [string | undefined, string, string | undefined]
+
+  const charIsNumberToken = ([prevChar, char, nextChar]: charLoopParams) =>
+    /\d|\./.test(char) || (char === '-' && nextChar && /\d/.test(nextChar))
+  const handleNumberToken = ([prevChar, char, nextChar]: charLoopParams) => (currentToken += char)
+  const charIsSpace = ([prevChar, char, nextChar]: charLoopParams) => /\s/.test(char)
+  const handleSpace = ([prevChar, char, nextChar]: charLoopParams) => recordNumberTokenToRPNQueue()
+  const charIsOperator = ([prevChar, char, nextChar]: charLoopParams) => {
     const isKnownOperator = operators.hasOwnProperty(char)
     return isKnownOperator
   }
-  const handleOperator = (char: string) => {
+  const handleOperator = ([prevChar, char, nextChar]: charLoopParams) => {
     recordNumberTokenToRPNQueue()
     while (operatorStack.length > 0 && operators[operatorStack[operatorStack.length - 1]] >= operators[char]) {
       recordLastOperatorToRPNQueue()
@@ -100,11 +104,11 @@ export function toRPN(expression: MathExpression): RPNQueue {
     operatorStack.push(char)
   }
 
-  const charIsLeftParenthesis = (char: string) => char === '('
-  const handleLeftParenthesis = (char: string) => operatorStack.push(char)
+  const charIsLeftParenthesis = ([prevChar, char, nextChar]: charLoopParams) => char === '('
+  const handleLeftParenthesis = ([prevChar, char, nextChar]: charLoopParams) => operatorStack.push(char)
 
-  const charIsRightParenthesis = (char: string) => char === ')'
-  const handleRightParenthesis = (char: string) => {
+  const charIsRightParenthesis = ([prevChar, char, nextChar]: charLoopParams) => char === ')'
+  const handleRightParenthesis = ([prevChar, char, nextChar]: charLoopParams) => {
     while (operatorStack[operatorStack.length - 1] !== '(') {
       recordLastOperatorToRPNQueue()
     }
@@ -112,8 +116,12 @@ export function toRPN(expression: MathExpression): RPNQueue {
     operatorStack.pop()
   }
 
-  for (const char of expression) {
-    switchCase(char, [
+  for (let i = 0; i < expression.length; i++) {
+    const prevChar = expression[i - 1] as string | undefined
+    const char = expression[i]
+    const nextChar = expression[i + 1] as string | undefined
+    // @ts-ignore
+    switchCase([prevChar, char, nextChar] as const, [
       [charIsNumberToken, handleNumberToken],
       [charIsSpace, handleSpace],
       [charIsOperator, handleOperator],
@@ -130,4 +138,8 @@ export function toRPN(expression: MathExpression): RPNQueue {
   }
 
   return rpnQueue // 返回逆波兰表示法的数组形式
+}
+
+export function isNumberishExpression(s: any): s is String {
+  return isString(s) && (s.includes('+') || s.includes('-') || s.includes('*') || s.includes('/') || s.includes('^'))
 }

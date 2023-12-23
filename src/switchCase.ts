@@ -12,7 +12,7 @@ export function switchCase<T, R>(
   rules: Partial<Map<T | ((key: T) => boolean), R | ((key: T) => R)>> /** only invoked if none matched */,
   getDefaultValue?: R | ((key: T) => R)
 ): R | undefined
-export function switchCase<T, R>(
+export function switchCase<T extends any, R>(
   key: T,
   rules: [matchCase: T | ((key: T) => boolean), returnValue: R | ((key: T) => R)][] /** only invoked if none matched */,
   getDefaultValue?: R | ((key: T) => R)

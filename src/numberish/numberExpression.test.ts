@@ -1,5 +1,5 @@
-import { toString } from './changeFormats'
 import { parseRPNToNumberishAtom, toRPN } from './numberExpression'
+import { toString } from './numberishAtom'
 
 test('numberExpression', () => {
   const expression = '3.1 + 4 * 2 - ( 1 - 5 ) ^ 2 ^ 3'

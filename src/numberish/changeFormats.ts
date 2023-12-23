@@ -1,7 +1,7 @@
 import { isNumber } from '../dataType'
 import { Numberish, NumberishAtom } from '../typings'
 import { OneBigint, TenBigint } from './constant'
-import { toNumberishAtom } from './numberishAtom'
+import { parseCarriedActions, toNumberishAtom, toNumberishAtomRaw, toString } from './numberishAtom'
 import { padZeroR, shakeTailingZero } from './utils'
 
 export type NumberishOption = {
@@ -14,33 +14,7 @@ export type NumberishOption = {
    * @default 6
    */ maxDecimalPlace?: number
 }
-/**
- * @example
- * toString(3) //=> '3'
- * toString('.3') //=> '0.3'
- * toString('8n') //=> '8'
- * toString({ decimal: 2, all: '42312' }) => '423.12'
- * toString({ decimal: 0, all: '12' }) //=> '12'
- * toString({ decimal: 7, all: '40000000' }) //=> '4'
- */
-export function toString(from: Numberish, options?: NumberishOption): string {
-  const { decimal, numerator, denominator } = toNumberishAtom(from)
-  if (denominator === OneBigint) {
-    if (decimal === 0) return String(numerator)
-    if (decimal < 0) return padZeroR(String(numerator), -decimal)
-    return shakeTailingZero(
-      [String(numerator).slice(0, -decimal) || '0', '.', String(numerator).padStart(decimal, '0').slice(-decimal)].join(
-        ''
-      )
-    )
-  } else {
-    const decimalPlace = options?.maxDecimalPlace ?? 6
-    const finalNumerator = numerator * TenBigint ** BigInt(decimalPlace)
-    const finalDenominator = TenBigint ** BigInt(decimal) * denominator
-    const finalN = String(finalNumerator / finalDenominator)
-    return shakeTailingZero(`${finalN.slice(0, -decimalPlace)}.${finalN.slice(-decimalPlace)}`)
-  }
-}
+
 /**
  * CAUTION : if original number have decimal part, it will lost
  */

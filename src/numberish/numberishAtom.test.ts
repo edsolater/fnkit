@@ -1,5 +1,5 @@
-import { toNumberishAtom } from './numberishAtom'
+import { toNumberishAtom, toString } from './numberishAtom'
 
 test('numberish: create from expression', () => {
-  expect(toNumberishAtom('3/2')).toBe({ numerator: 3n, decimal: 0, denominator: 2n })
+  expect(toString(toNumberishAtom('3/2'))).toBe('1.5')
 })
