@@ -21,7 +21,6 @@ export function isInt<T extends Numberish | undefined>(a: T): a is NonNullable<T
   if (a == null) return false
   // should judger number | stringNumber as faster as it can
   const { decimal, denominator, numerator } = fromNumberishAtomToFraction(toNumberishAtom(a))
-  console.log('erw', decimal, denominator, numerator)
   // if (decimal === 0 && denominator === 1n) return true
   const modResult = decimal ? mod(numerator, denominator * 10n ** BigInt(decimal)) : mod(numerator, denominator)
   return isZero(modResult)

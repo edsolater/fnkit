@@ -34,7 +34,6 @@ export function excutiveAdd(a: BasicNumberish, b: BasicNumberish): Fraction {
     return toBasicFraction({
       numerator: numratorA + numratorB,
       denominator: denominatorA,
-      decimal: 0
     })
   } else if (denominatorA === denominatorB) {
     return toBasicFraction({
@@ -181,9 +180,7 @@ export function modS(...params: Parameters<typeof mod>): string {
  */
 export function divideMod(a: Numberish, b: Numberish): [divisior: bigint, mod: NumberishAtom] {
   const n = divide(a, b)
-  console.log('n00: ', a, b,Array.isArray(n.carriedOperations))
   const { denominator, decimal = 0 } = fromNumberishAtomToFraction(n)
-  console.log('denominator: ', denominator)
   const divisior = n.numerator / (denominator * TenBigint ** BigInt(decimal))
   const rest = minus(a, multiply(divisior, b))
   return [divisior, rest]

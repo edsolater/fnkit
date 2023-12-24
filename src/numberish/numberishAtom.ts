@@ -25,7 +25,7 @@ import {
   mergeObjects,
   omit
 } from '..'
-import { OneBigint, TenBigint, numberishAtomZero } from './constant'
+import { OneBigint, TenBigint, fractionZero } from './constant'
 import { isNumberishExpression, parseRPNToNumberishAtom, toRPN } from './numberExpression'
 import { padZeroR, shakeTailingZero } from './utils'
 
@@ -70,11 +70,6 @@ export const fromNumberishAtomToFraction = parseCarriedActions
 //TODO: `toFaction` (which accept numberExpression) is higher than `toBasicFraction()`
 export function toBasicFraction(from: BasicNumberish): Fraction {
   if (isBasicFraction(from)) return from
-  if (isScientificNotation(from)) {
-    const [nPart = '', ePart = ''] = String(from).split(/e|E/)
-    const nPartNumberishAtom = toNumberishAtomRawFromString(nPart)
-    return { ...nPartNumberishAtom, decimal: (nPartNumberishAtom.decimal ?? 0) + -Number(ePart) }
-  }
   if (isNumber(from)) {
     try {
       // for scientific notation number can be format like 1.34e+24
@@ -84,6 +79,11 @@ export function toBasicFraction(from: BasicNumberish): Fraction {
     }
   }
   if (isBigInt(from)) return toNumberishAtomRawFromBigInt(from)
+  if (isScientificNotation(from)) {
+    const [nPart = '', ePart = ''] = String(from).split(/e|E/)
+    const nPartNumberishAtom = toNumberishAtomRawFromString(nPart)
+    return { ...nPartNumberishAtom, decimal: (nPartNumberishAtom.decimal ?? 0) + -Number(ePart) }
+  }
   return toNumberishAtomRawFromString(String(from))
 }
 
@@ -118,9 +118,7 @@ export function parseCarriedActions(n: NumberishAtom): Fraction {
     return { denominator: 1n, ...n } satisfies Fraction
   }
   if (!n.carriedOperations) return omit(n, 'carriedOperations') as Fraction
-  console.log('n', isArray(n.carriedOperations))
   return n.carriedOperations.reduce((n, action) => {
-    console.log('action: ', action)
     const bAtomRaw =
       action?.numberishB != null
         ? isBasicNumberish(action.numberishB)
@@ -185,5 +183,5 @@ export function toString(from: Numberish, options?: NumberishOption): string {
 
 /** aim: easy to read code */
 export function createNumberishFromZero(options?: CreateNumberishAtomOptions): NumberishAtom {
-  return toNumberishAtom(numberishAtomZero, options)
+  return toNumberishAtom(fractionZero, options)
 }

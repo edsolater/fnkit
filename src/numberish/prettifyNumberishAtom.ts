@@ -78,7 +78,4 @@ function prettifyNumberishAtomWith10(n: { numerator: bigint; denominator: bigint
 function prettifyNumberishAtom(n: Fraction): NumberishAtom {
   return toNumberishAtom(prettifyNumberishAtomWith10(prettifyNumberishAtomWithDecimal(n)))
 }
-console.log(prettifyNumberishAtom({ numerator: 10n, denominator: 133n, decimal: 2 }))
-console.log(prettifyNumberishAtom({ numerator: 100n, denominator: 133000n, decimal: 1 }))
-console.log(prettifyNumberishAtom({ numerator: 10n, denominator: 13300n, decimal: -2 }))
-console.log(prettifyNumberishAtom({ numerator: 100n, denominator: 133n, decimal: -1 }))
+
