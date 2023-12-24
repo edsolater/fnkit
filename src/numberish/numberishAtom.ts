@@ -5,6 +5,11 @@
 
 import {
   BasicNumberish,
+  Fraction,
+  Numberish,
+  NumberishAction,
+  NumberishAtom,
+  NumberishOption,
   concat,
   excutiveAdd,
   excutiveDivide,
@@ -12,36 +17,33 @@ import {
   excutiveMultiply,
   excutivePow,
   excutiveReciprocal,
+  isArray,
   isBigInt,
   isNumber,
   isObject,
   isString,
   mergeObjects,
-  Numberish,
-  NumberishAction,
-  NumberishAtom,
-  Fraction,
-  NumberishOption,
-  omit,
-  isArray
+  omit
 } from '..'
-import { hasProperty } from '../compare'
-import { numberishAtomZero, OneBigint, TenBigint } from './constant'
+import { OneBigint, TenBigint, numberishAtomZero } from './constant'
 import { isNumberishExpression, parseRPNToNumberishAtom, toRPN } from './numberExpression'
 import { padZeroR, shakeTailingZero } from './utils'
 
 export const stringNumberRegex = /(?<sign>-|\+?)(?<int>\d*)\.?(?<dec>\d*)/
 
-export const isFraction = (value: any): value is Fraction =>
-  isObject(value) && 'numerator' in value && 'decimal' in value && 'denominator' in value
+export function isBasicFraction(value: any): value is Fraction {
+  return isObject(value) && 'numerator' in value && 'denominator' in value
+}
 
-export const isNumberishAtom = (value: any): value is NumberishAtom => isObject(value) && 'numerator' in value
+export function isNumberishAtom(value: any): value is NumberishAtom {
+  return isObject(value) && 'numerator' in value
+}
 
 export function isNumberish(v: unknown): v is Numberish {
-  return isNumber(v) || isString(v) || isNumberishAtom(v) || isFraction(v)
+  return isNumber(v) || isString(v) || isNumberishAtom(v) || isBasicFraction(v)
 }
 export function isBasicNumberish(v: unknown): v is BasicNumberish {
-  return isNumber(v) || isFraction(v)
+  return isNumber(v) || isBasicFraction(v)
 }
 
 function toNumberishAtomRawFromString(str: string): Fraction {
@@ -54,8 +56,9 @@ function toNumberishAtomRawFromBigInt(n: bigint): Fraction {
 }
 
 const scientificNotationRegex = /^[+-]?\d+\.?\d*e[+-]?\d+$/
-const isScientificNotation = (str: any): boolean =>
-  (isString(str) || isNumber(str)) && scientificNotationRegex.test(String(str))
+function isScientificNotation(str: any): boolean {
+  return (isString(str) || isNumber(str)) && scientificNotationRegex.test(String(str))
+}
 
 export const fromNumberishAtomToFraction = parseCarriedActions
 /**
@@ -64,8 +67,9 @@ export const fromNumberishAtomToFraction = parseCarriedActions
  *  '423.12' => { numerator: 42312n, denominator: 1n, decimal: 2 }
  *  '12' => { numerator: 12n, denominator: 1n, decimal: 0 }
  */
+//TODO: `toFaction` (which accept numberExpression) is higher than `toBasicFraction()`
 export function toBasicFraction(from: BasicNumberish): Fraction {
-  if (isFraction(from)) return from
+  if (isBasicFraction(from)) return from
   if (isScientificNotation(from)) {
     const [nPart = '', ePart = ''] = String(from).split(/e|E/)
     const nPartNumberishAtom = toNumberishAtomRawFromString(nPart)
@@ -91,7 +95,7 @@ type CreateNumberishAtomOptions = {
  * toNumberishAtom(1e13) //=> { numerator: 10000000000000n, decimal: 0, denominator: 1n , toString: () => '10000000000000' }
  * @todo numberish Atom is higher than add/minus/multiply/divide/pow
  */
-export const toNumberishAtom = (from: Numberish, options?: CreateNumberishAtomOptions): NumberishAtom => {
+export function toNumberishAtom(from: Numberish, options?: CreateNumberishAtomOptions): NumberishAtom {
   if (isNumberishAtom(from))
     return options?.operations
       ? { ...from, carriedOperations: concat(from.carriedOperations, options.operations) }
@@ -110,7 +114,7 @@ export const toNumberishAtom = (from: Numberish, options?: CreateNumberishAtomOp
  */
 export function parseCarriedActions(n: NumberishAtom): Fraction {
   if (!n.carriedOperations) {
-    if (isFraction(n)) return n
+    if (isBasicFraction(n)) return n
     return { denominator: 1n, ...n } satisfies Fraction
   }
   if (!n.carriedOperations) return omit(n, 'carriedOperations') as Fraction
@@ -158,6 +162,9 @@ export function parseCarriedActions(n: NumberishAtom): Fraction {
  * toString({ decimal: 7, all: '40000000' }) //=> '4'
  */
 export function toString(from: Numberish, options?: NumberishOption): string {
+  if (isNumber(from)) return String(from)
+  if (isBigInt(from)) return String(from)
+  if (isString(from) && !isNumberishExpression(from)) return from
   const { decimal = 0, numerator, denominator } = fromNumberishAtomToFraction(toNumberishAtom(from))
   if (denominator === OneBigint) {
     if (decimal === 0) return String(numerator)
