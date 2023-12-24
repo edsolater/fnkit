@@ -13,8 +13,8 @@ import { AnyObj } from '../typings'
 export function concat<T, D>(arr1: T[] | undefined, arr2: D[] | undefined): (T | D)[]
 export function concat<T extends AnyObj | undefined, D extends AnyObj | undefined>(obj1: T, obj2: D): T & D
 export function concat(collection, collection2) {
-  if (isArray(collection)) {
-    return [...(collection ?? []), ...(collection2 ?? [])]
+  if (isArray(collection) || collection == null && isArray(collection2)) {
+    return (collection??[]).concat(collection2 ?? [])
   } else {
     return { ...collection, ...collection2 }
   }

@@ -1,7 +1,7 @@
 import { isString } from '../dataType'
 import { switchCase } from '../switchCase'
-import { MathExpression, NumberishAtom, NumberishAtomRaw } from '../typings'
-import { toNumberishAtom, toNumberishAtomRaw } from './numberishAtom'
+import { MathExpression, NumberishAtom, Fraction } from '../typings'
+import { toNumberishAtom, toBasicFraction } from './numberishAtom'
 import { add, div, minus, mul, pow } from './operations'
 
 type Operator = '+' | '-' | '*' | '/' | '^' | (string & {})
@@ -22,7 +22,7 @@ type RPNQueue = RPNItem[]
 
 type RPNItem =
   | { isOperator: true; value: Operator }
-  | { isOperator: false; value: number | NumberToken | bigint | NumberishAtomRaw }
+  | { isOperator: false; value: number | NumberToken | bigint | Fraction }
 
 export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
   const rpnLengthIsValid = rpn.length % 2 === 1
@@ -61,7 +61,7 @@ export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
         }
       }
     } else {
-      numberishStack.push(toNumberishAtomRaw(item.value))
+      numberishStack.push(toBasicFraction(item.value))
     }
   }
   if (numberishStack.length !== 1) {

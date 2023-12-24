@@ -1,5 +1,3 @@
-import { NumberishOption } from '../numberish'
-
 export type Primitive = boolean | number | string | bigint | symbol | null | undefined
 export type StringNumber = string
 export type MathExpression = string
@@ -10,42 +8,33 @@ export type Numberish =
   | StringNumber
   | MathExpression
   | NumberishAtom
-  | Omit<NumberishAtomRaw, 'denominator' | 'decimal'>
+  | Fraction
   | { toNumberish: () => Numberish }
 
 /** for basic operations */
-export type BasicNumberish =
-  | number
-  | bigint
-  | StringNumber
-  | NumberishAtom
-  | Omit<NumberishAtomRaw, 'denominator' | 'decimal'>
-  | { toNumberish: () => Numberish }
+export type BasicNumberish = number | bigint | StringNumber | Fraction | { toNumberish: () => Numberish }
 
-export type NumberishAction =
-  | {
-      type:
-        | 'add' /* basicAdd */
-        | 'minus' /* basicMinus */
-        | 'multiply' /* basicMul */
-        | 'divide' /* basicDivide */
-        | 'pow' /* basicPow */
-      numberishB: Numberish
-    }
-  | {
-      type: 'reciprocal' /* basicReciprocal */
-    }
+export type NumberishAction = {
+  type:
+    | 'add' /* basicAdd */
+    | 'minus' /* basicMinus */
+    | 'multiply' /* basicMul */
+    | 'divide' /* basicDivide */
+    | 'pow' /* basicPow */
+    | 'reciprocal' /* basicReciprocal */
+  numberishB?: Numberish
+}
 export type NumberishAtom = {
-  decimal: number
+  decimal?: number
   numerator: bigint
-  denominator: bigint
+  denominator?: bigint
   /** RPN-like */
   carriedOperations?: NumberishAction[]
 }
 
 /** value is numerator / (denominator * 10 ^ decimal) */
-export type NumberishAtomRaw = {
-  decimal: number
+export type Fraction = {
+  decimal?: number
   numerator: bigint
   denominator: bigint
 }

@@ -1,4 +1,4 @@
-import { NumberishAtom, NumberishAtomRaw } from '../typings'
+import { NumberishAtom, Fraction } from '../typings'
 import { toNumberishAtom } from './numberishAtom'
 
 function padTailZero(n: string | bigint | number, zeroLength?: number) {
@@ -12,7 +12,7 @@ function getTailZeroLength(n: string | bigint | number) {
  * @example
  * prettifyNumberishAtom({ numerator: 100n, denominator: 133000n, decimal: 1}) //=> { numerator: 100n, denominator: 133000n}
  */
-function prettifyNumberishAtomWithDecimal(n: NumberishAtomRaw): { numerator: bigint; denominator: bigint } {
+function prettifyNumberishAtomWithDecimal(n: Fraction): { numerator: bigint; denominator: bigint } {
   if (!n.decimal) return { numerator: n.numerator, denominator: n.denominator ?? 1n }
 
   let finalNumerator = n.numerator
@@ -75,7 +75,7 @@ function prettifyNumberishAtomWith10(n: { numerator: bigint; denominator: bigint
   }
   return n
 }
-function prettifyNumberishAtom(n: NumberishAtomRaw): NumberishAtom {
+function prettifyNumberishAtom(n: Fraction): NumberishAtom {
   return toNumberishAtom(prettifyNumberishAtomWith10(prettifyNumberishAtomWithDecimal(n)))
 }
 console.log(prettifyNumberishAtom({ numerator: 10n, denominator: 133n, decimal: 2 }))

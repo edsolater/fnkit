@@ -1,7 +1,7 @@
 import { isNumber } from '../dataType'
 import { Numberish, NumberishAtom } from '../typings'
 import { OneBigint, TenBigint } from './constant'
-import { parseCarriedActions, toNumberishAtom, toNumberishAtomRaw, toString } from './numberishAtom'
+import { fromNumberishAtomToFraction, parseCarriedActions, toNumberishAtom, toBasicFraction, toString } from './numberishAtom'
 import { padZeroR, shakeTailingZero } from './utils'
 
 export type NumberishOption = {
@@ -19,7 +19,8 @@ export type NumberishOption = {
  * CAUTION : if original number have decimal part, it will lost
  */
 export function toBigint(from: Numberish | NumberishAtom): bigint {
-  const { decimal, numerator, denominator } = toNumberishAtom(from)
+  const atom = toNumberishAtom(from)
+  const { decimal = 0, numerator, denominator } = fromNumberishAtomToFraction(atom)
   if (decimal === 0) return numerator / denominator
   if (decimal < 0) return BigInt(padZeroR(String(numerator), -decimal)) / denominator
   return BigInt(String(numerator / denominator).slice(0, -decimal) || '0')

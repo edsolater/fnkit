@@ -1,11 +1,13 @@
-import { BasicNumberish, Numberish, NumberishAtom, NumberishAtomRaw } from '../typings/constants'
+import { isArray } from '../dataType'
+import { BasicNumberish, Numberish, NumberishAtom, Fraction } from '../typings/constants'
 import { NumberishOption, toBigint, toNumber } from './changeFormats'
 import { TenBigint } from './constant'
 import {
   createNumberishFromZero,
   toNumberishAtom,
-  toNumberishAtomRaw,
-  toString
+  toBasicFraction,
+  toString,
+  fromNumberishAtomToFraction
 } from './numberishAtom'
 import { isInt } from './selfIs'
 
@@ -24,23 +26,24 @@ export function add(a: Numberish, b: Numberish): NumberishAtom {
     ]
   })
 }
-export function excutiveAdd(a: BasicNumberish, b: BasicNumberish): NumberishAtomRaw {
-  const { decimal: decimalA, numerator: numratorA, denominator: denominatorA } = toNumberishAtomRaw(a)
-  const { decimal: decimalB, numerator: numratorB, denominator: denominatorB } = toNumberishAtomRaw(b)
+export function excutiveAdd(a: BasicNumberish, b: BasicNumberish): Fraction {
+  const { decimal: decimalA = 0, numerator: numratorA, denominator: denominatorA } = toBasicFraction(a)
+  const { decimal: decimalB = 0, numerator: numratorB, denominator: denominatorB } = toBasicFraction(b)
 
   if (denominatorA === denominatorB && decimalA === 0 && decimalB === 0) {
-    return toNumberishAtomRaw({
+    return toBasicFraction({
       numerator: numratorA + numratorB,
-      denominator: denominatorA
+      denominator: denominatorA,
+      decimal: 0
     })
   } else if (denominatorA === denominatorB) {
-    return toNumberishAtomRaw({
+    return toBasicFraction({
       numerator: numratorA * TenBigint ** BigInt(decimalB) + numratorB * TenBigint ** BigInt(decimalA),
       decimal: decimalA + decimalB,
       denominator: denominatorA
     })
   } else {
-    return toNumberishAtomRaw({
+    return toBasicFraction({
       numerator:
         numratorA * TenBigint ** BigInt(decimalB) * denominatorB +
         numratorB * TenBigint ** BigInt(decimalA) * denominatorA,
@@ -66,10 +69,10 @@ export function addS(...params: Parameters<typeof add>): string {
 export function multiply(a: Numberish, b: Numberish): NumberishAtom {
   return toNumberishAtom(a, { operations: [{ type: 'multiply', numberishB: b }] })
 }
-export function excutiveMultiply(a: Numberish, b: Numberish): NumberishAtomRaw {
-  const { decimal: decimalA, numerator: numratorA, denominator: denominatorA } = toNumberishAtomRaw(a)
-  const { decimal: decimalB, numerator: numratorB, denominator: denominatorB } = toNumberishAtomRaw(b)
-  return toNumberishAtomRaw({
+export function excutiveMultiply(a: BasicNumberish, b: BasicNumberish): Fraction {
+  const { decimal: decimalA = 0, numerator: numratorA, denominator: denominatorA } = toBasicFraction(a)
+  const { decimal: decimalB = 0, numerator: numratorB, denominator: denominatorB } = toBasicFraction(b)
+  return toBasicFraction({
     numerator: numratorA * numratorB,
     decimal: decimalA + decimalB,
     denominator: denominatorA * denominatorB
@@ -89,9 +92,9 @@ export var mulS = multiplyS
 export function reciprocal(a: Numberish): NumberishAtom {
   return toNumberishAtom(a, { operations: [{ type: 'reciprocal' }] })
 }
-export function excutiveReciprocal(a: Numberish): NumberishAtomRaw {
-  const { decimal, numerator, denominator } = toNumberishAtomRaw(a)
-  return toNumberishAtomRaw({
+export function excutiveReciprocal(a:BasicNumberish): Fraction {
+  const { decimal = 0, numerator, denominator } = toBasicFraction(a)
+  return toBasicFraction({
     numerator: denominator,
     decimal: -decimal,
     denominator: numerator
@@ -113,7 +116,7 @@ export function minus(a: Numberish, b: Numberish): NumberishAtom {
     ]
   })
 }
-export function excutiveMinus(a: Numberish, b: Numberish): NumberishAtomRaw {
+export function excutiveMinus(a: BasicNumberish, b: BasicNumberish): Fraction {
   return excutiveAdd(a, excutiveMultiply(-1, b))
 }
 
@@ -138,7 +141,7 @@ export function divide(a: Numberish, b: Numberish): NumberishAtom {
     ]
   })
 }
-export function excutiveDivide(a: Numberish, b: Numberish): NumberishAtomRaw {
+export function excutiveDivide(a: BasicNumberish, b: BasicNumberish): Fraction {
   return excutiveMultiply(a, excutiveReciprocal(b))
 }
 export var div = divide
@@ -178,7 +181,10 @@ export function modS(...params: Parameters<typeof mod>): string {
  */
 export function divideMod(a: Numberish, b: Numberish): [divisior: bigint, mod: NumberishAtom] {
   const n = divide(a, b)
-  const divisior = n.numerator / (n.denominator * TenBigint ** BigInt(n.decimal))
+  console.log('n00: ', a, b,Array.isArray(n.carriedOperations))
+  const { denominator, decimal = 0 } = fromNumberishAtomToFraction(n)
+  console.log('denominator: ', denominator)
+  const divisior = n.numerator / (denominator * TenBigint ** BigInt(decimal))
   const rest = minus(a, multiply(divisior, b))
   return [divisior, rest]
 }
@@ -192,21 +198,25 @@ export function pow(a: Numberish, b: Numberish): NumberishAtom {
   return toNumberishAtom(a, { operations: [{ type: 'pow', numberishB: b }] })
 }
 
-export function excutivePow(a: Numberish, b: Numberish): NumberishAtomRaw {
-  if (a === 1 || a === 1n || a === '1') return toNumberishAtomRaw(1)
-  if (a === 0 || a === 0n || a === '0') return toNumberishAtomRaw(0)
-  if (b === 1 || b === 1n || b === '1') return toNumberishAtomRaw(a)
-  if (b === 0 || b === 0n || b === '0') return toNumberishAtomRaw(1)
+export function excutivePow(a: Numberish, b: Numberish): Fraction {
+  if (a === 1 || a === 1n || a === '1') return toBasicFraction(1)
+  if (a === 0 || a === 0n || a === '0') return toBasicFraction(0)
+  if (b === 1 || b === 1n || b === '1') return fromNumberishAtomToFraction(toNumberishAtom(a))
+  if (b === 0 || b === 0n || b === '0') return toBasicFraction(1)
   const bIsInt = isInt(b)
   if (bIsInt) {
-    const { decimal: decimalA, numerator: numratorA, denominator: denominatorA } = toNumberishAtomRaw(a)
+    const {
+      decimal: decimalA = 0,
+      numerator: numratorA,
+      denominator: denominatorA
+    } = fromNumberishAtomToFraction(toNumberishAtom(a))
     const exponent = toBigint(b)
-    return toNumberishAtomRaw({
+    return toBasicFraction({
       numerator: numratorA ** exponent,
       decimal: decimalA ** Number(exponent),
       denominator: denominatorA ** exponent
     })
   } else {
-    return toNumberishAtomRaw(Math.pow(toNumber(a), toNumber(b)))
+    return toBasicFraction(Math.pow(toNumber(a), toNumber(b)))
   }
 }
