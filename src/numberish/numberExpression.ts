@@ -137,6 +137,10 @@ export function toRPN(expression: MathExpression): RPNQueue {
   return rpnQueue 
 }
 
-export function isNumberishExpression(s: any): s is String {
+export function isMathExpression(s: any): s is String {
   return isString(s) && (s.includes('+') || s.includes('-') || s.includes('*') || s.includes('/') || s.includes('^'))
+}
+
+export function isStringNumber(s: any): s is String {
+  return isString(s) && !isMathExpression(s)
 }

@@ -1,7 +1,9 @@
+import { isBigInt, isNumber, isString, isStringNumber } from '../dataType'
 import { Numberish } from '../typings'
 import { ZeroBigint } from './constant'
-import { fromNumberishAtomToFraction, toBasicFraction, toNumberishAtom } from './numberishAtom'
+import { fromNumberishAtomToFraction, toNumberishAtom } from './numberishAtom'
 import { mod } from './operations'
+import { impureNumberish } from './parseNumberish'
 
 export function isMeaningfulNumber<T extends Numberish | undefined>(n: T): n is NonNullable<T> {
   if (n == null) return false
@@ -13,22 +15,31 @@ export function isMeaninglessNumber<T extends Numberish | undefined>(n: T): bool
   return isZero(n)
 }
 
-export function hasDecimal<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
-  return a == null ? false : !isInt(a)
+export function hasDecimal<T extends Numberish | undefined>(v: T): v is NonNullable<T> {
+  return v == null ? false : !isInt(v)
 }
 
-export function isInt<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
-  if (a == null) return false
-  // should judger number | stringNumber as faster as it can
-  const { decimal, denominator, numerator } = fromNumberishAtomToFraction(toNumberishAtom(a))
-  // if (decimal === 0 && denominator === 1n) return true
+export function isInt<T extends Numberish | undefined>(v: T): v is NonNullable<T> {
+  if (v == null) return false
+  const pure = impureNumberish(v)
+  if (isBigInt(pure)) return true
+  if (isNumber(pure)) return Number.isInteger(pure)
+  if (isStringNumber(pure)) return Number.isInteger(Number(pure))
+  const atom = toNumberishAtom(pure)
+  const { decimal, denominator, numerator } = fromNumberishAtomToFraction(atom)
+
   const modResult = decimal ? mod(numerator, denominator * 10n ** BigInt(decimal)) : mod(numerator, denominator)
   return isZero(modResult)
 }
 
-export function isZero<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
-  if (a == null) return false
-  const { numerator, denominator } = fromNumberishAtomToFraction(toNumberishAtom(a))
+export function isZero<T extends Numberish | undefined>(v: T): v is NonNullable<T> {
+  if (v == null) return false
+  const pure = impureNumberish(v)
+  if (pure === 0) return true
+  if (pure === 0n) return true
+  if (pure === '0') return true
+  if (isString(pure) && /^0(?:\.0*)?$/.test(pure)) return true
+  const { numerator, denominator } = fromNumberishAtomToFraction(toNumberishAtom(pure))
   return numerator === ZeroBigint && denominator !== ZeroBigint
 }
 

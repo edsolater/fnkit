@@ -26,7 +26,7 @@ import {
   omit
 } from '..'
 import { OneBigint, TenBigint, fractionZero } from './constant'
-import { isNumberishExpression, parseRPNToNumberishAtom, toRPN } from './numberExpression'
+import { isMathExpression, parseRPNToNumberishAtom, toRPN } from './numberExpression'
 import { padZeroR, shakeTailingZero } from './utils'
 
 export const stringNumberRegex = /(?<sign>-|\+?)(?<int>\d*)\.?(?<dec>\d*)/
@@ -101,7 +101,7 @@ export function toNumberishAtom(from: Numberish, options?: CreateNumberishAtomOp
       ? { ...from, carriedOperations: concat(from.carriedOperations, options.operations) }
       : from
   if (isObject(from) && 'toNumberish' in from) return toNumberishAtom(from.toNumberish(), options)
-  if (isNumberishExpression(from)) {
+  if (isMathExpression(from)) {
     return parseRPNToNumberishAtom(toRPN(from))
   } else {
     return mergeObjects(toBasicFraction(from), { carriedOperations: options?.operations }) as NumberishAtom
@@ -162,7 +162,7 @@ export function parseCarriedActions(n: NumberishAtom): Fraction {
 export function toString(from: Numberish, options?: NumberishOption): string {
   if (isNumber(from)) return String(from)
   if (isBigInt(from)) return String(from)
-  if (isString(from) && !isNumberishExpression(from)) return from
+  if (isString(from) && !isMathExpression(from)) return from
   const { decimal = 0, numerator, denominator } = fromNumberishAtomToFraction(toNumberishAtom(from))
   if (denominator === OneBigint) {
     if (decimal === 0) return String(numerator)

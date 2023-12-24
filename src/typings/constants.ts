@@ -11,8 +11,11 @@ export type Numberish =
   | Fraction
   | { toNumberish: () => Numberish }
 
+/** parsed some method that can switch a object to a numberish */
+export type PureNumberish = number | bigint | StringNumber | Fraction
+
 /** for basic operations */
-export type BasicNumberish = number | bigint | StringNumber | Fraction | { toNumberish: () => Numberish }
+export type BasicNumberish = number | bigint | StringNumber | Fraction
 
 export type NumberishAction = {
   type:

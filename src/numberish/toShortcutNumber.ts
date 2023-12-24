@@ -1,7 +1,7 @@
 import { Numberish } from '../typings'
 import { div } from './operations'
 import { parseNumberInfo } from './parseNumberInfo'
-import { FormatOptions, toPrettierNumberString } from './toPrettierNumberString'
+import { FormatOptions, toPrettierNumberString } from './toFormattedNumberString'
 
 /**
  * 1000 => 1K
