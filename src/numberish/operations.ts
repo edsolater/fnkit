@@ -1,7 +1,12 @@
 import { BasicNumberish, Numberish, NumberishAtom, NumberishAtomRaw } from '../typings/constants'
 import { NumberishOption, toBigint, toNumber } from './changeFormats'
 import { TenBigint } from './constant'
-import { toNumberishAtom, toNumberishAtomRaw, toString } from './numberishAtom'
+import {
+  createNumberishFromZero,
+  toNumberishAtom,
+  toNumberishAtomRaw,
+  toString
+} from './numberishAtom'
 import { isInt } from './selfIs'
 
 /**
@@ -12,7 +17,12 @@ import { isInt } from './selfIs'
  * @todo should just add virculy
  */
 export function add(a: Numberish, b: Numberish): NumberishAtom {
-  return toNumberishAtom(a, { operations: [{ type: 'add', numberishB: b }] })
+  return createNumberishFromZero({
+    operations: [
+      { type: 'add', numberishB: a },
+      { type: 'add', numberishB: b }
+    ]
+  })
 }
 export function excutiveAdd(a: BasicNumberish, b: BasicNumberish): NumberishAtomRaw {
   const { decimal: decimalA, numerator: numratorA, denominator: denominatorA } = toNumberishAtomRaw(a)
@@ -96,7 +106,12 @@ export function excutiveReciprocal(a: Numberish): NumberishAtomRaw {
  * minus('9007199254740991.4', '112.4988') //=> '9007199254740878.9012'
  */
 export function minus(a: Numberish, b: Numberish): NumberishAtom {
-  return toNumberishAtom(a, { operations: [{ type: 'minus', numberishB: b }] })
+  return createNumberishFromZero({
+    operations: [
+      { type: 'add', numberishB: a },
+      { type: 'minus', numberishB: b }
+    ]
+  })
 }
 export function excutiveMinus(a: Numberish, b: Numberish): NumberishAtomRaw {
   return excutiveAdd(a, excutiveMultiply(-1, b))
@@ -116,7 +131,12 @@ export function minusS(...params: Parameters<typeof minus>): string {
  * divide('1.22', '-112.3') //=> '-0.010863'
  */
 export function divide(a: Numberish, b: Numberish): NumberishAtom {
-  return toNumberishAtom(a, { operations: [{ type: 'divide', numberishB: b }] })
+  return createNumberishFromZero({
+    operations: [
+      { type: 'add', numberishB: a },
+      { type: 'divide', numberishB: b }
+    ]
+  })
 }
 export function excutiveDivide(a: Numberish, b: Numberish): NumberishAtomRaw {
   return excutiveMultiply(a, excutiveReciprocal(b))

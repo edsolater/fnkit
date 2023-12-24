@@ -27,7 +27,7 @@ import {
   switchCase
 } from '..'
 import { hasProperty } from '../compare'
-import { OneBigint, TenBigint } from './constant'
+import { OneBigint, TenBigint, numberishAtomOne, numberishAtomZero } from './constant'
 import { isNumberishExpression, parseRPNToNumberishAtom, toRPN } from './numberExpression'
 import { padZeroR, shakeTailingZero } from './utils'
 
@@ -80,16 +80,15 @@ export function toNumberishAtomRaw(from: BasicNumberish): NumberishAtomRaw {
   return toNumberishAtomRawFromString(String(from))
 }
 
+type CreateNumberishAtomOptions = {
+  operations?: NumberishAction[]
+}
+
 /**
  * toNumberishAtom(1e13) //=> { numerator: 10000000000000n, decimal: 0, denominator: 1n , toString: () => '10000000000000' }
  * @todo numberish Atom is higher than add/minus/multiply/divide/pow
  */
-export const toNumberishAtom = (
-  from: Numberish,
-  options?: {
-    operations?: NumberishAction[]
-  }
-): NumberishAtom => {
+export const toNumberishAtom = (from: Numberish, options?: CreateNumberishAtomOptions): NumberishAtom => {
   if (isNumberishAtom(from))
     return options?.operations
       ? mergeObjects(from, { carriedOperations: concat(from.carriedOperations, options.operations) })
@@ -98,7 +97,7 @@ export const toNumberishAtom = (
   if (isNumberishExpression(from)) {
     return parseRPNToNumberishAtom(toRPN(from))
   } else {
-    return mergeObjects(toNumberishAtomRaw(from), { carriedOperations: options?.operations  }) as NumberishAtom
+    return mergeObjects(toNumberishAtomRaw(from), { carriedOperations: options?.operations }) as NumberishAtom
   }
 }
 
@@ -159,4 +158,9 @@ export function toString(from: Numberish, options?: NumberishOption): string {
     const finalN = String(finalNumerator / finalDenominator)
     return shakeTailingZero(`${finalN.slice(0, -decimalPlace)}.${finalN.slice(-decimalPlace)}`)
   }
+}
+
+/** aim: easy to read code */
+export function createNumberishFromZero(options?: CreateNumberishAtomOptions): NumberishAtom {
+  return toNumberishAtom(numberishAtomZero, options)
 }
