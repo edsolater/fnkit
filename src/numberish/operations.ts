@@ -33,7 +33,7 @@ export function excutiveAdd(a: BasicNumberish, b: BasicNumberish): Fraction {
   if (denominatorA === denominatorB && decimalA === 0 && decimalB === 0) {
     return toBasicFraction({
       numerator: numratorA + numratorB,
-      denominator: denominatorA,
+      denominator: denominatorA
     })
   } else if (denominatorA === denominatorB) {
     return toBasicFraction({
@@ -66,7 +66,12 @@ export function addS(...params: Parameters<typeof add>): string {
  * multiply('9007199254740991.4', '112.4988') //=> '1013299107519255843.31032'
  */
 export function multiply(a: Numberish, b: Numberish): NumberishAtom {
-  return toNumberishAtom(a, { operations: [{ type: 'multiply', numberishB: b }] })
+  return createNumberishFromZero({
+    operations: [
+      { type: 'add', numberishB: a },
+      { type: 'multiply', numberishB: b }
+    ]
+  })
 }
 export function excutiveMultiply(a: BasicNumberish, b: BasicNumberish): Fraction {
   const { decimal: decimalA = 0, numerator: numratorA, denominator: denominatorA } = toBasicFraction(a)
@@ -91,7 +96,7 @@ export var mulS = multiplyS
 export function reciprocal(a: Numberish): NumberishAtom {
   return toNumberishAtom(a, { operations: [{ type: 'reciprocal' }] })
 }
-export function excutiveReciprocal(a:BasicNumberish): Fraction {
+export function excutiveReciprocal(a: BasicNumberish): Fraction {
   const { decimal = 0, numerator, denominator } = toBasicFraction(a)
   return toBasicFraction({
     numerator: denominator,
@@ -180,8 +185,8 @@ export function modS(...params: Parameters<typeof mod>): string {
  */
 export function divideMod(a: Numberish, b: Numberish): [divisior: bigint, mod: NumberishAtom] {
   const n = divide(a, b)
-  const { denominator, decimal = 0 } = fromNumberishAtomToFraction(n)
-  const divisior = n.numerator / (denominator * TenBigint ** BigInt(decimal))
+  const { numerator, denominator, decimal = 0 } = fromNumberishAtomToFraction(n)
+  const divisior = numerator / (decimal ? denominator * TenBigint ** BigInt(decimal) : denominator)
   const rest = minus(a, multiply(divisior, b))
   return [divisior, rest]
 }
