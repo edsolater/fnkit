@@ -1,7 +1,7 @@
 import { Numberish } from '../typings'
 import { div } from './operations'
 import { parseNumberInfo } from './parseNumberInfo'
-import { FormatOptions, toPrettierNumberString } from './toFormattedNumberString'
+import { FormatOptions, toFormattedNumberString } from './toFormattedNumberString'
 
 /**
  * 1000 => 1K
@@ -16,7 +16,7 @@ export function toShortcutNumber(
   } & FormatOptions
 ): string {
   const formatFn = (n: Numberish) =>
-    toPrettierNumberString(n, {
+    toFormattedNumberString(n, {
       decimals: 'auto',
       ...options
     })

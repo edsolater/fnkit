@@ -12,24 +12,24 @@ export type FormatOptions = {
    * separator symbol
    * @default ','
    * @example
-   * formatNumber(7000000.2) // result: '7,000,000.200'
-   * formatNumber(7000000.2, { separator: '_' }) // result: '7_000_000.200'
+   * toFormattedNumberString(7000000.2) // result: '7,000,000.200'
+   * toFormattedNumberString(7000000.2, { separator: '_' }) // result: '7_000_000.200'
    */
   groupSeparator?: string
   /**
    * @default 3
    * @example
-   * formatNumber(10000.2) // result: '10,000.200'
-   * formatNumber(10000.1234, { seperatorEach: 4 }) // result: '1,0000.123400'
+   * toFormattedNumberString(10000.2) // result: '10,000.200'
+   * toFormattedNumberString(10000.1234, { seperatorEach: 4 }) // result: '1,0000.123400'
    */
   groupSize?: number
   /**
    * how many fraction number. (if there is noting, 0 will be added )
    * @default 2
    * @example
-   * formatNumber(100.2, { decimals: 3 }) // result: '100.200'
-   * formatNumber(100.2, { decimals: auto }) // result: '100.2'
-   * formatNumber(100.1234, { decimals: 6 }) // result: '100.123400'
+   * toFormattedNumberString(100.2, { decimals: 3 }) // result: '100.200'
+   * toFormattedNumberString(100.2, { decimals: auto }) // result: '100.2'
+   * toFormattedNumberString(100.1234, { decimals: 6 }) // result: '100.123400'
    */
   decimals?: number | 'auto'
 }
@@ -37,12 +37,12 @@ export type FormatOptions = {
 /**
  * to formated number string
  * @example
- * toPrettierNumberString(undefined) // '0'
- * toPrettierNumberString(7000000.2) // result: '7,000,000.20'
- * toPrettierNumberString(8800.1234, { seperator: '', decimals: 6 }) // result: '8,800.123400'
- * toPrettierNumberString(100.1234, { decimals: 3 }) // result: '100.123'
+ * toFormattedNumberString(undefined) // '0'
+ * toFormattedNumberString(7000000.2) // result: '7,000,000.20'
+ * toFormattedNumberString(8800.1234, { seperator: '', decimals: 6 }) // result: '8,800.123400'
+ * toFormattedNumberString(100.1234, { decimals: 3 }) // result: '100.123'
  */
-export function toPrettierNumberString(
+export function toFormattedNumberString(
   n: Numberish | undefined,
   { groupSeparator = ',', decimals = 2, groupSize = 3 }: FormatOptions = {}
 ): string {
@@ -63,15 +63,12 @@ export function toPrettierNumberString(
 /**
  * parse a string
  *
- * it a function that reverse the result of {@link toPrettierNumberString}
+ * it a function that reverse the result of {@link toFormattedNumberString}
  * @param numberString a string represent a number. e.g. -70,000.050
  * @example
  * parsePrettierNumberString('-70,000.050') // result: -70000.05
  */
-export function parsePrettierNumberString(numberString: string): number {
+export function parseFormattedNumberString(numberString: string): number {
   const pureNumberString = [...numberString].reduce((acc, char) => acc + (/\d|\.|-/.test(char) ? char : ''), '')
   return Number(pureNumberString)
 }
-
-
-
