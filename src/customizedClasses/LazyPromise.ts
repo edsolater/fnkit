@@ -1,5 +1,5 @@
-import { isFunction } from '../dataType'
-import { shrinkToValue } from '../wrapper'
+import { isFunction, notNullish } from '../dataType'
+import { shrinkFn, shrinkToValue } from '../wrapper'
 
 /**
  * like promise, but
@@ -39,7 +39,8 @@ export class LazyPromise<T = undefined> extends Promise<T> {
   static resolve<T>(value?: T | PromiseLike<T> | (() => T | PromiseLike<T>)) {
     return new LazyPromise<T>(
       (resolve) => {
-        resolve(shrinkToValue(value))
+        if (value == null) return
+        resolve(shrinkFn(value))
       },
       { initLoad: !isFunction(value) }
     )

@@ -1,4 +1,4 @@
-import shrinkToValue from '../wrapper/shrinkToValue'
+import shrinkToValue from '../wrapper/shrinkFn'
 
 export type CallbackCenterRegistedCallback<T> = (payloads: { data: T }) => void
 export type CallbackCenterOptions = {

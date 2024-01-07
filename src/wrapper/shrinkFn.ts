@@ -19,7 +19,7 @@ export const flatWithFn = <T extends MayArray<MayFn<any>>>(
  * @returns a pure value which can't be a function
  * @deprecated use {@link shrinkFn} instead
  */
-export default function shrinkToValue<T extends MayFn<any>>(mayValue: T, params?: MayParameters<T>): MayReturn<T> {
+export default function shrinkToValue<T>(mayValue: T, params?: MayParameters<T>): MayReturn<T> {
   return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue
 }
 /**
@@ -29,11 +29,10 @@ export default function shrinkToValue<T extends MayFn<any>>(mayValue: T, params?
  * @param params the parameters that will be passed in mayValue(if it's function)
  * @returns a pure value which can't be a function
  */
-export function shrinkFn<T extends MayFn<any>>(mayValue: undefined, params?: MayParameters<T>): undefined
-export function shrinkFn<T extends MayFn<any>>(mayValue: T, params?: MayParameters<T>): MayReturn<T>
-export function shrinkFn<T extends MayFn<any>>(mayValue: T, params?: MayParameters<T>): MayReturn<T> {
+export function shrinkFn<T>(mayValue: undefined, params?: MayParameters<T>): undefined
+export function shrinkFn<T>(mayValue: T, params?: MayParameters<T>): MayReturn<T>
+export function shrinkFn<T>(mayValue: T, params?: MayParameters<T>): MayReturn<T> {
   return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue
 }
-
-type MayParameters<T extends MayFn<unknown>> = Parameters<Extract<T, AnyFn>>
-type MayReturn<T extends MayFn<unknown>> = ReturnType<Extract<T, AnyFn>>
+type MayParameters<T> = Parameters<Extract<T, AnyFn>>;
+type MayReturn<T > = T extends AnyFn ?  ReturnType<T>:T;
