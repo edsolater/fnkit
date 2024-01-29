@@ -13,33 +13,25 @@ export function mergeObjectsWithConfigs<T extends object>(
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]!
 
-  let keys: Set<string | symbol> | undefined = undefined
-  let keysArray: (string | symbol)[] | undefined = undefined
+  let keys: (string | symbol)[] | undefined = undefined
 
-  function getOwnKeys() {
-    if (!keys || !keysArray) {
-      keysArray = getObjKeys(...objs)
-      keys = new Set(keysArray)
+  function getKeys() {
+    if (!keys) {
+      keys = getObjKeys(...objs)
     }
-    return { s: keys, a: keysArray }
+    return keys
   }
 
   return new Proxy(objs.some(isFunction) ? () => {} : {}, {
-    apply(target, thisArg, argArray) {
+    apply(_target, thisArg, argArray) {
       const fn = objs.findLast(isFunction)
       return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
     },
-    get: (target, key) => {
-      if (key in target) return target[key]
-      if (!getOwnKeys().s.has(key)) return undefined
-      const v = getValueByConfig(objs, key, transformer)
-      Reflect.set(target, key, v)
-      return v
-    },
+    get: (target, key) => (key in target ? target[key] : getValueByConfig(objs, key, transformer)),
     set: (_target, key, value) => Reflect.set(_target, key, value),
-    has: (_target, key) => getOwnKeys().s.has(key as string),
+    has: (_target, key) => getKeys().includes(key),
     getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
-    ownKeys: () => getOwnKeys().a,
+    ownKeys: getKeys,
     // for Object.keys to filter
     getOwnPropertyDescriptor: (_target, prop) => {
       for (const obj of objs) {
@@ -66,15 +58,12 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]! ?? {}
   let reversedObjs: typeof objs | undefined = undefined
-  let keys: Set<string | symbol> | undefined = undefined
-  let keysArray: (string | symbol)[] | undefined = undefined
-
-  function getOwnKeys() {
-    if (!keys || !keysArray) {
-      keysArray = getObjKeys(...objs)
-      keys = new Set(keysArray)
+  let keys: (string | symbol)[] | undefined = undefined
+  function getKeys() {
+    if (!keys) {
+      keys = getObjKeys(...objs)
     }
-    return { s: keys, a: keysArray }
+    return keys
   }
   function getValue(key: string | symbol) {
     if (!reversedObjs) {
@@ -90,21 +79,15 @@ export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
     }
   }
   return new Proxy(objs.some(isFunction) ? () => {} : {}, {
-    apply(target, thisArg, argArray) {
+    apply(_target, thisArg, argArray) {
       const fn = objs.findLast(isFunction)
       return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
     },
-    get(target, key) {
-      if (key in target) return target[key]
-      if (!getOwnKeys().s.has(key)) return undefined
-      const v = getValue(key)
-      Reflect.set(target, key, v)
-      return v
-    },
-    has: (_target, key) => getOwnKeys().s.has(key as string),
+    get: (target, key) => (key in target ? target[key] : getValue(key)),
+    has: (_target, key) => getKeys().includes(key as string),
     set: (_target, key, value) => Reflect.set(_target, key, value),
     getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
-    ownKeys: () => getOwnKeys().a,
+    ownKeys: getKeys,
     // for Object.keys to filter
     getOwnPropertyDescriptor: (_target, prop) => {
       for (const obj of objs) {
