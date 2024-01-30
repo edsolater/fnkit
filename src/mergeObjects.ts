@@ -14,6 +14,7 @@ export function mergeObjectsWithConfigs<T extends object | Function>(
   if (objs.length === 1) return objs[0]!
 
   let keys: (string | symbol)[] | undefined = undefined
+  let keySet: Set<string | symbol> | undefined = undefined
 
   function getKeys() {
     if (!keys) {
@@ -21,13 +22,20 @@ export function mergeObjectsWithConfigs<T extends object | Function>(
     }
     return keys
   }
+  function getKeySet() {
+    if (!keySet) {
+      keySet = new Set(getKeys())
+    }
+    return keySet
+  }
 
   return new Proxy(objs.some(isFunction) ? () => {} : {}, {
     apply(_target, thisArg, argArray) {
       const fn = objs.findLast(isFunction)
       return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
     },
-    get: (target, key) => (key in target ? target[key] : getValueByConfig(objs, key, transformer)),
+    get: (target, key) =>
+      getKeySet().has(key) ? (key in target ? target[key] : getValueByConfig(objs, key, transformer)) : undefined,
     set: (_target, key, value) => Reflect.set(_target, key, value),
     has: (_target, key) => getKeys().includes(key),
     getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
@@ -59,11 +67,18 @@ export function mergeObjects<T extends object | Function | undefined>(...objs: T
   if (objs.length === 1) return objs[0]! ?? {}
   let reversedObjs: typeof objs | undefined = undefined
   let keys: (string | symbol)[] | undefined = undefined
+  let keySet: Set<string | symbol> | undefined = undefined
   function getKeys() {
     if (!keys) {
       keys = getObjKeys(...objs)
     }
     return keys
+  }
+  function getKeySet() {
+    if (!keySet) {
+      keySet = new Set(getKeys())
+    }
+    return keySet
   }
   function getValue(key: string | symbol) {
     if (!reversedObjs) {
@@ -83,7 +98,7 @@ export function mergeObjects<T extends object | Function | undefined>(...objs: T
       const fn = objs.findLast(isFunction)
       return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
     },
-    get: (target, key) => (key in target ? target[key] : getValue(key)),
+    get: (target, key) => (getKeySet().has(key) ? (key in target ? target[key] : getValue(key)) : undefined),
     has: (_target, key) => getKeys().includes(key as string),
     set: (_target, key, value) => Reflect.set(_target, key, value),
     getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
