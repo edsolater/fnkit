@@ -6,7 +6,7 @@ import { AnyFn } from './typings'
  * @example
  * mergeObjectsWithConfigs([{a: 3, b: 2}, {a: 1, b: 3}], (key, v1, v2) => (key === 'a') ? [v1, v2] : v2) // {a: [3,1], b: 3}
  */
-export function mergeObjectsWithConfigs<T extends object>(
+export function mergeObjectsWithConfigs<T extends object | Function>(
   objs: T[],
   transformer: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any = ({ valueA, valueB }) => valueB
 ): T {
@@ -53,8 +53,8 @@ export function mergeObjects<T, W>(...objs: [T, W]): T & W
 export function mergeObjects<T, W, X>(...objs: [T, W, X]): T & W & X
 export function mergeObjects<T, W, X, Y>(...objs: [T, W, X, Y]): T & W & X & Y
 export function mergeObjects<T, W, X, Y, Z>(...objs: [T, W, X, Y, Z]): T & W & X & Y & Z
-export function mergeObjects<T extends object | undefined>(...objs: T[]): T
-export function mergeObjects<T extends object | undefined>(...objs: T[]): T {
+export function mergeObjects<T extends object | Function | undefined>(...objs: T[]): T
+export function mergeObjects<T extends object | Function | undefined>(...objs: T[]): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]! ?? {}
   let reversedObjs: typeof objs | undefined = undefined
