@@ -26,19 +26,26 @@ export function toPercentString(
 
     /** no % */
     noUnit?: boolean
+
+    // TODO: imply it!!
+    /** by default, 9999.99999 */
+    max?: number
+    // TODO: imply it!!
+    /** by default, 0.00001 */
+    min?: number
   }
 ): string {
-  try {
-    const stringPart = toFixedDecimal(mul(n ?? 0, options?.alreadyPercented ? 1 : 100), options?.fixed ?? 2)
-    if (eq(n, 0)) return `0${options?.noUnit ? '' : '%'}`
-    if (!options?.exact && stringPart === '0.00')
-      return options?.alwaysSigned ? `<+0.01${options?.noUnit ? '' : '%'}` : `<0.01${options?.noUnit ? '' : '%'}`
-    return options?.alwaysSigned
-      ? `${getSign(stringPart)}${toString(getUnsignNumber(stringPart))}${options?.noUnit ? '' : '%'}`
-      : `${stringPart}${options?.noUnit ? '' : '%'}`
-  } catch (err) {
-    return `0${options?.noUnit ? '' : '%'}`
-  }
+  const nPart = (() => {
+    try {
+      const stringPart = toFixedDecimal(mul(n ?? 0, options?.alreadyPercented ? 1 : 100), options?.fixed ?? 2)
+      if (eq(n, 0)) return '0'
+      if (!options?.exact && stringPart === '0.00') return options?.alwaysSigned ? '<+0.01' : '<0.01'
+      return options?.alwaysSigned ? getSign(stringPart) + toString(getUnsignNumber(stringPart)) : stringPart
+    } catch (err) {
+      return '0'
+    }
+  })()
+  return options?.noUnit ? nPart : `${nPart}%`
 }
 
 /**
