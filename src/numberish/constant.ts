@@ -1,4 +1,4 @@
-import { Fraction } from '../typings'
+import { Fraction } from './types'
 
 export const TenBigint = BigInt(10)
 export const OneBigint = BigInt(1)

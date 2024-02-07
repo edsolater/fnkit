@@ -4,11 +4,6 @@
  */
 
 import {
-  BasicNumberish,
-  Fraction,
-  Numberish,
-  NumberishAction,
-  NumberishAtom,
   NumberishOption,
   concat,
   excutiveAdd,
@@ -17,7 +12,6 @@ import {
   excutiveMultiply,
   excutivePow,
   excutiveReciprocal,
-  isArray,
   isBigInt,
   isNumber,
   isObject,
@@ -27,6 +21,7 @@ import {
 } from '..'
 import { OneBigint, TenBigint, fractionZero } from './constant'
 import { isMathExpression, parseRPNToNumberishAtom, toRPN } from './numberExpression'
+import { BasicNumberish, Fraction, Numberish, NumberishAction, NumberishAtom } from './types'
 import { padZeroR, shakeTailingZero } from './utils'
 
 export const stringNumberRegex = /(?<sign>-|\+?)(?<int>\d*)\.?(?<dec>\d*)/

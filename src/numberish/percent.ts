@@ -1,4 +1,4 @@
-import { Numberish } from '../typings'
+import { Numberish } from './types'
 import { eq, gt } from './compare'
 import { toString } from './numberishAtom'
 import { mul } from './operations'

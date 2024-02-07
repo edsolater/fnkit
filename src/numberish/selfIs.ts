@@ -1,5 +1,5 @@
 import { isBigInt, isNumber, isString, isStringNumber } from '../dataType'
-import { Numberish } from '../typings'
+import { Numberish } from './types'
 import { ZeroBigint } from './constant'
 import { fromNumberishAtomToFraction, toNumberishAtom } from './numberishAtom'
 import { mod } from './operations'

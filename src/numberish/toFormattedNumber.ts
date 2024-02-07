@@ -3,7 +3,7 @@
  */
 
 import { fall } from '../fall'
-import { Numberish } from '../typings'
+import { Numberish } from './types'
 import { toString } from './numberishAtom'
 import { toFixedDecimal } from './utils'
 

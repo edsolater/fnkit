@@ -1,4 +1,4 @@
-import { Numberish } from '../typings'
+import { Numberish } from './types'
 import { div } from './operations'
 import { parseNumberInfo } from './parseNumberInfo'
 import { FormatOptions, toFormattedNumber } from './toFormattedNumber'

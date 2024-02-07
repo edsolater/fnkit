@@ -1,4 +1,4 @@
-import { Numberish } from '..';
+import { Numberish } from "../numberish/types";
 
 
 export type TimeStamp = string | number | Date;

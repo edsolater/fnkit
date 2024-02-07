@@ -1,4 +1,4 @@
-import { NumberishAtom, Fraction } from '../typings'
+import { NumberishAtom, Fraction } from './types'
 import { toNumberishAtom } from './numberishAtom'
 
 function padTailZero(n: string | bigint | number, zeroLength?: number) {

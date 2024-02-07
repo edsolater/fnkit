@@ -1,46 +1,4 @@
 export type Primitive = boolean | number | string | bigint | symbol | null | undefined
-export type StringNumber = string
-export type MathExpression = string
-export type NoNullablePrimitive = NonNullable<Primitive>
-export type Numberish =
-  | number
-  | bigint
-  | StringNumber
-  | MathExpression
-  | NumberishAtom
-  | Fraction
-  | { toNumberish: () => Numberish }
-
-/** parsed some method that can switch a object to a numberish */
-export type PureNumberish = number | bigint | StringNumber | Fraction
-
-/** for basic operations */
-export type BasicNumberish = number | bigint | StringNumber | Fraction
-
-export type NumberishAction = {
-  type:
-    | 'add' /* basicAdd */
-    | 'minus' /* basicMinus */
-    | 'multiply' /* basicMul */
-    | 'divide' /* basicDivide */
-    | 'pow' /* basicPow */
-    | 'reciprocal' /* basicReciprocal */
-  numberishB?: Numberish
-}
-export type NumberishAtom = {
-  decimal?: number
-  numerator: bigint
-  denominator?: bigint
-  /** RPN-like */
-  carriedOperations?: NumberishAction[]
-}
-
-/** value is numerator / (denominator * 10 ^ decimal) */
-export type Fraction = {
-  decimal?: number
-  numerator: bigint
-  denominator: bigint
-}
 export type AnyFn = (...args: any[]) => any
 export type AnyObj = Record<keyof any, any>
 export type AnyArr = any[]

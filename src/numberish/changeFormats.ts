@@ -1,8 +1,7 @@
 import { isNumber } from '../dataType'
-import { Numberish, NumberishAtom } from '../typings'
-import { OneBigint, TenBigint } from './constant'
-import { fromNumberishAtomToFraction, parseCarriedActions, toNumberishAtom, toBasicFraction, toString } from './numberishAtom'
-import { padZeroR, shakeTailingZero } from './utils'
+import { fromNumberishAtomToFraction, toNumberishAtom, toString } from './numberishAtom'
+import { Numberish, NumberishAtom } from './types'
+import { padZeroR } from './utils'
 
 export type NumberishOption = {
   /**

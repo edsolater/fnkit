@@ -1,7 +1,7 @@
 import { addS, divide, greaterThan, lessThan, toBigint, toNumber, toString } from '..'
 import { reduce } from '../collectionMethods'
 import { getType } from '../dataType'
-import { Numberish } from '../typings'
+import { Numberish } from '../numberish/types'
 
 type Unliteral<T> = T extends string
   ? string

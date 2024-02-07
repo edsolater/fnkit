@@ -1,8 +1,8 @@
 import { isString } from '../dataType'
 import { switchCase } from '../switchCase'
-import { MathExpression, NumberishAtom, Fraction } from '../typings'
-import { toNumberishAtom, toBasicFraction } from './numberishAtom'
+import { toBasicFraction } from './numberishAtom'
 import { add, div, minus, mul, pow } from './operations'
+import { Fraction, MathExpression, NumberishAtom } from './types'
 
 type Operator = '+' | '-' | '*' | '/' | '^' | (string & {})
 type NumberToken = string
@@ -127,20 +127,16 @@ export function toRPN(expression: MathExpression): RPNQueue {
   }
 
   // if still have number token, push to rpn queue
-  recordNumberTokenToRPNQueue() 
+  recordNumberTokenToRPNQueue()
 
   // push to rpn queue
   while (operatorStack.length > 0) {
     recordLastOperatorToRPNQueue()
   }
 
-  return rpnQueue 
+  return rpnQueue
 }
 
 export function isMathExpression(s: any): s is String {
   return isString(s) && (s.includes('+') || s.includes('-') || s.includes('*') || s.includes('/') || s.includes('^'))
-}
-
-export function isStringNumber(s: any): s is String {
-  return isString(s) && !isMathExpression(s)
 }

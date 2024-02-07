@@ -1,4 +1,4 @@
-import { Numberish } from '../typings'
+import { Numberish } from './types'
 import { stringNumberRegex } from './numberishAtom'
 import { toString } from './numberishAtom'
 

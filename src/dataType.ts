@@ -1,4 +1,5 @@
-import { AnyArr, AnyFn, Primitive, StringNumber } from './typings/constants'
+import { AnyArr, AnyFn, Primitive } from './typings/constants'
+import { StringNumber } from "./numberish/types"
 
 /**
  * @requires {@link getObjType `getObjType()`}

@@ -1,5 +1,5 @@
 import { isArray } from '../dataType'
-import { BasicNumberish, Numberish, NumberishAtom, Fraction } from '../typings/constants'
+import { BasicNumberish, Numberish, NumberishAtom, Fraction } from "./types"
 import { NumberishOption, toBigint, toNumber } from './changeFormats'
 import { TenBigint } from './constant'
 import {

@@ -1,5 +1,6 @@
-import { clamp, map, Numberish } from '..'
+import { clamp, map } from '..'
 import { getType } from '../dataType'
+import { Numberish } from '../numberish/types'
 import { DateParam, DateInfoAtom, TimeStamp } from './type'
 
 export const createDate: {
