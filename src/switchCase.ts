@@ -10,8 +10,23 @@ import { shrinkFn } from './wrapper'
 export function switchCase<T, R>(
   key: T,
   rules: Partial<Map<T | ((key: T) => boolean), R | ((key: T) => R)>> /** only invoked if none matched */,
+  getDefaultValue: R | ((key: T) => R)
+): R
+export function switchCase<T, R>(
+  key: T,
+  rules: Map<T | ((key: T) => boolean), R | ((key: T) => R)> /** only invoked if none matched */,
+  getDefaultValue?: R | ((key: T) => R)
+): R 
+export function switchCase<T, R>(
+  key: T,
+  rules: Partial<Map<T | ((key: T) => boolean), R | ((key: T) => R)>> /** only invoked if none matched */,
   getDefaultValue?: R | ((key: T) => R)
 ): R | undefined
+export function switchCase<T extends any, R>(
+  key: T,
+  rules: [matchCase: T | ((key: T) => boolean), returnValue: R | ((key: T) => R)][] /** only invoked if none matched */,
+  getDefaultValue: R | ((key: T) => R)
+): R
 export function switchCase<T extends any, R>(
   key: T,
   rules: [matchCase: T | ((key: T) => boolean), returnValue: R | ((key: T) => R)][] /** only invoked if none matched */,
@@ -19,7 +34,20 @@ export function switchCase<T extends any, R>(
 ): R | undefined
 export function switchCase<T extends keyof any, R>(
   key: T,
-  rules: Partial<Record<T, R | ((key: T) => R)>> /** only invoked if none matched */,
+  /** only invoked if none matched */
+  rules: Partial<Record<T, R | ((key: T) => R)>>,
+  getDefaultValue: R | ((key: T) => R)
+): R
+export function switchCase<T extends keyof any, R>(
+  key: T,
+  /** only invoked if none matched */
+  rules: Record<T, R | ((key: T) => R)>,
+  getDefaultValue?: R | ((key: T) => R)
+): R
+export function switchCase<T extends keyof any, R>(
+  key: T,
+  /** only invoked if none matched */
+  rules: Partial<Record<T, R | ((key: T) => R)>>,
   getDefaultValue?: R | ((key: T) => R)
 ): R | undefined
 export function switchCase<T, R>(
