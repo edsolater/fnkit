@@ -1,5 +1,9 @@
 import { AnyFn } from '.'
 
+/** will make every tuple item can support undefined,  */
+type PartialAragument<T extends any[]> = {
+  [K in keyof T]?: T[K] | undefined
+}
 /**
  * solid params and return a new function
  * but, it will lost correct type
@@ -8,21 +12,12 @@ import { AnyFn } from '.'
  * const v = newFn(wallet)
  * const sameAs = connectWallet(wallet, config)
  */
-export function bindParams<T extends AnyFn>(fn: T, params: (Parameters<T>[number] | undefined)[]) {
-  return ((...args: any[]) => {
+export function bindParams<T extends AnyFn>(fn: T, params: PartialAragument<Parameters<T>>) {
+  return (...args: any[]) => {
     const newParams = [...args]
     Object.entries(params).forEach(([idx, v]) => {
       newParams[idx] = v
     })
     return fn(...newParams)
-  }) as (...arg: Parameters<T>[number][]) => ReturnType<T>
+  }
 }
-
-type MakeItemsOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
-function add(a: number, b: number, c: string) {
-  return a + b
-}
-const fn = bindParams(add, [, , 'c'])
-fn(1, 2)
-
-type C = [qr: number, sdf: number, ehl: string]
