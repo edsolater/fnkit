@@ -7,7 +7,7 @@ import { Numberish } from './types'
 import { toString } from './numberishAtom'
 import { toFixedDecimal } from './utils'
 
-export type FormatOptions = {
+export type NumberishFormatOptions = {
   /**
    * separator symbol
    * @default ','
@@ -32,7 +32,7 @@ export type FormatOptions = {
    * toFormattedNumber(100.1234, { decimals: 6 }) // result: '100.123400'
    */
   decimals?: number | 'auto'
-  
+
   // https://github.com/raydium-io/raydium-ui-v3-inner/blob/22383d458a59e05d77d29e318a25c200005edc85/src/utils/numberish/formatNumber.ts
   // /**
   //  * how many fraction number. (if there is noting, 0 will be added )
@@ -44,19 +44,20 @@ export type FormatOptions = {
   //  */
   // decimalMode?: 'fixed' | 'trim'
 
-  // /**
-  //  * if true, always use shorter expression
-  //  * if set this, only max 1 digit
-  //  * @default false
-  //  * @example
-  //  * formatNumber(1000000000, { useShorterExpression: false }) // result: '1,000,000,000'
-  //  * formatNumber(1100000000, { useShorterExpression: true }) // result: '1.1B'
-  //  * formatNumber(1000300, { useShorterExpression: true }) // result: '1M'
-  //  * formatNumber(1020, { useShorterExpression: true }) // result: '1K'
-  //  * formatNumber(102000, { useShorterExpression: true }) // result: '102K'
-  //  * formatNumber(102.2344, { useShorterExpression: true }) // result: '102.2'
-  //  */
-  // useShorterExpression?: boolean
+  /**
+   * if true, always use shorter expression
+   * if set this, only max 1 digit
+   * @default false
+   * @todo imply it!
+   * @example
+   * formatNumber(1000000000, { shortExpression: false }) // result: '1,000,000,000'
+   * formatNumber(1100000000, { shortExpression: true }) // result: '1.1B'
+   * formatNumber(1000300, { shortExpression: true }) // result: '1M'
+   * formatNumber(1020, { shortExpression: true }) // result: '1K'
+   * formatNumber(102000, { shortExpression: true }) // result: '102K'
+   * formatNumber(102.2344, { shortExpression: true }) // result: '102.2'
+   */
+  shortExpression?: boolean
 }
 
 /**
@@ -67,33 +68,59 @@ export type FormatOptions = {
  * toFormattedNumber(8800.1234, { seperator: '', decimals: 6 }) // result: '8,800.123400'
  * toFormattedNumber(100.1234, { decimals: 3 }) // result: '100.123'
  */
-export function toFormattedNumber(
-  n: Numberish | undefined,
-  { groupSeparator = ',', decimals = 2, groupSize = 3 }: FormatOptions = {}
-): string {
+export function toFormattedNumber(n: Numberish | undefined, options?: NumberishFormatOptions): string {
   if (n === undefined) return '0'
-  return fall(n, [
-    (n) => (decimals === 'auto' ? toString(n) : toFixedDecimal(toString(n), decimals)),
-    (str) => {
-      const [, sign = '', int = '', dec = ''] = str.match(/(-?)(\d*)\.?(\d*)/) ?? []
-      const newIntegerPart = [...int].reduceRight((acc, cur, idx, strN) => {
-        const indexFromRight = strN.length - 1 - idx
-        const shouldAddSeparator = indexFromRight !== 0 && indexFromRight % groupSize! === 0
-        return cur + (shouldAddSeparator ? groupSeparator : '') + acc
-      }, '') as string
-      return dec ? `${sign}${newIntegerPart}.${dec}` : `${sign}${newIntegerPart}`
-    }
-  ])
+  return options?.shortExpression
+    ? fall(n, [toString, (s: string) => handleShortExpression(s, options)])
+    : fall(n, [toString, fixDecimal, groupSeparater])
 }
+
+function groupSeparater(str: string, options?: Pick<NumberishFormatOptions, 'groupSeparator' | 'groupSize'>) {
+  const [, sign = '', int = '', dec = ''] = str.match(/(-?)(\d*)\.?(\d*)/) ?? []
+  const newIntegerPart = [...int].reduceRight((acc, cur, idx, strN) => {
+    const indexFromRight = strN.length - 1 - idx
+    const shouldAddSeparator = indexFromRight !== 0 && indexFromRight % (options?.groupSize ?? 3) === 0
+    return cur + (shouldAddSeparator ? options?.groupSeparator : '') + acc
+  }, '') as string
+  return dec ? `${sign}${newIntegerPart}.${dec}` : `${sign}${newIntegerPart}`
+}
+
+function fixDecimal(n: string, options?: Pick<NumberishFormatOptions, 'decimals'>): string {
+  return options?.decimals === 'auto' ? n : toFixedDecimal(n, options?.decimals ?? 2)
+}
+
+function handleShortExpression(str: string, options?: Pick<NumberishFormatOptions, 'decimals'>) {
+  const [, sign = '', int = '', dec = ''] = str.match(/(-?)(\d*)\.?(\d*)/) ?? []
+  const decimals = (options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2
+  if (int.length > 3 * 4) {
+    return `${sign}${trimTailingZero((Number(int.slice(0, -3 * 4 + 2)) / 100).toFixed(decimals))}T`
+  } else if (int.length > 3 * 3) {
+    return `${sign}${trimTailingZero((Number(int.slice(0, -3 * 3 + 2)) / 100).toFixed(decimals))}B`
+  } else if (int.length > 3 * 2) {
+    return `${sign}${trimTailingZero((Number(int.slice(0, -3 * 2 + 2)) / 100).toFixed(decimals))}M`
+  } else if (int.length > 3 * 1) {
+    return `${sign}${trimTailingZero((Number(int.slice(0, -3 * 1 + 2)) / 100).toFixed(decimals))}K`
+  } else {
+    return dec
+      ? `${sign}${int}.${dec.slice(0, decimals).padEnd(decimals, '0')}`
+      : `${sign}${int}.${'0'.padEnd(decimals, '0')}`
+  }
+}
+
 /**
- * parse a string
  *
- * it a function that reverse the result of {@link toFormattedNumber}
- * @param numberString a string represent a number. e.g. -70,000.050
  * @example
- * parsePrettierNumberString('-70,000.050') // result: -70000.05
+ * trimTailingZero('-33.33000000') //=> '-33.33'
+ * trimTailingZero('-33.000000') //=> '-33'
+ * trimTailingZero('.000000') //=> '0'
  */
-export function parseFormattedNumberString(numberString: string): number {
-  const pureNumberString = [...numberString].reduce((acc, char) => acc + (/\d|\.|-/.test(char) ? char : ''), '')
-  return Number(pureNumberString)
+export function trimTailingZero(s: string) {
+  // no decimal part
+  if (!s.includes('.')) return s
+  const [, sign, int, dec] = s.match(/(-?)([\d,_]*)\.?(\d*)/) ?? []
+  let cleanedDecimalPart = dec
+  while (cleanedDecimalPart.endsWith('0')) {
+    cleanedDecimalPart = cleanedDecimalPart.slice(0, cleanedDecimalPart.length - 1)
+  }
+  return cleanedDecimalPart ? `${sign}${int}.${cleanedDecimalPart}` : `${sign}${int}` || '0'
 }
