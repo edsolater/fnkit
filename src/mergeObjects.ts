@@ -177,6 +177,7 @@ function getValueByConfig<T extends object>(
 ) {
   let valueA = undefined
   for (const obj of objs) {
+    if (obj == null) continue
     const valueB = obj[key]
     valueA = valueA != null && valueB !== null ? valueMatchRule({ key, valueA, valueB }) : valueB ?? valueA
   }
