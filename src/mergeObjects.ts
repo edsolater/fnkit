@@ -7,7 +7,7 @@ import { AnyFn } from './typings'
  * mergeObjectsWithConfigs([{a: 3, b: 2}, {a: 1, b: 3}], (key, v1, v2) => (key === 'a') ? [v1, v2] : v2) // {a: [3,1], b: 3}
  */
 export function mergeObjectsWithConfigs<T extends object | Function>(
-  objs: (T | undefined)[],
+  objs: T[],
   transformer: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any = ({ valueA, valueB }) => valueB
 ): T {
   if (objs.length === 0) return {} as T
@@ -34,83 +34,21 @@ export function mergeObjectsWithConfigs<T extends object | Function>(
       const fn = objs.findLast(isFunction)
       return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
     },
-    get: (target, key) => {
-      if (!getKeySet().has(key)) return undefined
-      if (key in target) return target[key]
-      const v = getValueByConfig(objs, key, transformer)
-      Reflect.set(target, key, v)
-      return v
-    },
-    deleteProperty(target, key) {
-      getKeySet().delete(key)
-      keys = Array.from(getKeySet())
-      return Reflect.deleteProperty(target, key)
-    },
-    defineProperty: (target, key, attributes) => {
-      getKeySet().add(key)
-      keys = Array.from(getKeySet())
-      return Reflect.defineProperty(target, key, attributes)
-    },
-    set: (target, key, value) => {
-      getKeySet().add(key)
-      keys = Array.from(getKeySet())
-      return Reflect.set(target, key, value)
-    },
-    has: (_, key) => getKeySet().has(key),
-    getPrototypeOf: () => (objs[0] ? Reflect.getPrototypeOf(objs[0]) : null),
+    get: (target, key) =>
+      getKeySet().has(key) ? (key in target ? target[key] : getValueByConfig(objs, key, transformer)) : undefined,
+    set: (_target, key, value) => Reflect.set(_target, key, value),
+    has: (_target, key) => getKeySet().has(key),
+    getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
     ownKeys: getKeys,
     // for Object.keys to filter
-    getOwnPropertyDescriptor: (target, key) => {
-      if (key in target) {
-        return Reflect.getOwnPropertyDescriptor(target, key)
-      } else {
-        for (const obj of objs) {
-          if (obj && key in obj) {
-            return Reflect.getOwnPropertyDescriptor(obj, key)
-          }
+    getOwnPropertyDescriptor: (_target, prop) => {
+      for (const obj of objs) {
+        if (prop in obj) {
+          return Reflect.getOwnPropertyDescriptor(obj, prop)
         }
       }
     }
   }) as T
-}
-
-/** run-time ==> visit-time    */
-export function proxyObjectWithConfigs<T extends object>(
-  obj: T,
-  configFn: (options: { key: string | symbol; value: any }) => any
-): object {
-  return new Proxy(
-    {},
-    {
-      get(target, key, receiver) {
-        if (key in target) return target[key]
-        // if (valueMap.has(key)) return valueMap.get(key)
-        if (!(key in obj)) return undefined
-        const originalValue = Reflect.get(obj, key, receiver)
-        const newV = configFn({ key, value: originalValue })
-        Reflect.set(target, key, newV)
-        return newV
-      },
-      set(target, p, newValue) {
-        Reflect.set(target, p, newValue)
-        return Reflect.set(obj, p, newValue)
-      },
-      deleteProperty(target, p) {
-        Reflect.deleteProperty(target, p)
-        return Reflect.deleteProperty(obj, p)
-      },
-      defineProperty(target, property, attributes) {
-        Reflect.defineProperty(target, property, attributes)
-        return Reflect.defineProperty(obj, property, attributes)
-      },
-      has: (target, key) => Reflect.has(obj, key) ?? Reflect.has(target, key),
-      ownKeys: () => Reflect.ownKeys(obj),
-      // for Object.keys to filter
-      getPrototypeOf: () => Reflect.getPrototypeOf(obj),
-      getOwnPropertyDescriptor: (target, prop) =>
-        Reflect.getOwnPropertyDescriptor(target, prop) ?? Reflect.getOwnPropertyDescriptor(obj, prop)
-    }
-  )
 }
 
 /**
@@ -160,40 +98,16 @@ export function mergeObjects<T extends object | Function | undefined>(...objs: T
       const fn = objs.findLast(isFunction)
       return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
     },
-    get: (target, key) => {
-      if (!getKeySet().has(key)) return undefined
-      if (key in target) return target[key]
-      const v = getValue(key)
-      Reflect.set(target, key, v)
-      return v
-    },
-    deleteProperty(target, key) {
-      getKeySet().delete(key)
-      keys = Array.from(getKeySet())
-      return Reflect.deleteProperty(target, key)
-    },
-    defineProperty: (target, key, attributes) => {
-      getKeySet().add(key)
-      keys = Array.from(getKeySet())
-      return Reflect.defineProperty(target, key, attributes)
-    },
-    set: (target, key, value) => {
-      getKeySet().add(key)
-      keys = Array.from(getKeySet())
-      return Reflect.set(target, key, value)
-    },
-    has: (_, key) => getKeySet().has(key),
-    getPrototypeOf: () => (objs[0] ? Reflect.getPrototypeOf(objs[0]) : null),
+    get: (target, key) => (getKeySet().has(key) ? (key in target ? target[key] : getValue(key)) : undefined),
+    has: (_target, key) => getKeySet().has(key),
+    set: (_target, key, value) => Reflect.set(_target, key, value),
+    getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
     ownKeys: getKeys,
     // for Object.keys to filter
-    getOwnPropertyDescriptor: (target, key) => {
-      if (key in target) {
-        return Reflect.getOwnPropertyDescriptor(target, key)
-      } else {
-        for (const obj of objs) {
-          if (obj && key in obj) {
-            return Reflect.getOwnPropertyDescriptor(obj, key)
-          }
+    getOwnPropertyDescriptor: (_target, prop) => {
+      for (const obj of objs) {
+        if (obj && prop in obj) {
+          return Reflect.getOwnPropertyDescriptor(obj, prop)
         }
       }
     }
@@ -257,7 +171,7 @@ export function createEmptyObject(keys: (string | symbol)[]) {
 }
 
 function getValueByConfig<T extends object>(
-  objs: (T | undefined)[],
+  objs: T[],
   key: string | symbol,
   valueMatchRule: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any
 ) {
