@@ -1,7 +1,6 @@
 /**
  * it's format content, not face like
  */
-
 import { fall } from '../fall'
 import { Numberish } from './types'
 import { toString } from './numberishAtom'
@@ -58,6 +57,11 @@ export type NumberishFormatOptions = {
    * formatNumber(102.2344, { shortExpression: true }) // result: '102.2'
    */
   shortExpression?: boolean
+
+  /**
+   * @default 2
+   */
+  shortExpressionDecimal?: number
 }
 
 /**
@@ -71,8 +75,8 @@ export type NumberishFormatOptions = {
 export function toFormattedNumber(n: Numberish | undefined, options?: NumberishFormatOptions): string {
   if (n === undefined) return '0'
   return options?.shortExpression
-    ? fall(n, [toString, (s: string) => handleShortExpression(s, options)])
-    : fall(n, [toString, fixDecimal, groupSeparater])
+    ? fall(n, [toString, (s) => fixDecimal(s, options), (s) => handleShortExpression(s, options)])
+    : fall(n, [toString, (s) => fixDecimal(s, options), (s) => groupSeparater(s, options)])
 }
 
 function groupSeparater(str: string, options?: Pick<NumberishFormatOptions, 'groupSeparator' | 'groupSize'>) {
@@ -89,9 +93,9 @@ function fixDecimal(n: string, options?: Pick<NumberishFormatOptions, 'decimals'
   return options?.decimals === 'auto' ? n : toFixedDecimal(n, options?.decimals ?? 2)
 }
 
-function handleShortExpression(str: string, options?: Pick<NumberishFormatOptions, 'decimals'>) {
+function handleShortExpression(str: string, options?: Pick<NumberishFormatOptions, 'shortExpressionDecimal'>) {
   const [, sign = '', int = '', dec = ''] = str.match(/(-?)(\d*)\.?(\d*)/) ?? []
-  const decimals = (options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2
+  const decimals = options?.shortExpressionDecimal ?? 2
   if (int.length > 3 * 4) {
     return `${sign}${trimTailingZero((Number(int.slice(0, -3 * 4 + 2)) / 100).toFixed(decimals))}T`
   } else if (int.length > 3 * 3) {
@@ -101,9 +105,7 @@ function handleShortExpression(str: string, options?: Pick<NumberishFormatOption
   } else if (int.length > 3 * 1) {
     return `${sign}${trimTailingZero((Number(int.slice(0, -3 * 1 + 2)) / 100).toFixed(decimals))}K`
   } else {
-    return dec
-      ? `${sign}${int}.${dec.slice(0, decimals).padEnd(decimals, '0')}`
-      : `${sign}${int}.${'0'.padEnd(decimals, '0')}`
+    return dec ? `${sign}${int}.${dec}` : `${sign}${int}`
   }
 }
 
