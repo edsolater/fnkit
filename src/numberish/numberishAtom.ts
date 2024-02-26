@@ -155,7 +155,7 @@ export function parseCarriedActions(n: NumberishAtom): Fraction {
  * toString({ decimal: 7, all: '40000000' }) //=> '4'
  */
 export function toString(from: Numberish, options?: NumberishOption): string {
-  if (isNumber(from)) return String(from)
+  if (isNumber(from)) return from > Number.MAX_SAFE_INTEGER ? String(BigInt(from)) : String(from)
   if (isBigInt(from)) return String(from)
   if (isString(from) && !isMathExpression(from)) return from
   const { decimal = 0, numerator, denominator } = fromNumberishAtomToFraction(toNumberishAtom(from))
