@@ -38,5 +38,5 @@ export function padZeroL(str: string, count: number): string {
 export function toFixedDecimal(n: Numberish, fractionLength: number): string {
   const [, sign = '', int = '', dec = ''] = toString(n).match(/(-?)(\d*)\.?(\d*)/) ?? []
   if (!dec || dec.length < fractionLength) return toString(n)
-  else return `${sign}${int}.${dec.slice(0, fractionLength)}`
+  else return fractionLength > 0 ? `${sign}${int}.${dec.slice(0, fractionLength)}` : `${sign}${int}`
 }
