@@ -84,7 +84,7 @@ function groupSeparater(str: string, options?: Pick<NumberishFormatOptions, 'gro
   const newIntegerPart = [...int].reduceRight((acc, cur, idx, strN) => {
     const indexFromRight = strN.length - 1 - idx
     const shouldAddSeparator = indexFromRight !== 0 && indexFromRight % (options?.groupSize ?? 3) === 0
-    return cur + (shouldAddSeparator ? options?.groupSeparator : '') + acc
+    return shouldAddSeparator ? cur + (options?.groupSeparator ?? ',') + acc : cur + acc
   }, '') as string
   return dec ? `${sign}${newIntegerPart}.${dec}` : `${sign}${newIntegerPart}`
 }

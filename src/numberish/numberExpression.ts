@@ -72,29 +72,40 @@ export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
 }
 
 export function toRPN(expression: MathExpression): RPNQueue {
+  if (isMathExpressionASingleValue(expression) as boolean) {
+    return [{ isOperator: false, value: expression }]
+  }
+  type charLoopParams = { prevChar: string | undefined; char: string; nextChar: string | undefined }
   const operatorStack: string[] = []
   const rpnQueue: RPNQueue = []
-  function recordToRPNQueue(value: string | undefined, options?: { isOperator?: boolean; onAfterPush?(): void }) {
-    if (value) {
-      rpnQueue.push({ isOperator: Boolean(options?.isOperator), value: value })
-      options?.onAfterPush?.()
-    }
-  }
+
   let currentToken = ''
   const recordNumberTokenToRPNQueue = () =>
     recordToRPNQueue(currentToken, { isOperator: false, onAfterPush: () => (currentToken = '') })
   const recordLastOperatorToRPNQueue = () =>
     operatorStack.length > 0 && recordToRPNQueue(operatorStack.pop()!, { isOperator: true })
-  type charLoopParams = { prevChar: string | undefined; char: string; nextChar: string | undefined }
-  const charIsNumberToken = ({ char, nextChar }: charLoopParams) =>
-    /\d|\./.test(char) || (char === '-' && nextChar != null && /\d/.test(nextChar))
-  const handleNumberToken = ({ char }: charLoopParams) => (currentToken += char)
+  const recordToRPNQueue = (value: string | undefined, options?: { isOperator?: boolean; onAfterPush?(): void }) => {
+    if (value) {
+      rpnQueue.push({ isOperator: Boolean(options?.isOperator), value: value })
+      options?.onAfterPush?.()
+    }
+  }
+
+  const charIsNumberToken = ({ char, nextChar, prevChar }: charLoopParams) =>
+    char === '.' ||
+    (char >= '0' && char <= '9') ||
+    (char === '-' && nextChar != null && /\d/.test(nextChar)) ||
+    (prevChar != null && nextChar != null && char === 'e')
   const charIsSpace = ({ char }: charLoopParams) => /\s/.test(char)
-  const handleSpace = () => recordNumberTokenToRPNQueue()
   const charIsOperator = ({ char }: charLoopParams) => {
     const isKnownOperator = operators.hasOwnProperty(char)
     return isKnownOperator
   }
+  const charIsLeftParenthesis = ({ char }: charLoopParams) => char === '('
+  const charIsRightParenthesis = ({ char }: charLoopParams) => char === ')'
+  
+  const handleNumberToken = ({ char }: charLoopParams) => (currentToken += char)
+  const handleSpace = () => recordNumberTokenToRPNQueue()
   const handleOperator = ({ char }: charLoopParams) => {
     recordNumberTokenToRPNQueue()
     while (operatorStack.length > 0 && operators[operatorStack[operatorStack.length - 1]] >= operators[char]) {
@@ -102,9 +113,7 @@ export function toRPN(expression: MathExpression): RPNQueue {
     }
     operatorStack.push(char)
   }
-  const charIsLeftParenthesis = ({ char }: charLoopParams) => char === '('
   const handleLeftParenthesis = ({ char }: charLoopParams) => operatorStack.push(char)
-  const charIsRightParenthesis = ({ char }: charLoopParams) => char === ')'
   const handleRightParenthesis = () => {
     while (operatorStack[operatorStack.length - 1] !== '(') {
       recordLastOperatorToRPNQueue()
@@ -137,6 +146,18 @@ export function toRPN(expression: MathExpression): RPNQueue {
   return rpnQueue
 }
 
-export function isMathExpression(s: any): s is String {
+export function isMathExpression(s: any): s is string {
   return isString(s) && (s.includes('+') || s.includes('-') || s.includes('*') || s.includes('/') || s.includes('^'))
+}
+
+const stringValueRegex = /^\s*[+-]?\d+\.?\d*(?:e[+-]?\d+)\s*$/
+/**
+ *
+ * @example
+ * isMathExpressionASingleValue('3.1') //=> true
+ * isMathExpressionASingleValue('3.1e-2') //=> true
+ * isMathExpressionASingleValue('3.1e-2 + 4 * 2 - ( 1 - 5 ) ^ 2 ^ 3') //=> false
+ */
+export function isMathExpressionASingleValue(s: any): s is string {
+  return s && stringValueRegex.test(s)
 }
