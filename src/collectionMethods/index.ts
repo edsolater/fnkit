@@ -18,3 +18,4 @@ export * from './omit'
 export * from './pick'
 /** @dreprecated */
 export * from './entries'
+export * from './itemMethods'
