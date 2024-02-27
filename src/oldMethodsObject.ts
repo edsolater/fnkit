@@ -123,18 +123,20 @@ export function containKey<T extends string | number | symbol>(
  * cloneObject({get a() {return 1}}) //=> {get a() {return 1}}
  */
 export function cloneObject<T extends AnyObj>(original: T): T {
-  const cloneCache = {}
-  return new Proxy(original, {
-    get: (_target, key, receiver) =>
-      key in cloneCache ? Reflect.get(cloneCache, key, receiver) : Reflect.get(original, key, receiver),
-    has: (_target, key) => key in cloneCache || key in original,
-    set: (_target, key, value) => Reflect.set(cloneCache, key, value),
-    getPrototypeOf: () => Object.getPrototypeOf(original),
-    ownKeys: (_target) => unifyItem(Reflect.ownKeys(cloneCache).concat(Reflect.ownKeys(original))),
-    // for Object.keys to filter
-    getOwnPropertyDescriptor: (_target, key) =>
-      key in cloneCache
-        ? Object.getOwnPropertyDescriptor(cloneCache, key)
-        : Object.getOwnPropertyDescriptor(original, key)
-  }) as T
+  return new Proxy(
+    {},
+    {
+      get: (target, key, receiver) =>
+        key in target ? Reflect.get(target, key, receiver) : Reflect.get(original, key, receiver),
+      has: (target, key) => key in target || key in original,
+      set: (target, key, value) => Reflect.set(target, key, value),
+      defineProperty: (target, property, attributes) => Reflect.defineProperty(target, property, attributes),
+      deleteProperty: (target, property) => Reflect.deleteProperty(target, property),
+      getPrototypeOf: () => Object.getPrototypeOf(original),
+      ownKeys: (target) => unifyItem(Reflect.ownKeys(target).concat(Reflect.ownKeys(original))),
+      // for Object.keys to filter
+      getOwnPropertyDescriptor: (target, key) =>
+        key in target ? Object.getOwnPropertyDescriptor(target, key) : Object.getOwnPropertyDescriptor(original, key)
+    }
+  ) as T
 }
