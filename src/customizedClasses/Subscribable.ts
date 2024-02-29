@@ -1,6 +1,6 @@
 import { flap } from '../collectionMethods'
 import { isFunction, isObjectLike, isPromise } from '../dataType'
-import { AnyFn, MayPromise, type MayArray } from '../typings'
+import { AnyFn, MayPromise, type MayArray, type UndefinedKeys } from '../typings'
 import { shrinkFn } from '../wrapper'
 import { WeakerMap } from './WeakerMap'
 import { WeakerSet } from './WeakerSet'
@@ -43,10 +43,9 @@ export function createSubscribable<T>(
   defaultValue?: T | (() => T),
   options?: { subscribeFns?: MayArray<SubscribeFn<T>> }
 ): Subscribable<T | undefined> {
-  const subscribeFnsStore = new WeakerSet<SubscribeFn<T>>(
-    options?.subscribeFns ? flap(options.subscribeFns) : undefined
-  )
-  const cleanFnsStore = new WeakerMap<SubscribeFn<T>, AnyFn>()
+  const subscribeFnsStore = new Set<SubscribeFn<T>>(options?.subscribeFns ? flap(options.subscribeFns) : undefined)
+  const cleanFnsStore = new Map<SubscribeFn<T>, AnyFn>()
+  const onDestoryCallback = new Set<AnyFn>()
 
   let innerValue = shrinkFn(defaultValue) as T | undefined
 
@@ -73,7 +72,10 @@ export function createSubscribable<T>(
 
   function invokeSubscribedCallbacks(cb: SubscribeFn<T>, newValue: T | undefined, prevValue: T | undefined) {
     const oldCleanFn = cleanFnsStore.get(cb)
-    if (isFunction(oldCleanFn)) oldCleanFn(innerValue)
+    if (oldCleanFn) {
+      oldCleanFn(innerValue)
+      cleanFnsStore.delete(cb)
+    }
     const cleanFn = cb(newValue as T /*  type force */, prevValue)
     if (isFunction(cleanFn)) cleanFnsStore.set(cb, cleanFn)
   }
@@ -85,25 +87,23 @@ export function createSubscribable<T>(
       subscribeFnsStore.add(cb)
       return {
         unsubscribe() {
-          const cleanFn = cleanFnsStore.get(cb)
-          if (isFunction(cleanFn)) cleanFn(innerValue)
-          cleanFnsStore.delete(cb)
           subscribeFnsStore.delete(cb)
+          cleanFnsStore.delete(cb)
         }
       }
     },
     set: changeValue,
-    pipe: (fn) => {
+    pipe: (fn: AnyFn) => {
       const newSubscribable = createSubscribable(fn(innerValue))
-      const subscribeFn: any = (value) => newSubscribable.set(fn(value))
+      const subscribeFn = (extendedSubscribableValue: unknown) => newSubscribable.set(fn(extendedSubscribableValue))
       const { unsubscribe } = subscribable.subscribe(subscribeFn)
-      cleanFnsStore.set(subscribeFn, unsubscribe)
+      onDestoryCallback.add(unsubscribe)
       return newSubscribable
     },
     destroy() {
       subscribeFnsStore.clear()
-      cleanFnsStore.forEach((fn) => fn(innerValue))
-      cleanFnsStore.clear()
+      onDestoryCallback.forEach((cb) => cb())
+      onDestoryCallback.clear()
     },
     [Symbol.dispose]: () => {
       subscribable.destroy()
