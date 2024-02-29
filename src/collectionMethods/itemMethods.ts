@@ -11,7 +11,7 @@ export type ItemList<T> =
   | undefined
 
 /** accept all may iterable data type */
-export function toArray<T>(i: ItemList<T>) {
+export function toList<T>(i: ItemList<T>) {
   if (isUndefined(i)) return []
   if (isMap(i)) return Array.from(i.values())
   if (isIterable(i)) return Array.from(i)
@@ -33,7 +33,7 @@ export function toMap<T>(i: ItemList<T>, key?: (item: T) => any) {
   return new Map(Object.entries(i))
 }
 
-export function toCollectionObject<T, K extends keyof any>(
+export function toRecord<T, K extends keyof any>(
   i: ItemList<T>,
   key: (item: T, key: unknown) => K
 ): Record<K, T> {
