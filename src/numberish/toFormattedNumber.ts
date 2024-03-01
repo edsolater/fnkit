@@ -75,8 +75,16 @@ export type NumberishFormatOptions = {
 export function toFormattedNumber(n: Numberish | undefined, options?: NumberishFormatOptions): string {
   if (n === undefined) return '0'
   return options?.shortExpression
-    ? fall(n, [toString, (s) => fixDecimal(s, options), (s) => handleShortExpression(s, options)])
-    : fall(n, [toString, (s) => fixDecimal(s, options), (s) => groupSeparater(s, options)])
+    ? fall(n, [
+        (s) => toString(s, { decimals: ((options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2) + 1 }),
+        (s) => fixDecimal(s, options),
+        (s) => handleShortExpression(s, options)
+      ])
+    : fall(n, [
+        (s) => toString(s, { decimals: ((options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2) + 1 }),
+        (s) => fixDecimal(s, options),
+        (s) => groupSeparater(s, options)
+      ])
 }
 
 function groupSeparater(str: string, options?: Pick<NumberishFormatOptions, 'groupSeparator' | 'groupSize'>) {

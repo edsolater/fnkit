@@ -148,7 +148,7 @@ export function parseCarriedActions(n: NumberishAtom): Fraction {
 /**
  * @example
  * toString(3) //=> '3'
- * toString('.3') //=> '0.3'
+ * toString(.3) //=> '0.3'
  * toString('8n') //=> '8'
  * toString({ decimal: 2, all: '42312' }) => '423.12'
  * toString({ decimal: 0, all: '12' }) //=> '12'
@@ -162,17 +162,17 @@ export function toString(from: Numberish, options?: NumberishOption): string {
   if (denominator === OneBigint) {
     if (decimal === 0) return String(numerator)
     if (decimal < 0) return padZeroR(String(numerator), -decimal)
-    return shakeTailingZero(
-      [String(numerator).slice(0, -decimal) || '0', '.', String(numerator).padStart(decimal, '0').slice(-decimal)].join(
-        ''
-      )
-    )
+    return [
+      String(numerator).slice(0, -decimal) || '0',
+      '.',
+      String(numerator).padStart(decimal, '0').slice(-decimal)
+    ].join('')
   } else {
-    const decimalPlace = options?.maxDecimalPlace ?? 6
+    const decimalPlace = options?.decimals ?? 6
     const finalNumerator = numerator * TenBigint ** BigInt(decimalPlace)
     const finalDenominator = TenBigint ** BigInt(decimal) * denominator
     const finalN = String(finalNumerator / finalDenominator)
-    return shakeTailingZero(`${finalN.slice(0, -decimalPlace)}.${finalN.slice(-decimalPlace)}`)
+    return `${finalN.slice(0, -decimalPlace) || '0'}.${finalN.slice(-decimalPlace)}`
   }
 }
 

@@ -11,7 +11,7 @@ export type NumberishOption = {
    * toString('3.14897987', 0) => '3'
    * toString('3.14897987') => '3.148979'
    * @default 6
-   */ maxDecimalPlace?: number
+   */ decimals?: number
 }
 
 /**
