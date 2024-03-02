@@ -1,5 +1,5 @@
 import { isObject } from '../dataType'
-import { shakeTailingZero } from '../numberish/utils'
+import { shakeTailingZero } from '../numberish/trimZero'
 import { shrinkToValue } from '../wrapper'
 import { parseDuration } from './parseDuration'
 import { ParsedDurationInfo } from './type'

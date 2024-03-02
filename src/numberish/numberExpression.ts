@@ -1,12 +1,11 @@
-import { isString } from '../dataType'
+import { isObject, isString } from '../dataType'
 import { switchCase } from '../switchCase'
-import { toBasicFraction } from './numberishAtom'
+import { toFraction } from './numberishAtom'
 import { add, div, minus, mul, pow } from './operations'
-import { Fraction, MathExpression, NumberishAtom } from './types'
+import { Fraction, MathematicalExpression, type BasicNumberish } from './types'
 
-type Operator = '+' | '-' | '*' | '/' | '^' | (string & {})
-type NumberToken = string
-type Priority = number
+export type Operator = '+' | '-' | '*' | '/' | '^' | (string & {})
+export type Priority = number
 const operators: Record<Operator, Priority> = {
   '+': 1,
   '-': 1,
@@ -15,22 +14,20 @@ const operators: Record<Operator, Priority> = {
   '^': 3
 }
 
-/**
- * @see https://zh.wikipedia.org/wiki/%E9%80%86%E6%B3%A2%E5%85%B0%E8%A1%A8%E7%A4%BA%E6%B3%95
- */
-type RPNQueue = RPNItem[]
+export type RPNItem = { isOperator: true; value: Operator } | { isOperator: false; value: BasicNumberish }
 
-type RPNItem =
-  | { isOperator: true; value: Operator }
-  | { isOperator: false; value: number | NumberToken | bigint | Fraction }
+export function isRPNItem(item: unknown): item is RPNItem {
+  return isObject(item) && 'isOperator' in item
+}
 
-export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
+export function parseRPNToFraction(rpn: RPNItem[]): Fraction {
+  console.log('rpn: ', rpn)
   const rpnLengthIsValid = rpn.length % 2 === 1
   if (!rpnLengthIsValid) {
     throw `invalid rpn length, so can't parse`
   }
 
-  const numberishStack: NumberishAtom[] = []
+  const numberishStack: Fraction[] = []
   for (const item of rpn) {
     if (item.isOperator) {
       const num2 = numberishStack.pop()
@@ -40,28 +37,28 @@ export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
       }
       switch (item.value) {
         case '+': {
-          numberishStack.push(add(num1, num2))
+          numberishStack.push(toFraction(add(num1, num2)))
           break
         }
         case '-': {
-          numberishStack.push(minus(num1, num2))
+          numberishStack.push(toFraction(minus(num1, num2)))
           break
         }
         case '*': {
-          numberishStack.push(mul(num1, num2))
+          numberishStack.push(toFraction(mul(num1, num2)))
           break
         }
         case '/': {
-          numberishStack.push(div(num1, num2))
+          numberishStack.push(toFraction(div(num1, num2)))
           break
         }
         case '^': {
-          numberishStack.push(pow(num1, num2))
+          numberishStack.push(toFraction(pow(num1, num2)))
           break
         }
       }
     } else {
-      numberishStack.push(toBasicFraction(item.value))
+      numberishStack.push(toFraction(item.value))
     }
   }
   if (numberishStack.length !== 1) {
@@ -71,13 +68,13 @@ export function parseRPNToNumberishAtom(rpn: RPNQueue): NumberishAtom {
   return resultN
 }
 
-export function toRPN(expression: MathExpression): RPNQueue {
-  if (isMathExpressionASingleValue(expression) as boolean) {
+export function toRPN(expression: MathematicalExpression): RPNItem[] {
+  if (isMathematicalExpressionASingleValue(expression) as boolean) {
     return [{ isOperator: false, value: expression }]
   }
   type charLoopParams = { prevChar: string | undefined; char: string; nextChar: string | undefined }
   const operatorStack: string[] = []
-  const rpnQueue: RPNQueue = []
+  const rpnQueue: RPNItem[] = []
 
   let currentToken = ''
   const recordNumberTokenToRPNQueue = () =>
@@ -103,7 +100,7 @@ export function toRPN(expression: MathExpression): RPNQueue {
   }
   const charIsLeftParenthesis = ({ char }: charLoopParams) => char === '('
   const charIsRightParenthesis = ({ char }: charLoopParams) => char === ')'
-  
+
   const handleNumberToken = ({ char }: charLoopParams) => (currentToken += char)
   const handleSpace = () => recordNumberTokenToRPNQueue()
   const handleOperator = ({ char }: charLoopParams) => {
@@ -146,18 +143,18 @@ export function toRPN(expression: MathExpression): RPNQueue {
   return rpnQueue
 }
 
-export function isMathExpression(s: any): s is string {
-  return isString(s) && (s.includes('+') || s.includes('-') || s.includes('*') || s.includes('/') || s.includes('^'))
+export function isMathematicalExpression(s: any): s is string {
+  return isString(s) && !stringNumberRegex.test(s)
 }
 
-const stringValueRegex = /^\s*[+-]?\d+\.?\d*(?:e[+-]?\d+)\s*$/
+const stringNumberRegex = /^\s*[+-]?\d+\.?\d*(?:e|E[+-]?\d+)?\s*$/
 /**
  *
  * @example
- * isMathExpressionASingleValue('3.1') //=> true
- * isMathExpressionASingleValue('3.1e-2') //=> true
- * isMathExpressionASingleValue('3.1e-2 + 4 * 2 - ( 1 - 5 ) ^ 2 ^ 3') //=> false
+ * isMathematicalExpressionASingleValue('3.1') //=> true
+ * isMathematicalExpressionASingleValue('3.1e-2') //=> true
+ * isMathematicalExpressionASingleValue('3.1e-2 + 4 * 2 - ( 1 - 5 ) ^ 2 ^ 3') //=> false
  */
-export function isMathExpressionASingleValue(s: any): s is string {
-  return s && stringValueRegex.test(s)
+export function isMathematicalExpressionASingleValue(s: any): s is string {
+  return s && stringNumberRegex.test(s)
 }

@@ -3,7 +3,7 @@
  */
 import { fall } from '../fall'
 import { Numberish } from './types'
-import { toString } from './numberishAtom'
+import { toStringNumber } from './numberishAtom'
 import { toFixedDecimal } from './utils'
 
 export type NumberishFormatOptions = {
@@ -76,12 +76,12 @@ export function toFormattedNumber(n: Numberish | undefined, options?: NumberishF
   if (n === undefined) return '0'
   return options?.shortExpression
     ? fall(n, [
-        (s) => toString(s, { decimals: ((options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2) + 1 }),
+        (s) => toStringNumber(s, { decimals: ((options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2) + 1 }),
         (s) => fixDecimal(s, options),
         (s) => handleShortExpression(s, options)
       ])
     : fall(n, [
-        (s) => toString(s, { decimals: ((options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2) + 1 }),
+        (s) => toStringNumber(s, { decimals: ((options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2) + 1 }),
         (s) => fixDecimal(s, options),
         (s) => groupSeparater(s, options)
       ])

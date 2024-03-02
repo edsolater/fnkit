@@ -1,7 +1,7 @@
 import { isNumber, isBigInt } from '../dataType'
 import { Numberish } from './types'
 import { ZeroBigint } from './constant'
-import { toNumberishAtom } from './numberishAtom'
+import { toFraction } from './numberishAtom'
 import { minus } from './operations'
 
 /**
@@ -14,7 +14,7 @@ export function greaterThan(a: Numberish | undefined, b: Numberish | undefined):
   if (a == null || b == null) return false
   if ((isNumber(a) || isBigInt(a)) && (isNumber(b) || isBigInt(b))) return a > b
   const diff = minus(a, b)
-  const ab = toNumberishAtom(diff).numerator
+  const ab = toFraction(diff).numerator
   return BigInt(ab) > BigInt(0)
 }
 export const gt = greaterThan
@@ -40,7 +40,7 @@ export function lessThan(a: Numberish | undefined, b: Numberish | undefined): bo
   if (a == null || b == null) return false
   if ((isNumber(a) || isBigInt(a)) && (isNumber(b) || isBigInt(b))) return a < b
   const diff = minus(a, b)
-  const ab = toNumberishAtom(diff).numerator
+  const ab = toFraction(diff).numerator
   return ab < 0
 }
 export const lt = lessThan
@@ -69,7 +69,7 @@ export function equal(a: Numberish | undefined, b: Numberish | undefined): boole
   if (a == null || b == null) return false
   if ((isNumber(a) || isBigInt(a)) && (isNumber(b) || isBigInt(b))) return a == b
   const diff = minus(a, b)
-  const ab = toNumberishAtom(diff).numerator
+  const ab = toFraction(diff).numerator
   return ab === ZeroBigint
 }
 export const eq = equal

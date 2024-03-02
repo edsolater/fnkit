@@ -1,5 +1,5 @@
-import { NumberishAtom, Fraction } from './types'
-import { toNumberishAtom } from './numberishAtom'
+import { toFraction } from './numberishAtom'
+import { Fraction } from './types'
 
 function padTailZero(n: string | bigint | number, zeroLength?: number) {
   if (!zeroLength) return String(n)
@@ -75,7 +75,7 @@ function prettifyNumberishAtomWith10(n: { numerator: bigint; denominator: bigint
   }
   return n
 }
-function prettifyNumberishAtom(n: Fraction): NumberishAtom {
-  return toNumberishAtom(prettifyNumberishAtomWith10(prettifyNumberishAtomWithDecimal(n)))
+function prettifyNumberishAtom(n: Fraction): Fraction {
+  return toFraction(prettifyNumberishAtomWith10(prettifyNumberishAtomWithDecimal(n)))
 }
 

@@ -1,4 +1,4 @@
-import { addS, divide, greaterThan, lessThan, toBigint, toNumber, toString } from '..'
+import { addS, divide, greaterThan, lessThan, toBigint, toNumber, toStringNumber } from '..'
 import { reduce } from '../collectionMethods'
 import { getType } from '../dataType'
 import { Numberish } from '../numberish/types'
@@ -21,7 +21,7 @@ function toFistItemType<T>(result: Numberish, orginArr: readonly T[]): Unliteral
     : type === 'number'
     ? toNumber(result)
     : type === 'string'
-    ? toString(result)
+    ? toStringNumber(result)
     : result
 }
 export function sum<T extends Numberish>(arr: readonly T[]): Unliteral<T> {

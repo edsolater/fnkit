@@ -1,23 +1,35 @@
-import { toString } from './numberishAtom'
+import { toStringNumber } from './numberishAtom'
 import { add, minus, multiply, pow } from './operations'
 
-test('numberish: toString', () => {
-  expect(toString(3.22)).toBe('3.22')
-  expect(toString({ numerator: 12312n, decimal: 4 })).toBe('1.2312')
+test('numberish: toStringNumber', () => {
+  expect(toStringNumber(3.22)).toBe('3.22')
+  expect(toStringNumber({ numerator: 12312n, decimal: 4 })).toBe('1.2312')
 })
 
-test('numberish: operator', () => {
-  expect(toString(add('9007199254740991.4', '112.4988'))).toBe('9007199254741103.8988')
+test('numberish: operators', () => {
+  expect(toStringNumber(add('9007199254740991.4', '112.4988'))).toBe('9007199254741103.8988')
 
-  expect(toString(minus('1.22', '112.3'))).toBe('-111.08')
-  expect(toString(minus('1.22', '-112.3'))).toBe('113.52')
-  expect(toString(minus('9007199254740991.4', '112.4988'))).toBe('9007199254740878.9012')
+  expect(toStringNumber(minus('1.22', '112.3'))).toBe('-111.08')
+  expect(toStringNumber(minus('1.22', '-112.3'))).toBe('113.52')
+  expect(toStringNumber(minus('9007199254740991.4', '112.4988'))).toBe('9007199254740878.9012')
 
-  expect(toString(multiply('1.22', '112.3'))).toBe('137.006')
-  expect(toString(multiply('9007199254740991.4', '112.4988'))).toBe('1013299107519255843.31032')
+  expect(toStringNumber(multiply('1.22', '112.3'))).toBe('137.006')
+  expect(toStringNumber(multiply('9007199254740991.4', '112.4988'))).toBe('1013299107519255843.31032')
+  expect(toStringNumber(multiply(add(90, 10), '112.4988'))).toBe('11249.88')
 })
+
+test('numberish: operator add', () => {
+  expect(add(10, 123)).toBe(133)
+  expect(toStringNumber(add('9007199254740991.4', '112.4988'))).toBe('9007199254741103.8988')
+})
+
+test('operator:mul', () => {
+  //FIXME: error here
+  expect(toStringNumber(multiply(add(90, 10), '112.4988'))).toBe('11249.88')
+})
+
 test('pow: (2 ^ 3 = 8)', () => {
-  expect(toString(pow('2', '3'))).toBe('8')
+  expect(toStringNumber(pow('2', '3'))).toBe('8')
   // expect(toString(pow(2n, '3'))).toBe('8')
   // expect(toString(pow('2', '3.1')).startsWith('8.57418')).toBe(true)
 })

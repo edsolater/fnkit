@@ -1,6 +1,6 @@
 import { Numberish } from './types'
 import { eq, gt } from './compare'
-import { toString } from './numberishAtom'
+import { toStringNumber } from './numberishAtom'
 import { mul } from './operations'
 import { toFixedDecimal } from './utils'
 
@@ -40,7 +40,7 @@ export function toPercentString(
       const stringPart = toFixedDecimal(mul(n ?? 0, options?.alreadyPercented ? 1 : 100), options?.fixed ?? 2)
       if (eq(n, 0)) return '0'
       if (!options?.exact && stringPart === '0.00') return options?.alwaysSigned ? '<+0.01' : '<0.01'
-      return options?.alwaysSigned ? getSign(stringPart) + toString(getUnsignNumber(stringPart)) : stringPart
+      return options?.alwaysSigned ? getSign(stringPart) + toStringNumber(getUnsignNumber(stringPart)) : stringPart
     } catch (err) {
       return '0'
     }
