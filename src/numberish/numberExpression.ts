@@ -21,7 +21,6 @@ export function isRPNItem(item: unknown): item is RPNItem {
 }
 
 export function parseRPNToFraction(rpn: RPNItem[]): Fraction {
-  console.log('rpn: ', rpn)
   const rpnLengthIsValid = rpn.length % 2 === 1
   if (!rpnLengthIsValid) {
     throw `invalid rpn length, so can't parse`

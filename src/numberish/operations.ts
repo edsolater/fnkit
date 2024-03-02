@@ -2,11 +2,14 @@ import { isNumber } from '../dataType'
 import { NumberishOption, toBigint, toNumber } from './changeFormats'
 import { TenBigint } from './constant'
 import { toFraction, toStringNumber } from './numberishAtom'
-import { isInt } from './selfIs'
+import { isBigIntable, isInt, isNumberSafeInteger } from './selfIs'
 import { BasicNumberish, Fraction, Numberish } from './types'
 
 type MathOperateOption = {
-  /** will always not number */
+  /**
+   * will always not number
+   * @deprecated should always auto-exact. No need to set this maunally
+   */
   exact?: boolean
 }
 
@@ -18,12 +21,14 @@ type MathOperateOption = {
  * @todo should just add virculy
  */
 export function add(a: Numberish, b: Numberish, options?: MathOperateOption): Numberish {
-  if (!options?.exact && isNumber(a) && isNumber(b)) {
+  if (!options?.exact && isNumberSafeInteger(a) && isNumberSafeInteger(b)) {
     const output = a + b
-    if (output > Number.MAX_SAFE_INTEGER) {
+    if (!isNumberSafeInteger(output)) {
       return exactAdd(a, b)
     }
     return output
+  } else if (isBigIntable(a) && isBigIntable(b)) {
+    return BigInt(a) + BigInt(b)
   } else {
     return exactAdd(a, b)
   }
@@ -73,12 +78,14 @@ export function addS(...params: Parameters<typeof add>): string {
  * multiply('9007199254740991.4', '112.4988') //=> '1013299107519255843.31032'
  */
 export function multiply(a: Numberish, b: Numberish, options?: MathOperateOption): Numberish {
-  if (!options?.exact && isNumber(a) && isNumber(b)) {
+  if (!options?.exact && isNumberSafeInteger(a) && isNumberSafeInteger(b)) {
     const output = a * b
-    if (output > Number.MAX_SAFE_INTEGER) {
+    if (!isNumberSafeInteger(output)) {
       return exactMultiply(a, b)
     }
     return output
+  } else if (isBigIntable(a) && isBigIntable(b)) {
+    return BigInt(a) * BigInt(b)
   } else {
     return exactMultiply(a, b)
   }
@@ -128,13 +135,15 @@ export function excutiveReciprocal(a: BasicNumberish): Fraction {
  * minus('1.22', '-112.3') //=> '113.52'
  * minus('9007199254740991.4', '112.4988') //=> '9007199254740878.9012'
  */
-export function minus(a: Numberish, b: Numberish): Numberish {
-  if (isNumber(a) && isNumber(b)) {
+export function minus(a: Numberish, b: Numberish, options?: MathOperateOption): Numberish {
+  if (!options?.exact && isNumberSafeInteger(a) && isNumberSafeInteger(b)) {
     const output = a - b
-    if (output > Number.MAX_SAFE_INTEGER) {
+    if (!isNumberSafeInteger(output)) {
       return exactMinus(a, b)
     }
     return output
+  } else if (isBigIntable(a) && isBigIntable(b)) {
+    return BigInt(a) - BigInt(b)
   } else {
     return exactMinus(a, b)
   }
@@ -162,16 +171,9 @@ export function minusS(...params: Parameters<typeof minus>): string {
  * divide('1.22', '-112.3') //=> '-0.010863'
  */
 export function divide(a: Numberish, b: Numberish): Numberish {
-  if (isNumber(a) && isNumber(b)) {
-    const output = a / b
-    if (output > Number.MAX_SAFE_INTEGER) {
-      return exactDivide(a, b)
-    }
-    return output
-  } else {
-    return exactDivide(a, b)
-  }
+  return exactDivide(a, b)
 }
+
 function exactDivide(a: Numberish, b: Numberish): Numberish {
   const aFraction = toFraction(a)
   const bFraction = toFraction(b)

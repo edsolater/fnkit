@@ -19,6 +19,23 @@ export function hasDecimal<T extends Numberish | undefined>(v: T): v is NonNulla
   return v == null ? false : !isInt(v)
 }
 
+export function isNumberSafeInteger(v: any): v is number {
+  return isNumber(v) && v < Number.MAX_SAFE_INTEGER && v > Number.MIN_SAFE_INTEGER && Number.isSafeInteger(v)
+}
+export function isNumberSafe(v: any): v is number {
+  return isNumber(v) && v < Number.MAX_SAFE_INTEGER && v > Number.MIN_SAFE_INTEGER
+}
+
+const stringNumberIntegerRegexp = /^-?\d+$/
+
+export function isStringInteger(v: any): v is string {
+  return isString(v) && stringNumberIntegerRegexp.test(v)
+}
+
+export function isBigIntable(v: any): v is bigint | string | number {
+  return isBigInt(v) || isStringInteger(v) || isNumberSafeInteger(v)
+}
+
 export function isInt<T extends Numberish | undefined>(v: T): v is NonNullable<T> {
   if (v == null) return false
   const pure = impureNumberish(v)
