@@ -146,7 +146,7 @@ export function isMathematicalExpression(s: any): s is string {
   return isString(s) && !stringNumberRegex.test(s)
 }
 
-const stringNumberRegex = /^\s*[+-]?\d+\.?\d*(?:e|E[+-]?\d+)?\s*$/
+const stringNumberRegex = /^\s*[+-]?\d+\.?\d*(?:[eE][+-]?\d+)?\s*$/
 /**
  *
  * @example

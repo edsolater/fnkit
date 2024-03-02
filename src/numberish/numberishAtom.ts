@@ -31,8 +31,8 @@ function fromBigIntToFraction(n: bigint): Fraction {
   return { numerator: n, decimal: 0, denominator: 1n }
 }
 
-const scientificNotationRegex = /^[+-]?\d+\.?\d*e[+-]?\d+$/
-function isScientificNotation(str: any): boolean {
+const scientificNotationRegex = /^[+-]?\d+\.?\d*[eE][+-]?\d+$/
+export function isScientificNotation(str: any): boolean {
   return (isString(str) || isNumber(str)) && scientificNotationRegex.test(String(str))
 }
 
@@ -57,7 +57,7 @@ export function toFraction(from: Numberish): Fraction {
   if (isObject(from) && 'toNumberish' in from) return toFraction(from.toNumberish())
   if (isString(from)) {
     if (isScientificNotation(from)) {
-      const [nPart = '', ePart = ''] = String(from).split(/e|E/)
+      const [nPart = '', ePart = ''] = String(from).split(/[eE]/)
       const nPartNumberishAtom = fromStringToFraction(nPart)
       return { ...nPartNumberishAtom, decimal: (nPartNumberishAtom.decimal ?? 0) + -Number(ePart) }
     }

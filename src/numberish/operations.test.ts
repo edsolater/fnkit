@@ -1,5 +1,5 @@
 import { toStringNumber } from './numberishAtom'
-import { add, minus, multiply, pow } from './operations'
+import { add, applyDecimal, minus, multiply, pow } from './operations'
 
 test('numberish: toStringNumber', () => {
   expect(toStringNumber(3.22)).toBe('3.22')
@@ -32,4 +32,12 @@ test('pow: (2 ^ 3 = 8)', () => {
   expect(toStringNumber(pow('2', '3'))).toBe('8')
   // expect(toString(pow(2n, '3'))).toBe('8')
   // expect(toString(pow('2', '3.1')).startsWith('8.57418')).toBe(true)
+})
+test('apply decimal', () => {
+  expect(applyDecimal(4.3424, 3)).toBe('0.0043424')
+  expect(applyDecimal(4.3424, -3)).toBe('4342.4')
+  expect(applyDecimal(4.3424, -4)).toBe('43424')
+  expect(applyDecimal(43424, 3)).toBe('43.424')
+  expect(applyDecimal(43424, 8)).toBe('0.00043424')
+  expect(applyDecimal(43424, -2)).toBe('4342400')
 })

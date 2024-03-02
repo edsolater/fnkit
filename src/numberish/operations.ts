@@ -1,8 +1,10 @@
-import { isNumber } from '../dataType'
+import { isNumber, isString } from '../dataType'
 import { NumberishOption, toBigint, toNumber } from './changeFormats'
 import { TenBigint } from './constant'
 import { toFraction, toStringNumber } from './numberishAtom'
+import { buildFromAnatomyNumberInfo, parseAnatomyNumberInfo } from './parseAnatomyNumberInfo'
 import { isBigIntable, isInt, isNumberSafeInteger } from './selfIs'
+import { trimZero } from './trimZero'
 import { BasicNumberish, Fraction, Numberish } from './types'
 
 type MathOperateOption = {
@@ -264,4 +266,26 @@ export function excutivePow(a: Numberish, b: Numberish): Fraction {
   } else {
     return toFraction(Math.pow(toNumber(a), toNumber(b)))
   }
+}
+
+/**
+ * @example
+ * applyDecimal('123', 2) //=> '12300'
+ */
+export function applyDecimal(n: Numberish, decimal: number): Numberish {
+  if (decimal === 0) return n
+
+  if (isBigIntable(n)) {
+    const nString = isString(n) ? n : String(BigInt(n))
+    const nCount = nString.length
+    if (decimal >= nCount) {
+      return trimZero('0.' + '0'.repeat(decimal - nCount) + nString)
+    } else if (decimal < 0) {
+      return nString + '0'.repeat(-decimal)
+    } else {
+      return `${nString.slice(0, -decimal)}.${nString.slice(-decimal)}`
+    }
+  }
+  const anatomy = parseAnatomyNumberInfo(n)
+  return buildFromAnatomyNumberInfo({ ...anatomy, e: (anatomy.e ?? 0) + decimal })
 }

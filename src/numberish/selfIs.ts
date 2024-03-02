@@ -60,7 +60,7 @@ export function isZero<T extends Numberish | undefined>(v: T): v is NonNullable<
   return numerator === ZeroBigint && denominator !== ZeroBigint
 }
 
-export function notZero<T extends Numberish | undefined>(a: T): boolean {
+export function notZero<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
   return a && !isZero(a)
 }
 

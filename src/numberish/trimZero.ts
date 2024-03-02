@@ -6,7 +6,9 @@
  * trimZero('.000000') //=> '0'
  */
 export function shakeTailingZero(s: string): string {
-  const n = s.replace(/\.?0+$/, '')
+  const hasDot = s.includes('.')
+  if (!hasDot) return s
+  const n = s.trimEnd().replace(/\.?0+$/, '')
   return n === '' ? '0' : n
 }
 
@@ -15,5 +17,5 @@ export function trimZero(s: string): string {
 }
 
 export function addHeadingZero(s: string): string {
-  return s.startsWith('.') ? '0' + s : s
+  return s.trimStart().replace(/^([-+]?)\.(.*)/, '$10.$2')
 }
