@@ -78,7 +78,8 @@ export function toFraction(from: Numberish): Fraction {
  * toString({ decimal: 7, all: '40000000' }) //=> '4'
  *
  */
-export function toStringNumber(from: Numberish, options?: NumberishOption): string {
+export function toStringNumber(from: Numberish | undefined, options?: NumberishOption): string {
+  if (from === undefined) return '0'
   const stringNumber = (() => {
     if (isNumber(from)) return from > Number.MAX_SAFE_INTEGER ? String(BigInt(from)) : String(from)
     if (isBigInt(from)) return String(from)
