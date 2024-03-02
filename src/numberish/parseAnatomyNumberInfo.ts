@@ -9,6 +9,7 @@ type AnatomyNumberInfo = {
   e?: number
 }
 
+
 /**
  *
  * @example
@@ -21,7 +22,6 @@ export function parseAnatomyNumberInfo(n: Numberish | undefined): AnatomyNumberI
   const [, sign = '', int = '', dec = '', e = ''] = s.match(/([-+]?)(\d*)\.?(\d*)(?:[eE]([+-]?\d+))?/) ?? []
   return { sign: sign as '-' | '+' | undefined, int: int, dec: dec, e: Number(e) }
 }
-
 export function buildFromAnatomyNumberInfo(info: AnatomyNumberInfo): string {
   const sign = info.sign === undefined ? '' : info.sign
   const int = info.int === '0' ? '' : info.int.toString()
