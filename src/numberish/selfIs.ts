@@ -1,9 +1,9 @@
-import { isBigInt, isNumber, isString, isStringNumber } from '../dataType'
+import { isBigInt, isNaN, isNumber, isString } from '../dataType'
 import { ZeroBigint } from './constant'
 import { toFraction } from './numberishAtom'
 import { mod } from './operations'
 import { impureNumberish } from './parseNumberish'
-import { Numberish } from './types'
+import { Numberish, type StringNumber } from './types'
 
 export function isMeaningfulNumber<T extends Numberish | undefined>(n: T): n is NonNullable<T> {
   if (n == null) return false
@@ -24,12 +24,6 @@ export function isNumberSafeInteger(v: any): v is number {
 }
 export function isNumberSafe(v: any): v is number {
   return isNumber(v) && v < Number.MAX_SAFE_INTEGER && v > Number.MIN_SAFE_INTEGER
-}
-
-const stringNumberIntegerRegexp = /^-?\d+$/
-
-export function isStringInteger(v: any): v is string {
-  return isString(v) && stringNumberIntegerRegexp.test(v)
 }
 
 export function isBigIntable(v: any): v is bigint | string | number {
@@ -66,12 +60,34 @@ export function notZero<T extends Numberish | undefined>(a: T): a is NonNullable
 
 export function isNegative<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
   if (a == null) return false
-  const { denominator = 1n, numerator } = toFraction(a)
+  const pure = impureNumberish(a)
+  if (isNumber(pure)) return pure < 0
+  if (isBigInt(pure)) return pure < 0n
+  if (isString(pure) && isStringNumber(pure)) return pure.trim() != '' && pure.trim().startsWith('-')
+  const { denominator = 1n, numerator } = toFraction(pure)
   return (numerator > 0n && denominator < 0n) || (numerator < 0n && denominator > 0n)
 }
 
 export function isPositive<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
   if (a == null) return false
-  const { denominator = 1n, numerator } = toFraction(a)
+  const pure = impureNumberish(a)
+  if (isNumber(pure)) return pure > 0
+  if (isBigInt(pure)) return pure > 0n
+  if (isString(pure) && isStringNumber(pure)) return pure.trim() != '' && !pure.trim().startsWith('-')
+  const { denominator = 1n, numerator } = toFraction(pure)
   return (numerator > 0n && denominator > 0n) || (numerator < 0n && denominator < 0n)
+}
+
+export function isStringNumber(v: any): v is StringNumber {
+  if (v === '') return false
+  if (isNumber(v)) return true
+  if (isBigInt(v)) return true
+  const n = Number(v)
+  return isNumber(n) && !isNaN(n)
+}
+
+const stringNumberIntegerRegexp = /^-?\d+$/
+
+export function isStringInteger(v: any): v is string {
+  return isString(v) && stringNumberIntegerRegexp.test(v)
 }

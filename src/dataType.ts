@@ -1,5 +1,4 @@
 import { AnyArr, AnyFn, Primitive } from './typings/constants'
-import { StringNumber } from "./numberish/types"
 
 /**
  * @requires {@link getObjType `getObjType()`}
@@ -151,10 +150,6 @@ export function isIterable(v: unknown): v is Iterable<unknown> {
 
 export function isAsyncIterable(v: unknown): v is AsyncIterable<unknown> {
   return isObject(v) && typeof v[Symbol.asyncIterator] === 'function'
-}
-
-export function isStringNumber(v: any): v is StringNumber {
-  return isNumber(Number(v))
 }
 
 export function isJSON(jsonString: unknown): jsonString is string {
