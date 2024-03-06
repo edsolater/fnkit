@@ -10,7 +10,8 @@ test('toFormattedNumber', () => {
 test('formattedNumber should always respect input decimal', () => {
   expect(toFormattedNumber(1, { decimals: 4 })).toEqual('1.0000')
   expect(toFormattedNumber(1n, { decimals: 4 })).toEqual('1.0000')
-  expect(toFormattedNumber('1', { decimals: 4 })).toEqual('1.0000')
+  expect(toFormattedNumber('1.00001', { decimals: 4 })).toEqual('1.0000')
+  expect(toFormattedNumber('1.00008', { decimals: 4 })).toEqual('1.0001')
 })
 
 test('toFormattedNumber2', () => {
