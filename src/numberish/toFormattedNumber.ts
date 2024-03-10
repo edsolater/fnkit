@@ -5,10 +5,11 @@ import { fall } from '../fall'
 import { Numberish } from './types'
 import { toStringNumber } from './numberishAtom'
 import { toFixedDecimal } from './utils'
+import { isNumber } from '../dataType'
 
 export type NumberishFormatOptions = {
   /**
-   * separator symbol
+   * separator  symbol between 3 number
    * @default ','
    * @example
    * toFormattedNumber(7000000.2) // result: '7,000,000.200'
@@ -65,7 +66,7 @@ export type NumberishFormatOptions = {
 }
 
 /**
- * to formated number string
+ * to formatted number string
  * @example
  * toFormattedNumber(undefined) // '0'
  * toFormattedNumber(7000000.2) // result: '7,000,000.20'
@@ -73,7 +74,10 @@ export type NumberishFormatOptions = {
  * toFormattedNumber(100.1234, { decimals: 3 }) // result: '100.123'
  */
 export function toFormattedNumber(n: Numberish | undefined, options?: NumberishFormatOptions): string {
-  if (n === undefined) return '0'
+  if (n === undefined) {
+    if (options?.decimals === 'auto') return '0'
+    if (!options || (options.decimals && options.decimals > 0)) return '0' + '.' + '0'.repeat(options?.decimals ?? 2)
+  }
   return options?.shortExpression
     ? fall(n, [
         (s) => toStringNumber(s, { decimals: ((options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2) + 1 }),

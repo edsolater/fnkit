@@ -78,6 +78,26 @@ export function isPositive<T extends Numberish | undefined>(a: T): a is NonNulla
   return (numerator > 0n && denominator > 0n) || (numerator < 0n && denominator < 0n)
 }
 
+export function isGreaterThanOne<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
+  if (a == null) return false
+  const pure = impureNumberish(a)
+  if (isNumber(pure)) return pure > 1
+  if (isBigInt(pure)) return pure > 1n
+  if (isString(pure) && isStringNumber(pure)) return pure.trim() != '' && pure.trim() !== '0' && pure.trim() !== '1'
+  const { denominator = 1n, numerator } = toFraction(pure)
+  return numerator > denominator
+}
+
+export function isLessThanOne<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
+  if (a == null) return false
+  const pure = impureNumberish(a)
+  if (isNumber(pure)) return pure < 1
+  if (isBigInt(pure)) return pure < 1n
+  if (isString(pure) && isStringNumber(pure)) return pure.trim() != '' && pure.trim() !== '0' && pure.trim() !== '1'
+  const { denominator = 1n, numerator } = toFraction(pure)
+  return numerator < denominator
+}
+
 export function isStringNumber(v: any): v is StringNumber {
   if (v === '') return false
   if (isNumber(v)) return true

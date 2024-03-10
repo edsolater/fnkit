@@ -9,9 +9,13 @@ test('toFormattedNumber', () => {
 
 test('formattedNumber should always respect input decimal', () => {
   expect(toFormattedNumber(1, { decimals: 4 })).toEqual('1.0000')
+  expect(toFormattedNumber('1', { decimals: 4 })).toEqual('1.0000')
   expect(toFormattedNumber(1n, { decimals: 4 })).toEqual('1.0000')
   expect(toFormattedNumber('1.00001', { decimals: 4 })).toEqual('1.0000')
   expect(toFormattedNumber('1.00008', { decimals: 4 })).toEqual('1.0001')
+  const formattedOne = toFormattedNumber({ decimal: 0, numerator: 1n, denominator: 1n }, { decimals: 4 })
+  console.log('formattedOne: ', formattedOne)
+  expect(formattedOne).toEqual('1.0000')
 })
 
 test('toFormattedNumber2', () => {

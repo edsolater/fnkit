@@ -155,9 +155,9 @@ export function has<T>(i: ItemList<T>, key: any) {
   return i[key] !== undefined
 }
 
-export function slice<T extends ItemList<any>>(i: T, count?: number): T
-export function slice<T extends ItemList<any>>(i: T, range?: [start: number, end?: number]): T
-export function slice<T extends ItemList<any>>(i: T, num?: [start: number, end?: number] | number): T {
+export function turncate<T extends ItemList<any>>(i: T, count?: number): T
+export function turncate<T extends ItemList<any>>(i: T, range?: [start: number, end?: number]): T
+export function turncate<T extends ItemList<any>>(i: T, num?: [start: number, end?: number] | number): T {
   if (num == null) return i
   const range = isArray(num) ? num : [0, num]
   if (isUndefined(i)) return i
