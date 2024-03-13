@@ -115,7 +115,7 @@ export function isPromise(target: unknown): target is Promise<unknown> {
 
 export function isNumber(v: any): v is number {
   return typeof v === 'number' && !Number.isNaN(v)
-} 
+}
 
 export function isFinite(v: unknown): v is number {
   return Number.isFinite(v)
@@ -150,6 +150,10 @@ export function isIterable(v: unknown): v is Iterable<unknown> {
 
 export function isAsyncIterable(v: unknown): v is AsyncIterable<unknown> {
   return isObject(v) && typeof v[Symbol.asyncIterator] === 'function'
+}
+
+export function isDate(v: unknown): v is Date {
+  return v instanceof Date
 }
 
 export function isJSON(jsonString: unknown): jsonString is string {

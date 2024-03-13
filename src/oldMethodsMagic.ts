@@ -18,7 +18,7 @@ export function assert(condition: any, arg0?: string | (() => void), arg1?: (msg
 
 export const neww = Reflect.construct
 
-//#region ------------------- 测试 -------------------
+//#region ------------------- test -------------------
 // const a = parallelSwitch('hello', [
 //   ['world', 1],
 //   ['hello', 4]

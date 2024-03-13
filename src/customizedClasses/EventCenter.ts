@@ -1,7 +1,6 @@
 import { map } from '../collectionMethods'
 import { AnyFn } from '../typings'
 import { createSubscription, Subscription } from './Subscription'
-import { WeakerSet } from './WeakerSet'
 
 type EventConfig = {
   [eventName: string]: AnyFn
@@ -12,38 +11,77 @@ function generateEventCenterId() {
   return eventCenterIdCounter++
 }
 
-export type EventCenterOptions = {
-  // TODO currently a placeholder. for don't know what to write
+type EventCenterCreateOptions<T extends EventConfig> = {
+  shouldCacheAllEmitedValues?: boolean
+  shouldCachEmitedValue?: boolean
+
+  whenEventListenerRegistered?: {
+    [P in keyof T as `${P & string}`]?: (utils: {
+      fn: (...params: Parameters<T[P]>) => void
+      eventName: P
+      emit: EventCenter<T>['emit']
+      isFirst: boolean
+    }) => void
+  }
+  whenAnyEventListenerRegistered?: (utils: {
+    fn: (...params: any[]) => void
+    emit: EventCenter<T>['emit']
+    isFirst: boolean
+  }) => void
+}
+export type EventListenerOptions = {
+  /**
+   * worked only if `shouldCacheAllEmitedValues` is true
+   */
+  initWithMultiPrevEmitedValues?: boolean
+  /**
+   * worked only if `shouldCachEmitedValue` is true
+   */
+  initWithPrevEmitedValue?: boolean
 }
 
-export type EventCenter<T extends EventConfig> = {
+export type EventCenter<Config extends EventConfig> = {
   /** core for event provider */
-  emit<N extends keyof T>(eventName: N, parameters: Parameters<T[N]>): void
+  emit<EventName extends keyof Config>(eventName: EventName, parameters: Parameters<Config[EventName]>): void
 
-  /** same as {@link EventCenter['on']} but will regist multi listeners at once */
-  registEvents<U extends Partial<T>>(subscriptionFns: U, options?: EventCenterOptions): { [P in keyof U]: Subscription }
+  /**
+   * same as {@link EventCenter['on']} but will regist multi listeners at once
+   * @deprecated just use on
+   */
+  registEventHandlers<U extends Partial<Config>>(
+    subscriptionFns: U,
+    options?: EventListenerOptions
+  ): { [P in keyof U]: Subscription }
 
   /** core for event consumer */
   /**
    * create a factory
    */
-  on<N extends keyof T>(
-    eventName: N
-  ): (subscriptionFn: (...params: Parameters<T[N]>) => void, options?: EventCenterOptions) => Subscription
+  on<EventName extends keyof Config>(
+    eventName: EventName
+  ): (
+    subscriptionFn: (...params: Parameters<Config[EventName]>) => void,
+    options?: EventListenerOptions
+  ) => Subscription
   /**
    * subscribe
    */
-  on<N extends keyof T>(
-    eventName: N,
-    subscriptionFn: (...params: Parameters<T[N]>) => void,
-    options?: EventCenterOptions
+  on<EventName extends keyof Config>(
+    eventName: EventName,
+    subscriptionFn: (...params: Parameters<Config[EventName]>) => void,
+    options?: EventListenerOptions
+  ): Subscription
+
+  onAnyEvent<EventName extends keyof Config>(
+    subscriptionFn: (eventName: EventName, cllbackParams: Parameters<Config[EventName]>) => void,
+    options?: EventListenerOptions
   ): Subscription
 
   /** clear all registed events for specified event */
   clearAll(): void
 
   /** clear registed for specified event */
-  clear(eventName: keyof T): void
+  clear(eventName: keyof Config): void
 }
 
 /**
@@ -71,41 +109,55 @@ export type EventCenter<T extends EventConfig> = {
  * cc.emit('change', [{ status: 'success' }])
  */
 // 💡 observable should be the core of js model. just like event target is the core of DOM
-export function createEventCenter<T extends EventConfig>(whenAttach?: {
-  [P in keyof T as `${P & string}`]?: (utils: {
-    fn: (...params: Parameters<T[P]>) => void
-    emit: EventCenter<T>['emit']
-    isFirst: boolean
-  }) => void
-}): EventCenter<T> {
+export function createEventCenter<T extends EventConfig>(options?: EventCenterCreateOptions<T>): EventCenter<T> {
   const _eventCenterId = generateEventCenterId()
-  const storedCallbackStore = new Map<keyof T, WeakerSet<AnyFn>>()
+  const anyEventCommonCallbacks = new Set<AnyFn>()
+  const storedCallbackStore = new Map<keyof T, Set<AnyFn>>()
   type CallbackParam = any[]
-  const emitedValueCache = new Map<keyof T, WeakerSet<CallbackParam>>()
+
+  const emitedValueCache =
+    options?.shouldCacheAllEmitedValues || options?.shouldCachEmitedValue
+      ? new Map<keyof T, CallbackParam[]>()
+      : undefined
 
   const emit = ((eventName, paramters) => {
-    const handlerFns = storedCallbackStore.get(eventName)
-
-    handlerFns?.forEach((fn) => {
+    storedCallbackStore.get(eventName)?.forEach((fn) => {
       fn.apply(undefined, paramters ?? [])
     })
-    emitedValueCache.set(eventName, (emitedValueCache.get(eventName) ?? new WeakerSet()).add(paramters))
+    anyEventCommonCallbacks.forEach((fn) => {
+      fn.apply(undefined, [eventName, paramters ?? []])
+    })
+
+    if (options?.shouldCachEmitedValue) {
+      emitedValueCache!.set(eventName, (emitedValueCache!.get(eventName) ?? []).concat(paramters))
+    } else if (options?.shouldCacheAllEmitedValues) {
+      emitedValueCache!.set(eventName, (emitedValueCache!.get(eventName) ?? []).concat(paramters))
+    }
   }) as EventCenter<T>['emit']
 
-  const singlyOn = (eventName: string, fn: AnyFn, options?: EventCenterOptions) => {
-    // TODO currently a placeholder. for don't know what to write
-    const callbackList = storedCallbackStore.get(eventName) ?? new WeakerSet()
+  function singlyOn(eventName: string, fn: AnyFn, eventListenerOptions?: EventListenerOptions): Subscription {
+    const callbackList = storedCallbackStore.get(eventName) ?? new Set()
     callbackList.add(fn) //NUG:  <-- add failed??
     storedCallbackStore.set(eventName, callbackList)
 
     // handle `whenAttached` side-effect
-    whenAttach?.[eventName]?.({ fn, emit, isFirst: !storedCallbackStore.has(eventName) })
-
-    // initly invoke prev emitedValues
-    const cachedValues = emitedValueCache.get(eventName)
-    cachedValues?.forEach((prevParamters) => {
-      fn.apply(undefined, prevParamters)
+    options?.whenEventListenerRegistered?.[eventName]?.({
+      fn,
+      emit,
+      eventName,
+      isFirst: !storedCallbackStore.has(eventName)
     })
+
+    if (eventListenerOptions?.initWithMultiPrevEmitedValues) {
+      const cachedValues = emitedValueCache?.get(eventName)
+      cachedValues?.forEach((prevParamters) => {
+        fn.apply(undefined, prevParamters)
+      })
+    } else if (eventListenerOptions?.initWithPrevEmitedValue) {
+      const values = emitedValueCache?.get(eventName)
+      const prevParamters = values?.[values.length - 1]
+      if (prevParamters) fn.apply(undefined, prevParamters)
+    }
 
     return createSubscription({
       onUnsubscribe() {
@@ -113,15 +165,45 @@ export function createEventCenter<T extends EventConfig>(whenAttach?: {
       }
     })
   }
+  function onAnyEvent<EventName extends keyof T>(
+    fn: (eventName: EventName, cllbackParams: Parameters<T[EventName]>) => void,
+    eventListenerOptions?: EventListenerOptions
+  ): Subscription {
+    anyEventCommonCallbacks.add(fn)
 
-  const createOnFactory = (eventName: string) => (fn: AnyFn, options?: EventCenterOptions) =>
+    // handle `whenAttached` side-effect
+    options?.whenAnyEventListenerRegistered?.({ fn, emit, isFirst: anyEventCommonCallbacks.size === 1 })
+
+    if (eventListenerOptions?.initWithPrevEmitedValue) {
+      emitedValueCache?.forEach((cachedValues, eventName) => {
+        const prevParamters = cachedValues?.[cachedValues.length - 1]
+        // @ts-ignore no need to check
+        fn.apply(undefined, [eventName, prevParamters])
+      })
+    } else if (eventListenerOptions?.initWithMultiPrevEmitedValues) {
+      emitedValueCache?.forEach((cachedValues, eventName) => {
+        cachedValues?.forEach((prevParamters) => {
+          // @ts-ignore no need to check
+          fn.apply(undefined, [eventName, prevParamters])
+        })
+      })
+    }
+
+    return createSubscription({
+      onUnsubscribe() {
+        anyEventCommonCallbacks.delete(fn)
+      }
+    })
+  }
+
+  const createOnFactory = (eventName: string) => (fn: AnyFn, options?: EventListenerOptions) =>
     singlyOn(eventName, fn, options)
 
   const on = ((...args) => {
     if (args.length === 1) {
       return createOnFactory(...(args as [string]))
     } else {
-      return singlyOn(...(args as [string, AnyFn, EventCenterOptions]))
+      return singlyOn(...(args as [string, AnyFn, EventListenerOptions]))
     }
   }) as EventCenter<T>['on']
 
@@ -129,7 +211,7 @@ export function createEventCenter<T extends EventConfig>(whenAttach?: {
     map(
       subscriptionFns,
       (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn as AnyFn, options)
-    )) as EventCenter<T>['registEvents']
+    )) as EventCenter<T>['registEventHandlers']
 
   function clearAll() {
     storedCallbackStore.clear()
@@ -138,7 +220,15 @@ export function createEventCenter<T extends EventConfig>(whenAttach?: {
     storedCallbackStore.delete(eventName)
   }
 
-  const eventCenter = { registEvents, on, emit, clearAll, clear, _eventCenterId } as EventCenter<T>
+  const eventCenter = {
+    onAnyEvent,
+    registEventHandlers: registEvents,
+    on,
+    emit,
+    clearAll,
+    clear,
+    _eventCenterId
+  } as EventCenter<T>
 
   return eventCenter
 }
