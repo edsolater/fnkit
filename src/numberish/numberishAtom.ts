@@ -103,3 +103,4 @@ export function toStringNumber(from: Numberish | undefined, options?: NumberishO
   })()
   return shakeTailingZero(stringNumber)
 }
+
