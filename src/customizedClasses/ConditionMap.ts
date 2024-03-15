@@ -1,4 +1,4 @@
-import { isFunction, isMap, isRegExp, isString } from '../dataType'
+import { isFunction, isMap, isRegExp, isString } from "../dataType"
 
 /**
  * @todo test it
@@ -64,7 +64,7 @@ export class ConditionMap<K extends string | RegExp | ((item: string) => boolean
 
 export function createConditionMap<K extends string, V>(map: Record<K, V>): ConditionMap<K, V>
 export function createConditionMap<K extends string | RegExp | ((item: string) => boolean), V>(
-  map: Iterable<readonly [K, V]>
+  map: Iterable<readonly [K, V]>,
 ): ConditionMap<K, V>
 export function createConditionMap<K extends string, V>(map: Record<K, V>): ConditionMap<K, V> {
   return new ConditionMap(map)

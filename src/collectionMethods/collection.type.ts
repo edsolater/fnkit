@@ -1,6 +1,6 @@
 export type Entry<Value = any, Key = any> = { key: Key; value: Value }
-export type GetEntryValue<E extends Entry> = E['value']
-export type GetEntryKey<E extends Entry> = E['key']
+export type GetEntryValue<E extends Entry> = E["value"]
+export type GetEntryKey<E extends Entry> = E["key"]
 export type ItemEntry<Item = any> = Entry<Item, number>
 export type Collection<Value = any, Key = any> = ArrayLikeCollection<Value> | ObjectLikeCollection<Value, Key>
 
@@ -20,40 +20,34 @@ type ObjectLikeCollection<Value = any, Key = any> =
 export type GetCollectionKey<C> = C extends ArrayLikeCollection
   ? number
   : C extends ObjectLikeCollection<any, infer Key>
-  ? Key
-  : never
+    ? Key
+    : never
 
-export type GetCollectionValue<C> = C extends ArrayLikeCollection<infer V>
-  ? V
-  : C extends ObjectLikeCollection<infer Value>
-  ? Value
-  : never
+export type GetCollectionValue<C> =
+  C extends ArrayLikeCollection<infer V> ? V : C extends ObjectLikeCollection<infer Value> ? Value : never
 
-export type GetNewCollection<
-  OldCollection,
-  NewValue,
-  NewKey = GetCollectionKey<OldCollection>
-> = OldCollection extends Array<any>
-  ? Array<NewValue>
-  : OldCollection extends ReadonlyArray<any>
-  ? ReadonlyArray<NewValue>
-  : OldCollection extends Map<any, any>
-  ? Map<NewKey, NewValue>
-  : OldCollection extends ReadonlyMap<any, any>
-  ? ReadonlyMap<NewKey, NewValue>
-  : OldCollection extends Set<any>
-  ? Set<NewValue>
-  : OldCollection extends ReadonlySet<any>
-  ? ReadonlySet<NewValue>
-  : OldCollection extends {
-      [k: string | number | symbol]: any
-    }
-  ? {
-      [k in keyof OldCollection]: NewValue
-    }
-  : OldCollection extends Record<any, any>
-  ? Record<Extract<NewKey, string | number | symbol>, NewValue>
-  : never
+export type GetNewCollection<OldCollection, NewValue, NewKey = GetCollectionKey<OldCollection>> =
+  OldCollection extends Array<any>
+    ? Array<NewValue>
+    : OldCollection extends ReadonlyArray<any>
+      ? ReadonlyArray<NewValue>
+      : OldCollection extends Map<any, any>
+        ? Map<NewKey, NewValue>
+        : OldCollection extends ReadonlyMap<any, any>
+          ? ReadonlyMap<NewKey, NewValue>
+          : OldCollection extends Set<any>
+            ? Set<NewValue>
+            : OldCollection extends ReadonlySet<any>
+              ? ReadonlySet<NewValue>
+              : OldCollection extends {
+                    [k: string | number | symbol]: any
+                  }
+                ? {
+                    [k in keyof OldCollection]: NewValue
+                  }
+                : OldCollection extends Record<any, any>
+                  ? Record<Extract<NewKey, string | number | symbol>, NewValue>
+                  : never
 
 /** test */
 // type V = GetCollectionKey<('hello' | number)[]>

@@ -1,4 +1,4 @@
-import { isNullish } from './dataType'
+import { isNullish } from "./dataType"
 
 /**
  * useful for structure other basements

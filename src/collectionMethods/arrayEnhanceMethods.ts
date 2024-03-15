@@ -1,5 +1,5 @@
-import { Collection, GetCollectionKey } from '.'
-import { isArray, isMap, isSet } from '../dataType'
+import { Collection, GetCollectionKey } from "."
+import { isArray, isMap, isSet } from "../dataType"
 
 export function getKeys<T extends Collection>(...collection: readonly T[]): GetCollectionKey<T>[] {
   if (isMap(collection) || isArray(collection) || isSet(collection)) {

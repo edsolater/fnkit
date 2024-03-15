@@ -1,5 +1,5 @@
-import { isJSON, isObject } from './dataType'
-import { ID } from './typings/constants'
+import { isJSON, isObject } from "./dataType"
+import { ID } from "./typings/constants"
 
 /**
  * 组合字符串们（n^3 复杂度）（不保证顺序）
@@ -68,7 +68,7 @@ export function deepJSONParse(jsonString: unknown) {
  * @param str 目标字符串
  */
 export function getFirstChar(str: string): string {
-  return str[0] ?? ''
+  return str[0] ?? ""
 }
 
 /**
@@ -77,7 +77,7 @@ export function getFirstChar(str: string): string {
  * @param str 目标字符串
  */
 export function getLastChar(str: string): string {
-  return str[str.length - 1] ?? ''
+  return str[str.length - 1] ?? ""
 }
 
 /**
@@ -89,7 +89,7 @@ export function getLastChar(str: string): string {
  * getMatches('hello world', /\wo/) // ['lo', 'wo']
  */
 export function getMatches(str: string, regex: RegExp): string[] {
-  return Array.from(str.match(new RegExp(regex, 'g')) ?? [])
+  return Array.from(str.match(new RegExp(regex, "g")) ?? [])
 }
 
 /**
@@ -97,5 +97,5 @@ export function getMatches(str: string, regex: RegExp): string[] {
  * 产生一个5位数数字字符串的id
  */
 export function randomCreateId(): ID {
-  return String('aa' + Math.round(+Math.random().toFixed(4) * 10000))
+  return String("aa" + Math.round(+Math.random().toFixed(4) * 10000))
 }

@@ -1,5 +1,5 @@
-import { isObjectLike } from './dataType'
-import { AnyArr, AnyFn } from './typings/constants'
+import { isObjectLike } from "./dataType"
+import { AnyArr, AnyFn } from "./typings/constants"
 
 /**
  * attach a param to the function.return the function's copy.
@@ -13,7 +13,7 @@ import { AnyArr, AnyFn } from './typings/constants'
 export function attachArgs<F extends AnyFn, Index extends number>(
   fn: F,
   paramIndex: Index,
-  param: Partial<Parameters<F>[Index]>
+  param: Partial<Parameters<F>[Index]>,
 ): F {
   const partlyInvokedFunction = (...args: Parameters<F>) => {
     const oldParam = args[paramIndex]
@@ -73,7 +73,7 @@ export function checkProp(propName: string | symbol, checker: (value: any) => bo
  */
 export function safer<F extends (...params: any[]) => any, Handler extends (error: unknown) => void>(
   fn: F,
-  handler: Handler
+  handler: Handler,
 ): F & {
   originalFunction: F
   errorHandler: Handler
@@ -104,7 +104,7 @@ export function safer<F extends (...params: any[]) => any, Handler extends (erro
 export function overwriteFunctionName<F extends (...params: any[]) => any>(func: F, name?: string): F {
   if (!name) return func
   const temp = {
-    [name]: (...args: any[]) => func(...args)
+    [name]: (...args: any[]) => func(...args),
   }
   return temp[name] as F
 }

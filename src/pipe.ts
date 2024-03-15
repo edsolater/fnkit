@@ -11,7 +11,7 @@ export function pipe<T, R, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10>(
     (v: M7) => M8,
     (v: M8) => M9,
     (v: M9) => M10,
-    (v: M10) => R
+    (v: M10) => R,
   ]
 ): R
 export function pipe<T, R, M1, M2, M3, M4, M5, M6, M7, M8, M9>(
@@ -26,7 +26,7 @@ export function pipe<T, R, M1, M2, M3, M4, M5, M6, M7, M8, M9>(
     (v: M6) => M7,
     (v: M7) => M8,
     (v: M8) => M9,
-    (v: M9) => R
+    (v: M9) => R,
   ]
 ): R
 export function pipe<T, R, M1, M2, M3, M4, M5, M6, M7, M8>(
@@ -40,7 +40,7 @@ export function pipe<T, R, M1, M2, M3, M4, M5, M6, M7, M8>(
     (v: M5) => M6,
     (v: M6) => M7,
     (v: M7) => M8,
-    (v: M8) => R
+    (v: M8) => R,
   ]
 ): R
 export function pipe<T, R, M1, M2, M3, M4, M5, M6, M7>(
@@ -53,7 +53,7 @@ export function pipe<T, R, M1, M2, M3, M4, M5, M6, M7>(
     (v: M4) => M5,
     (v: M5) => M6,
     (v: M6) => M7,
-    (v: M7) => R
+    (v: M7) => R,
   ]
 ): R
 export function pipe<T, R, M1, M2, M3, M4, M5, M6>(

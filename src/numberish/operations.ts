@@ -1,11 +1,11 @@
-import { isNumber, isString } from '../dataType'
-import { NumberishOption, toBigint, toNumber } from './changeFormats'
-import { TenBigint } from './constant'
-import { toFraction, toStringNumber } from './numberishAtom'
-import { buildFromAnatomyNumberInfo, parseAnatomyNumberInfo } from './parseAnatomyNumberInfo'
-import { isBigIntable, isInt, isNumberSafeInteger } from './selfIs'
-import { trimZero } from './trimZero'
-import { BasicNumberish, Fraction, Numberish } from './types'
+import { isNumber, isString } from "../dataType"
+import { NumberishOption, toBigint, toNumber } from "./changeFormats"
+import { TenBigint } from "./constant"
+import { toFraction, toStringNumber } from "./numberishAtom"
+import { buildFromAnatomyNumberInfo, parseAnatomyNumberInfo } from "./parseAnatomyNumberInfo"
+import { isBigIntable, isInt, isNumberSafeInteger } from "./selfIs"
+import { trimZero } from "./trimZero"
+import { BasicNumberish, Fraction, Numberish } from "./types"
 
 type MathOperateOption = {
   /**
@@ -47,13 +47,13 @@ export function excutiveAdd(a: BasicNumberish, b: BasicNumberish): Fraction {
   if (denominatorA === denominatorB && decimalA === 0 && decimalB === 0) {
     return toFraction({
       numerator: numratorA + numratorB,
-      denominator: denominatorA
+      denominator: denominatorA,
     })
   } else if (denominatorA === denominatorB) {
     return toFraction({
       numerator: numratorA * TenBigint ** BigInt(decimalB) + numratorB * TenBigint ** BigInt(decimalA),
       decimal: decimalA + decimalB,
-      denominator: denominatorA
+      denominator: denominatorA,
     })
   } else {
     return toFraction({
@@ -61,7 +61,7 @@ export function excutiveAdd(a: BasicNumberish, b: BasicNumberish): Fraction {
         numratorA * TenBigint ** BigInt(decimalB) * denominatorB +
         numratorB * TenBigint ** BigInt(decimalA) * denominatorA,
       decimal: decimalA + decimalB,
-      denominator: denominatorA * denominatorB
+      denominator: denominatorA * denominatorB,
     })
   }
 }
@@ -103,7 +103,7 @@ export function excutiveMultiply(a: BasicNumberish, b: BasicNumberish): Fraction
   return toFraction({
     numerator: numratorA * numratorB,
     decimal: decimalA + decimalB,
-    denominator: denominatorA * denominatorB
+    denominator: denominatorA * denominatorB,
   })
 }
 
@@ -126,7 +126,7 @@ export function excutiveReciprocal(a: BasicNumberish): Fraction {
   return toFraction({
     numerator: denominator,
     decimal: -decimal,
-    denominator: numerator
+    denominator: numerator,
   })
 }
 
@@ -250,10 +250,10 @@ function exactPow(a: Numberish, b: Numberish): Numberish {
 }
 
 export function excutivePow(a: Numberish, b: Numberish): Fraction {
-  if (a === 1 || a === 1n || a === '1') return toFraction(1)
-  if (a === 0 || a === 0n || a === '0') return toFraction(0)
-  if (b === 1 || b === 1n || b === '1') return toFraction(a)
-  if (b === 0 || b === 0n || b === '0') return toFraction(1)
+  if (a === 1 || a === 1n || a === "1") return toFraction(1)
+  if (a === 0 || a === 0n || a === "0") return toFraction(0)
+  if (b === 1 || b === 1n || b === "1") return toFraction(a)
+  if (b === 0 || b === 0n || b === "0") return toFraction(1)
   const bIsInt = isInt(b)
   if (bIsInt) {
     const { decimal: decimalA = 0, numerator: numratorA, denominator: denominatorA = 1n } = toFraction(a)
@@ -261,7 +261,7 @@ export function excutivePow(a: Numberish, b: Numberish): Fraction {
     return toFraction({
       numerator: numratorA ** exponent,
       decimal: decimalA ** Number(exponent),
-      denominator: denominatorA ** exponent
+      denominator: denominatorA ** exponent,
     })
   } else {
     return toFraction(Math.pow(toNumber(a), toNumber(b)))
@@ -279,9 +279,9 @@ export function applyDecimal(n: Numberish, decimal: number): Numberish {
     const nString = isString(n) ? n : String(BigInt(n))
     const nCount = nString.length
     if (decimal >= nCount) {
-      return trimZero('0.' + '0'.repeat(decimal - nCount) + nString)
+      return trimZero("0." + "0".repeat(decimal - nCount) + nString)
     } else if (decimal < 0) {
-      return nString + '0'.repeat(-decimal)
+      return nString + "0".repeat(-decimal)
     } else {
       return `${nString.slice(0, -decimal)}.${nString.slice(-decimal)}`
     }

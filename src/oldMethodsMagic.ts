@@ -1,4 +1,4 @@
-import { isString } from './dataType'
+import { isString } from "./dataType"
 
 export function assert(condition: any, callback?: () => void): asserts condition
 export function assert(condition: any, msg?: string, callback?: (msg: string) => void): asserts condition

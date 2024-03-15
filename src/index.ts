@@ -1,43 +1,43 @@
-export * from './bindParams' // FP style get function faster
-export * from './cache'
-export * from './cacheFunction'
-export * from './callStack' // for debug, should only use it in development mode
-export * from './changeCase'
-export * from './changeFnReturnValue'
-export * from './collectionMethods'
-export * from './compare'
-export * from './compose'
-export * from './createObjectByGetters'
-export * from './curry'
-export * from './customizedClasses'
-export * from './dataStructure'
-export * from './dataType'
-export * from './date'
-export * from './debounce'
-export * from './fall'
-export * from './forceEmpty'
-export * from './iife'
-export * from './invoke'
-export * from './lazyMap'
-export * from './listToMap'
-export * from './magic'
-export * from './math'
-export * from './mergeFunctions'
-export * from './mergeObjects'
-export * from './numberish'
-export * from './oldMethodsArray'
-export * from './oldMethodsFunctionFactory'
-export * from './oldMethodsMagic'
-export * from './oldMethodsMath'
-export * from './oldMethodsObject'
-export * from './oldMethodsString'
-export * from './pickProperty' // FP style utils to get property easily
-export * from './pipe'
-export * from './promisify' // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
-export * from './switchCase' // FP style switch
-export * from './tableList'
-export * from './toPrimitiveValue'
-export * from './toStringOrUndefined'
-export * from './typings'
-export * from './whiteWrap'
-export * from './wrapper'
+export * from "./bindParams" // FP style get function faster
+export * from "./cache"
+export * from "./cacheFunction"
+export * from "./callStack" // for debug, should only use it in development mode
+export * from "./changeCase"
+export * from "./changeFnReturnValue"
+export * from "./collectionMethods"
+export * from "./compare"
+export * from "./compose"
+export * from "./createObjectByGetters"
+export * from "./curry"
+export * from "./customizedClasses"
+export * from "./dataStructure"
+export * from "./dataType"
+export * from "./date"
+export * from "./debounce"
+export * from "./fall"
+export * from "./forceEmpty"
+export * from "./iife"
+export * from "./invoke"
+export * from "./lazyMap"
+export * from "./listToMap"
+export * from "./magic"
+export * from "./math"
+export * from "./mergeFunctions"
+export * from "./mergeObjects"
+export * from "./numberish"
+export * from "./oldMethodsArray"
+export * from "./oldMethodsFunctionFactory"
+export * from "./oldMethodsMagic"
+export * from "./oldMethodsMath"
+export * from "./oldMethodsObject"
+export * from "./oldMethodsString"
+export * from "./pickProperty" // FP style utils to get property easily
+export * from "./pipe"
+export * from "./promisify" // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
+export * from "./switchCase" // FP style switch
+export * from "./tableList"
+export * from "./toPrimitiveValue"
+export * from "./toStringOrUndefined"
+export * from "./typings"
+export * from "./whiteWrap"
+export * from "./wrapper"

@@ -3,17 +3,17 @@
  * @module
  */
 
-import { NumberishOption, isArray, isBigInt, isNumber, isObject, isString } from '..'
-import { OneBigint, TenBigint } from './constant'
-import { isMathematicalExpression, isRPNItem, parseRPNToFraction, toRPN } from './numberExpression'
-import { BasicNumberish, Fraction, Numberish } from './types'
-import { shakeTailingZero } from './trimZero'
-import { padZeroR } from './padZero'
+import { NumberishOption, isArray, isBigInt, isNumber, isObject, isString } from ".."
+import { OneBigint, TenBigint } from "./constant"
+import { isMathematicalExpression, isRPNItem, parseRPNToFraction, toRPN } from "./numberExpression"
+import { BasicNumberish, Fraction, Numberish } from "./types"
+import { shakeTailingZero } from "./trimZero"
+import { padZeroR } from "./padZero"
 
 export const stringNumberRegex = /(?<sign>-|\+?)(?<int>\d*)\.?(?<dec>\d*)/
 
 export function isFraction(value: any): value is Fraction {
-  return isObject(value) && 'numerator' in value
+  return isObject(value) && "numerator" in value
 }
 export function isNumberish(v: unknown): v is Numberish {
   return isNumber(v) || isString(v) || isFraction(v) || isFraction(v)
@@ -23,7 +23,7 @@ export function isBasicNumberish(v: unknown): v is BasicNumberish {
 }
 
 function fromStringToFraction(str: string): Fraction {
-  const [intPart = '', decimalPart = ''] = str.split('.')
+  const [intPart = "", decimalPart = ""] = str.split(".")
   return { decimal: decimalPart.length, numerator: BigInt(String(intPart) + String(decimalPart)), denominator: 1n }
 }
 
@@ -54,10 +54,10 @@ export function toFraction(from: Numberish): Fraction {
     }
   }
   if (isBigInt(from)) return fromBigIntToFraction(from)
-  if (isObject(from) && 'toNumberish' in from) return toFraction(from.toNumberish())
+  if (isObject(from) && "toNumberish" in from) return toFraction(from.toNumberish())
   if (isString(from)) {
     if (isScientificNotation(from)) {
-      const [nPart = '', ePart = ''] = String(from).split(/[eE]/)
+      const [nPart = "", ePart = ""] = String(from).split(/[eE]/)
       const nPartNumberishAtom = fromStringToFraction(nPart)
       return { ...nPartNumberishAtom, decimal: (nPartNumberishAtom.decimal ?? 0) + -Number(ePart) }
     }
@@ -79,7 +79,7 @@ export function toFraction(from: Numberish): Fraction {
  *
  */
 export function toStringNumber(from: Numberish | undefined, options?: NumberishOption): string {
-  if (from === undefined) return '0'
+  if (from === undefined) return "0"
   const stringNumber = (() => {
     if (isNumber(from)) return from > Number.MAX_SAFE_INTEGER ? String(BigInt(from)) : String(from)
     if (isBigInt(from)) return String(from)
@@ -89,18 +89,17 @@ export function toStringNumber(from: Numberish | undefined, options?: NumberishO
       if (decimal === 0) return String(numerator)
       if (decimal < 0) return padZeroR(String(numerator), -decimal)
       return [
-        String(numerator).slice(0, -decimal) || '0',
-        '.',
-        String(numerator).padStart(decimal, '0').slice(-decimal)
-      ].join('')
+        String(numerator).slice(0, -decimal) || "0",
+        ".",
+        String(numerator).padStart(decimal, "0").slice(-decimal),
+      ].join("")
     } else {
       const decimalPlace = options?.decimals ?? 6
       const finalNumerator = numerator * TenBigint ** BigInt(decimalPlace)
       const finalDenominator = TenBigint ** BigInt(decimal) * denominator
       const finalN = String(finalNumerator / finalDenominator)
-      return `${finalN.slice(0, -decimalPlace) || '0'}.${finalN.slice(-decimalPlace)}`
+      return `${finalN.slice(0, -decimalPlace) || "0"}.${finalN.slice(-decimalPlace)}`
     }
   })()
   return shakeTailingZero(stringNumber)
 }
-

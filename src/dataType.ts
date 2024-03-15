@@ -1,4 +1,4 @@
-import { AnyArr, AnyFn, Primitive } from './typings/constants'
+import { AnyArr, AnyFn, Primitive } from "./typings/constants"
 
 /**
  * @requires {@link getObjType `getObjType()`}
@@ -21,37 +21,37 @@ import { AnyArr, AnyFn, Primitive } from './typings/constants'
  * getType(new Date()) // 'Date'
  */
 export function getType(
-  v: unknown
+  v: unknown,
 ):
-  | 'null'
-  | 'undefined'
-  | 'boolean'
-  | 'number'
-  | 'string'
-  | 'bigint'
-  | 'symbol'
-  | 'function'
+  | "null"
+  | "undefined"
+  | "boolean"
+  | "number"
+  | "string"
+  | "bigint"
+  | "symbol"
+  | "function"
   | ReturnType<typeof getObjType>
-  | 'unknown' {
+  | "unknown" {
   // @ts-ignore
   return isNull(v)
-    ? 'null'
+    ? "null"
     : isArray(v)
-    ? 'Array'
-    : isFunction(v)
-    ? 'function'
-    : isSet(v)
-    ? 'Set'
-    : isMap(v)
-    ? 'Map'
-    : typeof v === 'object'
-    ? getObjType(v) ?? 'unknown'
-    : typeof v
+      ? "Array"
+      : isFunction(v)
+        ? "function"
+        : isSet(v)
+          ? "Set"
+          : isMap(v)
+            ? "Map"
+            : typeof v === "object"
+              ? getObjType(v) ?? "unknown"
+              : typeof v
 }
 
-export const getObjType = (obj: unknown): 'Array' | 'Object' | 'Set' | 'Map' | 'WeakSet' | 'WeakMap' | 'Date' => {
+export const getObjType = (obj: unknown): "Array" | "Object" | "Set" | "Map" | "WeakSet" | "WeakMap" | "Date" => {
   const typeRawString = Object.prototype.toString.call(obj)
-  const typeString = typeRawString.match(/object (?<t>\w+)/)?.groups?.['t']
+  const typeString = typeRawString.match(/object (?<t>\w+)/)?.groups?.["t"]
   //@ts-ignore force
   return typeString
 }
@@ -65,7 +65,7 @@ export function isMeanfulArray(v: unknown): v is AnyArr {
 }
 
 export function isFunction(v: unknown): v is AnyFn {
-  return typeof v === 'function'
+  return typeof v === "function"
 }
 
 export function isSet(v: unknown): v is Set<unknown> {
@@ -89,7 +89,7 @@ export function isWeakMap(v: unknown): v is WeakMap<any, unknown> {
  * v may both be object or array
  */
 export function isObject(v: unknown): v is object {
-  return !(v === null) && typeof v === 'object'
+  return !(v === null) && typeof v === "object"
 }
 
 export function isObjectLiteral(v: unknown): v is object {
@@ -114,7 +114,7 @@ export function isPromise(target: unknown): target is Promise<unknown> {
 // }
 
 export function isNumber(v: any): v is number {
-  return typeof v === 'number' && !Number.isNaN(v)
+  return typeof v === "number" && !Number.isNaN(v)
 }
 
 export function isFinite(v: unknown): v is number {
@@ -127,7 +127,7 @@ export function isNaN(v: unknown): v is number {
 }
 
 export function isBoolean(v: any): v is boolean {
-  return typeof v === 'boolean'
+  return typeof v === "boolean"
 }
 
 /**
@@ -137,19 +137,19 @@ export function isBoolean(v: any): v is boolean {
  * isBigInt('3') //=> false
  */
 export function isBigInt(v: unknown): v is bigint {
-  return typeof v === 'bigint'
+  return typeof v === "bigint"
 }
 
 export function isString(v: unknown): v is string {
-  return typeof v === 'string'
+  return typeof v === "string"
 }
 
 export function isIterable(v: unknown): v is Iterable<unknown> {
-  return isObject(v) && typeof v[Symbol.iterator] === 'function'
+  return isObject(v) && typeof v[Symbol.iterator] === "function"
 }
 
 export function isAsyncIterable(v: unknown): v is AsyncIterable<unknown> {
-  return isObject(v) && typeof v[Symbol.asyncIterator] === 'function'
+  return isObject(v) && typeof v[Symbol.asyncIterator] === "function"
 }
 
 export function isDate(v: unknown): v is Date {
@@ -157,7 +157,7 @@ export function isDate(v: unknown): v is Date {
 }
 
 export function isJSON(jsonString: unknown): jsonString is string {
-  if (typeof jsonString !== 'string') return false
+  if (typeof jsonString !== "string") return false
   else {
     try {
       JSON.parse(jsonString)
@@ -180,8 +180,8 @@ export function isEmptyObject(v: unknown): boolean {
   return isObjectLike(v) && Reflect.ownKeys(v).length === 0
 }
 
-export function isEmptyString(v: unknown): v is '' {
-  return v === ''
+export function isEmptyString(v: unknown): v is "" {
+  return v === ""
 }
 
 export const isExist = notNullish
@@ -236,11 +236,11 @@ export function isEmtyObject(obj: any): boolean {
 }
 
 export function isEmtyString(v: any): boolean {
-  return v === ''
+  return v === ""
 }
 
 export function isSymbol(v: unknown): v is symbol {
-  return typeof v === 'symbol'
+  return typeof v === "symbol"
 }
 
 export function isTrue(v: unknown): v is true {

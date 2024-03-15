@@ -1,9 +1,9 @@
-import { toFraction } from './numberishAtom'
-import { Fraction } from './types'
+import { toFraction } from "./numberishAtom"
+import { Fraction } from "./types"
 
 function padTailZero(n: string | bigint | number, zeroLength?: number) {
   if (!zeroLength) return String(n)
-  return zeroLength > 0 ? String(n) + ''.padEnd(zeroLength, '0') : String(n).slice(0, zeroLength)
+  return zeroLength > 0 ? String(n) + "".padEnd(zeroLength, "0") : String(n).slice(0, zeroLength)
 }
 function getTailZeroLength(n: string | bigint | number) {
   return String(n).match(/0+$/)?.[0].length ?? 0
@@ -48,7 +48,7 @@ function prettifyNumberishAtomWithDecimal(n: Fraction): { numerator: bigint; den
   }
   return {
     numerator: finalNumerator,
-    denominator: finalDenominator
+    denominator: finalDenominator,
   }
 }
 /**
@@ -60,17 +60,17 @@ function prettifyNumberishAtomWith10(n: { numerator: bigint; denominator: bigint
   numerator: bigint
   denominator: bigint
 } {
-  const canNumeratorMod10RestLength = String(n.numerator).endsWith('0')
+  const canNumeratorMod10RestLength = String(n.numerator).endsWith("0")
     ? String(n.numerator).match(/0+$/)?.[0].length
     : 0
-  const canDenominatorMod10RestLength = String(n.denominator).endsWith('0')
+  const canDenominatorMod10RestLength = String(n.denominator).endsWith("0")
     ? String(n.denominator).match(/0+$/)?.[0].length
     : 0
   if (canNumeratorMod10RestLength && canDenominatorMod10RestLength) {
     const restLength = Math.min(canNumeratorMod10RestLength, canDenominatorMod10RestLength)
     return {
       numerator: BigInt(padTailZero(n.numerator, -restLength)),
-      denominator: BigInt(padTailZero(n.denominator, -restLength))
+      denominator: BigInt(padTailZero(n.denominator, -restLength)),
     }
   }
   return n
@@ -78,4 +78,3 @@ function prettifyNumberishAtomWith10(n: { numerator: bigint; denominator: bigint
 function prettifyNumberishAtom(n: Fraction): Fraction {
   return toFraction(prettifyNumberishAtomWith10(prettifyNumberishAtomWithDecimal(n)))
 }
-

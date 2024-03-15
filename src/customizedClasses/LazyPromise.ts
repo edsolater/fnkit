@@ -1,5 +1,5 @@
-import { isFunction, notNullish } from '../dataType'
-import { shrinkFn, shrinkToValue } from '../wrapper'
+import { isFunction, notNullish } from "../dataType"
+import { shrinkFn, shrinkToValue } from "../wrapper"
 
 /**
  * like promise, but
@@ -27,7 +27,7 @@ export class LazyPromise<T = undefined> extends Promise<T> {
     executor?: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void,
     options?: {
       initLoad?: boolean
-    }
+    },
   ) {
     super((resolve, reject) => {
       resolve(undefined as T) // not elegent, but works
@@ -42,7 +42,7 @@ export class LazyPromise<T = undefined> extends Promise<T> {
         if (value == null) return
         resolve(shrinkFn(value))
       },
-      { initLoad: !isFunction(value) }
+      { initLoad: !isFunction(value) },
     )
   }
 
@@ -56,7 +56,7 @@ export class LazyPromise<T = undefined> extends Promise<T> {
 
   then<TResult1 = T, TResult2 = never>(
     onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
-    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
   ): Promise<TResult1 | TResult2> {
     if (!this.#loaded) this.load()
     return this.#innerPromise!.then(onfulfilled, onrejected)
@@ -68,7 +68,7 @@ export class LazyPromise<T = undefined> extends Promise<T> {
    * @returns A Promise for the completion of the callback.
    */
   catch<TResult = never>(
-    onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
+    onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null,
   ): Promise<T | TResult> {
     if (!this.#loaded) this.load()
     return this.#innerPromise!.catch(onrejected)
@@ -85,6 +85,6 @@ export class LazyPromise<T = undefined> extends Promise<T> {
   }
 
   get [Symbol.toStringTag]() {
-    return 'Lazy'
+    return "Lazy"
   }
 }

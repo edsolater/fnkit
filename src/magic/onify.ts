@@ -1,16 +1,10 @@
-import { shakeNil, map } from '../collectionMethods'
-import { isFunction } from '../dataType'
-import { AnyFn, PickMethodKeys, PickPropertyKeys } from '../typings'
+import { shakeNil, map } from "../collectionMethods"
+import { isFunction } from "../dataType"
+import { AnyFn, PickMethodKeys, PickPropertyKeys } from "../typings"
 
 type WithOnMethods<T extends Record<any, any>> = T & {
-  onChange: <P extends PickPropertyKeys<T>>(
-    propertyName: P,
-    cb: (newValue: T[P], oldValue: T[P]) => void
-  ) => void
-  on: <P extends PickMethodKeys<T>>(
-    propertyName: P,
-    cb: (...args: Parameters<T[P]>) => void
-  ) => void
+  onChange: <P extends PickPropertyKeys<T>>(propertyName: P, cb: (newValue: T[P], oldValue: T[P]) => void) => void
+  on: <P extends PickMethodKeys<T>>(propertyName: P, cb: (...args: Parameters<T[P]>) => void) => void
 }
 
 /**
@@ -52,9 +46,9 @@ export function onify<T extends Record<string, any>>(obj: T): WithOnMethods<T> {
             },
             get() {
               return originObject[k]
-            }
-          }
-    )
+            },
+          },
+    ),
   )
   Object.defineProperties(obj, props)
 
@@ -79,7 +73,7 @@ export function onify<T extends Record<string, any>>(obj: T): WithOnMethods<T> {
           }
         }
         return Reflect.get(target, propertyName)
-      }
+      },
     }),
     {
       on(propertyName: keyof T, callback: () => void) {
@@ -87,7 +81,7 @@ export function onify<T extends Record<string, any>>(obj: T): WithOnMethods<T> {
       },
       onChange(propertyName: keyof T, callback: () => void) {
         callbackBucket[propertyName] = [...(callbackBucket[propertyName] ?? []), callback]
-      }
-    }
+      },
+    },
   )
 }

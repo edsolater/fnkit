@@ -1,4 +1,4 @@
-import { isFunction, isNumber } from '../dataType'
+import { isFunction, isNumber } from "../dataType"
 
 /**
  * just like splice, but will not mutate original array

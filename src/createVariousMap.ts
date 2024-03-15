@@ -3,5 +3,5 @@ type MapPlugin = {
 }
 
 export function createVariousMap(pluginOption: MapPlugin[]) {
-  throw 'TODO'
+  throw "TODO"
 }

@@ -1,5 +1,5 @@
-import { isArray, isFunction, isNumber, isSet } from './dataType'
-import { MayPromise } from './typings/tools'
+import { isArray, isFunction, isNumber, isSet } from "./dataType"
+import { MayPromise } from "./typings/tools"
 
 /**
  * (纯函数)
@@ -48,9 +48,9 @@ export function insertAt<T>(arr: T[], at: number, ...items: T[]): T[] {
 export function createRange(start: number, stop: number, step = 1): number[] {
   return Array.from(
     {
-      length: Math.floor((stop - start) / step) + 1
+      length: Math.floor((stop - start) / step) + 1,
     },
-    (_, i) => start + i * step
+    (_, i) => start + i * step,
   )
 }
 
@@ -176,7 +176,7 @@ export function toggleSetItem(arr, ...items) {
 export function replaceItem<T, U>(
   arr: readonly U[],
   replaceTarget: U | ((item: U, index: number) => boolean),
-  newItem: T
+  newItem: T,
 ) {
   const index = isNumber(replaceTarget)
     ? replaceTarget
@@ -190,17 +190,17 @@ export function replaceItem<T, U>(
  */
 export async function asyncMapAllSettled<T, U>(
   arr: T[],
-  mapFn: (item: T, index: number) => MayPromise<U>
+  mapFn: (item: T, index: number) => MayPromise<U>,
 ): Promise<(Awaited<U> | undefined)[]> {
   return await Promise.allSettled(arr.map(async (item, idx) => await mapFn(item, idx))).then(
     (
-      promiseSettled // extract from `promise.allSettled()`
+      promiseSettled, // extract from `promise.allSettled()`
     ) =>
       promiseSettled.map((promiseSettledItem) =>
-        promiseSettledItem.status === 'fulfilled' /* fulfilled is promise.allSettled  */
+        promiseSettledItem.status === "fulfilled" /* fulfilled is promise.allSettled  */
           ? promiseSettledItem.value
-          : undefined
-      )
+          : undefined,
+      ),
   )
 }
 
@@ -209,47 +209,47 @@ export async function asyncMapAllSettled<T, U>(
  */
 export async function asyncMap<T, U>(
   arr: T[],
-  mapFn: (item: T, index: number) => MayPromise<U>
+  mapFn: (item: T, index: number) => MayPromise<U>,
 ): Promise<Awaited<U>[]> {
   return Promise.all(arr.map(async (item, idx) => await mapFn(item, idx)))
 }
 
 export async function asyncReduce<T>(
   arr: T[],
-  callbackfn: (previousValue: Awaited<T>, currentValue: Awaited<T>, currentIndex: number, array: T[]) => MayPromise<T>
+  callbackfn: (previousValue: Awaited<T>, currentValue: Awaited<T>, currentIndex: number, array: T[]) => MayPromise<T>,
 ): Promise<Awaited<T>>
 export async function asyncReduce<T>(
   arr: T[],
   callbackfn: (previousValue: Awaited<T>, currentValue: Awaited<T>, currentIndex: number, array: T[]) => MayPromise<T>,
-  initialValue: MayPromise<T>
+  initialValue: MayPromise<T>,
 ): Promise<Awaited<T>>
 export async function asyncReduce<T, U>(
   arr: T[],
   callbackfn: (previousValue: Awaited<U>, currentValue: Awaited<T>, currentIndex: number, array: T[]) => MayPromise<U>,
-  initialValue: MayPromise<U>
+  initialValue: MayPromise<U>,
 ): Promise<Awaited<U>>
 export async function asyncReduce(
   arr: any[],
   callbackfn: (previousValue, currentValue, currentIndex: number, array: any[]) => any,
-  initialValue?: any
+  initialValue?: any,
 ) {
   return initialValue === undefined
     ? arr.reduce((acc, currentValue, currentIndex, array) =>
         Promise.resolve(acc).then(async (previousValue) =>
-          callbackfn(await previousValue, await currentValue, currentIndex, array)
-        )
+          callbackfn(await previousValue, await currentValue, currentIndex, array),
+        ),
       )
     : arr.reduce(
         (acc, currentValue, currentIndex, array) =>
           acc.then(async (previousValue) => callbackfn(await previousValue, await currentValue, currentIndex, array)),
-        Promise.resolve(initialValue)
+        Promise.resolve(initialValue),
       )
 }
 
 /** type C = OmitItems<'a' | 'b' | 'c', 'a' | 'b' | 'd'> // 'c' */
 export type OmitItem<
   OriginString extends keyof any,
-  OmitString extends keyof any | undefined = undefined
+  OmitString extends keyof any | undefined = undefined,
 > = OriginString extends infer T ? (T extends OmitString ? never : T) : never
 
 /**

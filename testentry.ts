@@ -1,1 +1,1 @@
-import './src/collectionMethods/entries.test'
+import "./src/collectionMethods/entries.test"

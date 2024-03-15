@@ -12,13 +12,13 @@
  */
 function _parseString(str: string): string[] {
   return str
-    .replace(/(?<![A-Z])[A-Z]/g, '-$&')
-    .replace(/(?<=[A-Z])[A-Z](?=[a-z])/g, '-$&')
-    .replace(/_/g, '-')
+    .replace(/(?<![A-Z])[A-Z]/g, "-$&")
+    .replace(/(?<=[A-Z])[A-Z](?=[a-z])/g, "-$&")
+    .replace(/_/g, "-")
     .toLowerCase()
-    .replace(/\W+/g, ' ')
+    .replace(/\W+/g, " ")
     .trim()
-    .split(' ')
+    .split(" ")
 }
 
 /**
@@ -30,7 +30,7 @@ function _parseString(str: string): string[] {
 export function toCamelCase(str: string): string {
   return _parseString(str)
     .map((word, idx) => (idx === 0 ? word : capitalize(word)))
-    .join('')
+    .join("")
 }
 
 /**
@@ -40,7 +40,7 @@ export function toCamelCase(str: string): string {
 export function toPascalCase(str: string): string {
   return _parseString(str)
     .map((word) => capitalize(word))
-    .join('')
+    .join("")
 }
 
 /**
@@ -48,7 +48,7 @@ export function toPascalCase(str: string): string {
  * 'hello_World' => 'hello-world'
  */
 export function toKebabCase(str: string) {
-  return _parseString(str).join('-')
+  return _parseString(str).join("-")
 }
 
 /**
@@ -56,7 +56,7 @@ export function toKebabCase(str: string) {
  * 'hello-world' => 'hello_world'
  */
 export function toSnakeCase(str: string) {
-  return _parseString(str).join('_')
+  return _parseString(str).join("_")
 }
 
 /**
@@ -64,7 +64,7 @@ export function toSnakeCase(str: string) {
  * 'hello-world' => 'hello_world'
  */
 export function toConstantCase(str: string) {
-  return toUpperCase(_parseString(str).join('_'))
+  return toUpperCase(_parseString(str).join("_"))
 }
 
 /**
@@ -90,7 +90,7 @@ export function toUpperCase(str: string) {
  * 'hello' => 'Hello'
  */
 export function capitalize(str: string): Capitalize<string> {
-  if (!str) return ''
+  if (!str) return ""
   return (str[0].toUpperCase() + str.slice(1)) as Capitalize<string>
 }
 
@@ -99,7 +99,7 @@ export function capitalize(str: string): Capitalize<string> {
  * 'Hello' => 'hello'
  */
 export function uncapitalize(str: string): Uncapitalize<string> {
-  if (!str) return ''
+  if (!str) return ""
   return (str[0].toLowerCase() + str.slice(1)) as Uncapitalize<string>
 }
 
@@ -113,23 +113,23 @@ export function changeCase(
   str: string,
   options: {
     to:
-      | 'camelCase'
-      | 'PascalCase'
-      | 'kebab-case'
-      | 'snake_case'
-      | 'CONSTANT_CASE' /* IDEA 增加属性：copyCaseFrom （就像 Word 的 ctrl + shift + C） */
-  }
+      | "camelCase"
+      | "PascalCase"
+      | "kebab-case"
+      | "snake_case"
+      | "CONSTANT_CASE" /* IDEA 增加属性：copyCaseFrom （就像 Word 的 ctrl + shift + C） */
+  },
 ): string {
   switch (options.to) {
-    case 'camelCase':
+    case "camelCase":
       return toCamelCase(str)
-    case 'PascalCase':
+    case "PascalCase":
       return toPascalCase(str)
-    case 'kebab-case':
+    case "kebab-case":
       return toKebabCase(str)
-    case 'snake_case':
+    case "snake_case":
       return toSnakeCase(str)
-    case 'CONSTANT_CASE':
+    case "CONSTANT_CASE":
       return toConstantCase(str)
   }
 }

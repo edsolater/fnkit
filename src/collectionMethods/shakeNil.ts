@@ -1,6 +1,6 @@
-import { isExist, isTruthy } from '../dataType'
-import { NeverKeys, NonFalsy } from '../typings'
-import { filter } from './filter'
+import { isExist, isTruthy } from "../dataType"
+import { NeverKeys, NonFalsy } from "../typings"
+import { filter } from "./filter"
 
 type ShakeNeverValue<O> = Omit<O, NeverKeys<O>>
 

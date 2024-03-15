@@ -1,7 +1,7 @@
-import { isNumber } from '../dataType'
-import { toFraction, toStringNumber } from './numberishAtom'
-import { Fraction, Numberish } from './types'
-import { padZeroR } from './padZero'
+import { isNumber } from "../dataType"
+import { toFraction, toStringNumber } from "./numberishAtom"
+import { Fraction, Numberish } from "./types"
+import { padZeroR } from "./padZero"
 
 export type NumberishOption = {
   /**
@@ -22,7 +22,7 @@ export function toBigint(from: Numberish | Fraction): bigint {
   const { decimal = 0, numerator, denominator = 1n } = atom
   if (decimal === 0) return numerator / denominator
   if (decimal < 0) return BigInt(padZeroR(String(numerator), -decimal)) / denominator
-  return BigInt(String(numerator / denominator).slice(0, -decimal) || '0')
+  return BigInt(String(numerator / denominator).slice(0, -decimal) || "0")
 }
 
 /**
@@ -33,11 +33,11 @@ export function toBigint(from: Numberish | Fraction): bigint {
 export function toNumber(from: Numberish | Fraction): number {
   const n = isNumber(from) ? from : Number(toStringNumber(from))
   if (n > Number.MAX_SAFE_INTEGER) {
-    console.error('toNumber error, bigger than MAX_SAFE_INTEGER')
+    console.error("toNumber error, bigger than MAX_SAFE_INTEGER")
     return Number.MAX_SAFE_INTEGER
   }
   if (n < Number.MIN_SAFE_INTEGER) {
-    console.error('toNumber error, smaller than MIN_SAFE_INTEGER')
+    console.error("toNumber error, smaller than MIN_SAFE_INTEGER")
     return Number.MIN_SAFE_INTEGER
   }
   return n

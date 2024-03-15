@@ -1,4 +1,4 @@
-import { AnyFn } from '.'
+import { AnyFn } from "."
 
 /** will make every tuple item can support undefined,  */
 type PartialAragument<T extends any[]> = {

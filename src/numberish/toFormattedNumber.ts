@@ -1,11 +1,11 @@
 /**
  * it's format content, not face like
  */
-import { fall } from '../fall'
-import { Numberish } from './types'
-import { toStringNumber } from './numberishAtom'
-import { toFixedDecimal } from './utils'
-import { isNumber } from '../dataType'
+import { fall } from "../fall"
+import { Numberish } from "./types"
+import { toStringNumber } from "./numberishAtom"
+import { toFixedDecimal } from "./utils"
+import { isNumber } from "../dataType"
 
 export type NumberishFormatOptions = {
   /**
@@ -31,7 +31,7 @@ export type NumberishFormatOptions = {
    * toFormattedNumber(100.2, { decimals: auto }) // result: '100.2'
    * toFormattedNumber(100.1234, { decimals: 6 }) // result: '100.123400'
    */
-  decimals?: number | 'auto'
+  decimals?: number | "auto"
 
   // https://github.com/raydium-io/raydium-ui-v3-inner/blob/22383d458a59e05d77d29e318a25c200005edc85/src/utils/numberish/formatNumber.ts
   // /**
@@ -75,38 +75,38 @@ export type NumberishFormatOptions = {
  */
 export function toFormattedNumber(n: Numberish | undefined, options?: NumberishFormatOptions): string {
   if (n === undefined) {
-    if (options?.decimals === 'auto') return '0'
-    if (!options || (options.decimals && options.decimals > 0)) return '0' + '.' + '0'.repeat(options?.decimals ?? 2)
+    if (options?.decimals === "auto") return "0"
+    if (!options || (options.decimals && options.decimals > 0)) return "0" + "." + "0".repeat(options?.decimals ?? 2)
   }
   return options?.shortExpression
     ? fall(n, [
-        (s) => toStringNumber(s, { decimals: ((options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2) + 1 }),
+        (s) => toStringNumber(s, { decimals: ((options?.decimals === "auto" ? 2 : options?.decimals) ?? 2) + 1 }),
         (s) => fixDecimal(s, options),
-        (s) => handleShortExpression(s, options)
+        (s) => handleShortExpression(s, options),
       ])
     : fall(n, [
-        (s) => toStringNumber(s, { decimals: ((options?.decimals === 'auto' ? 2 : options?.decimals) ?? 2) + 1 }),
+        (s) => toStringNumber(s, { decimals: ((options?.decimals === "auto" ? 2 : options?.decimals) ?? 2) + 1 }),
         (s) => fixDecimal(s, options),
-        (s) => groupSeparater(s, options)
+        (s) => groupSeparater(s, options),
       ])
 }
 
-function groupSeparater(str: string, options?: Pick<NumberishFormatOptions, 'groupSeparator' | 'groupSize'>) {
-  const [, sign = '', int = '', dec = ''] = str.match(/(-?)(\d*)\.?(\d*)/) ?? []
+function groupSeparater(str: string, options?: Pick<NumberishFormatOptions, "groupSeparator" | "groupSize">) {
+  const [, sign = "", int = "", dec = ""] = str.match(/(-?)(\d*)\.?(\d*)/) ?? []
   const newIntegerPart = [...int].reduceRight((acc, cur, idx, strN) => {
     const indexFromRight = strN.length - 1 - idx
     const shouldAddSeparator = indexFromRight !== 0 && indexFromRight % (options?.groupSize ?? 3) === 0
-    return shouldAddSeparator ? cur + (options?.groupSeparator ?? ',') + acc : cur + acc
-  }, '') as string
+    return shouldAddSeparator ? cur + (options?.groupSeparator ?? ",") + acc : cur + acc
+  }, "") as string
   return dec ? `${sign}${newIntegerPart}.${dec}` : `${sign}${newIntegerPart}`
 }
 
-function fixDecimal(n: string, options?: Pick<NumberishFormatOptions, 'decimals'>): string {
-  return options?.decimals === 'auto' ? n : toFixedDecimal(n, options?.decimals ?? 2)
+function fixDecimal(n: string, options?: Pick<NumberishFormatOptions, "decimals">): string {
+  return options?.decimals === "auto" ? n : toFixedDecimal(n, options?.decimals ?? 2)
 }
 
-function handleShortExpression(str: string, options?: Pick<NumberishFormatOptions, 'shortExpressionDecimal'>) {
-  const [, sign = '', int = '', dec = ''] = str.match(/(-?)(\d*)\.?(\d*)/) ?? []
+function handleShortExpression(str: string, options?: Pick<NumberishFormatOptions, "shortExpressionDecimal">) {
+  const [, sign = "", int = "", dec = ""] = str.match(/(-?)(\d*)\.?(\d*)/) ?? []
   const decimals = options?.shortExpressionDecimal ?? 2
   if (int.length > 3 * 4) {
     return `${sign}${trimTailingZero((Number(int.slice(0, -3 * 4 + 2)) / 100).toFixed(decimals))}T`
@@ -130,11 +130,11 @@ function handleShortExpression(str: string, options?: Pick<NumberishFormatOption
  */
 export function trimTailingZero(s: string) {
   // no decimal part
-  if (!s.includes('.')) return s
+  if (!s.includes(".")) return s
   const [, sign, int, dec] = s.match(/(-?)([\d,_]*)\.?(\d*)/) ?? []
   let cleanedDecimalPart = dec
-  while (cleanedDecimalPart.endsWith('0')) {
+  while (cleanedDecimalPart.endsWith("0")) {
     cleanedDecimalPart = cleanedDecimalPart.slice(0, cleanedDecimalPart.length - 1)
   }
-  return cleanedDecimalPart ? `${sign}${int}.${cleanedDecimalPart}` : `${sign}${int}` || '0'
+  return cleanedDecimalPart ? `${sign}${int}.${cleanedDecimalPart}` : `${sign}${int}` || "0"
 }

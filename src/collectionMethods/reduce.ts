@@ -1,28 +1,28 @@
-import { AnyObj, isArray } from '../'
-import { SKeyof, Valueof } from '../typings'
+import { AnyObj, isArray } from "../"
+import { SKeyof, Valueof } from "../typings"
 
 export function reduce<T, U>(
   arr: readonly T[],
   callbackFn: (acc: U, item: T, index: number, arr: readonly T[]) => U,
-  initialValue: U
+  initialValue: U,
 ): U
 export function reduce<O extends AnyObj, F>(
   obj: O,
   callbackFn: (acc: F, value: Valueof<O>, key: SKeyof<O>) => F,
-  initialValue: F
+  initialValue: F,
 ): F
 export function reduce(collection, callbackFn, initialValue) {
   return isArray(collection)
     ? reduceItem(collection, callbackFn, initialValue)
     : // @ts-expect-error
-      reduceItem(collection, (acc, [key, value]) => [key, callbackFn(acc, value, key)], ['tempKey', initialValue])[1]
+      reduceItem(collection, (acc, [key, value]) => [key, callbackFn(acc, value, key)], ["tempKey", initialValue])[1]
 }
 
 /** just use reduce  */
 export function reduceItem<T, U>(
   arr: readonly T[],
   callbackFn: (acc: U, item: T, index: number, arr: readonly T[]) => U,
-  initialValue: U
+  initialValue: U,
 ): U {
   return arr.reduce(callbackFn, initialValue)
 }
@@ -33,7 +33,7 @@ export function reduceItem<T, U>(
 export function reduceEntry<O extends AnyObj, F extends [string, any]>(
   obj: O,
   callbackFn: (acc: F, entry: [key: SKeyof<O>, value: Valueof<O>]) => F,
-  initialValue: F
+  initialValue: F,
 ): F {
   return (
     // @ts-expect-error

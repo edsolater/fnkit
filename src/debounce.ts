@@ -1,4 +1,4 @@
-import { createCurrentTimestamp } from './date/parseDate'
+import { createCurrentTimestamp } from "./date/parseDate"
 
 /**
  *
@@ -9,7 +9,7 @@ export function throttle<F extends (...args: any[]) => void>(
   fn: F,
   options?: {
     delay?: number
-  }
+  },
 ): F {
   const middleParams = [] as Parameters<F>[]
   let currentTimoutId: any | null = null
@@ -47,7 +47,7 @@ export function debounce<F extends (...args: any[]) => void>(
   fn: F,
   options?: {
     delay?: number
-  }
+  },
 ): (...args: Parameters<F>) => Promise<ReturnType<F>> {
   let timeoutId
   return (...args: Parameters<F>) =>
@@ -71,9 +71,9 @@ export function debounceDo<F extends (...args: any[]) => void>(
     /** default is function self as key, any value that can be used as a key  */
     key?: any
     delay?: number
-  }
+  },
 ) {
-  throw new Error('TODO')
+  throw new Error("TODO")
 }
 // /** TODO */
 // /** 防抖（前置型） */

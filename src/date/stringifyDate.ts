@@ -1,4 +1,4 @@
-import { getISO, createDate, getYear } from './parseDate'
+import { getISO, createDate, getYear } from "./parseDate"
 import { TimeStamp } from "./type"
 
 /**
@@ -13,104 +13,80 @@ export function toUTC(timestamp?: TimeStamp) {
   return `${date} ${hour}:${minutes} UTC`
 }
 
-export const englishDayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-type ChineseDayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-export const chineseDayNames: ChineseDayNames = [
-  '周日',
-  '周一',
-  '周二',
-  '周三',
-  '周四',
-  '周五',
-  '周六'
-]
+export const englishDayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+type ChineseDayNames = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+export const chineseDayNames: ChineseDayNames = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
 export const englishFullMonthNames: [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December'
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ] = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December'
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ]
-type EnglishSimpleMonthNames = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec'
-]
+type EnglishSimpleMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 export const englishSimpleMonthNames: EnglishSimpleMonthNames = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec'
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ]
 export const chineseMonthNames = [
-  '一月',
-  '二月',
-  '三月',
-  '四月',
-  '五月',
-  '六月',
-  '七月',
-  '八月',
-  '九月',
-  '十月',
-  '十一月',
-  '十二月'
+  "一月",
+  "二月",
+  "三月",
+  "四月",
+  "五月",
+  "六月",
+  "七月",
+  "八月",
+  "九月",
+  "十月",
+  "十一月",
+  "十二月",
 ]
 /** base on 1 */
-export const mapToEnglishDay = (dayNumber: number) => englishDayNames[dayNumber] ?? ''
-export const mapToChineseDay = (dayNumber: number) => chineseDayNames[dayNumber] ?? ''
+export const mapToEnglishDay = (dayNumber: number) => englishDayNames[dayNumber] ?? ""
+export const mapToChineseDay = (dayNumber: number) => chineseDayNames[dayNumber] ?? ""
 /** base on 1 */
 export const mapToEnglishSimpleMonth = (monthNumber: number) =>
-  englishSimpleMonthNames[(monthNumber + 12 - 1) % 12] ?? ''
+  englishSimpleMonthNames[(monthNumber + 12 - 1) % 12] ?? ""
 /** base on 1 */
-export const mapToEnglishFullMonth = (monthNumber: number) =>
-  englishFullMonthNames[(monthNumber + 12 - 1) % 12] ?? ''
+export const mapToEnglishFullMonth = (monthNumber: number) => englishFullMonthNames[(monthNumber + 12 - 1) % 12] ?? ""
 /** base on 1 */
-export const mapToChineseMonth = (monthNumber: number) =>
-  chineseMonthNames[(monthNumber + 12 - 1) % 12] ?? ''
+export const mapToChineseMonth = (monthNumber: number) => chineseMonthNames[(monthNumber + 12 - 1) % 12] ?? ""
 
 export const mapToAmPmHour = (hourNumber: number): { hour: number; flag: string } =>
-  hourNumber > 12 ? { hour: hourNumber - 12, flag: 'PM' } : { hour: hourNumber, flag: 'AM' }
+  hourNumber > 12 ? { hour: hourNumber - 12, flag: "PM" } : { hour: hourNumber, flag: "AM" }
 
-  
 /**
  * date format string list:
  *
@@ -139,50 +115,46 @@ export const mapToAmPmHour = (hourNumber: number): { hour: number; flag: string 
 export function formatDate(
   inputDate: string | number | Date | undefined,
   formatString: string,
-  options?: { /** default is 'en' */ weekNameStyle?: 'en' | 'zh-cn' }
+  options?: { /** default is 'en' */ weekNameStyle?: "en" | "zh-cn" },
 ) {
   const dateObj = createDate(inputDate)
 
   return formatString
-    .replace('YYYY', `${getYear(dateObj)}`)
-    .replace('YY', `${dateObj.getFullYear()}`.slice(2))
-    .replace('MM', `${dateObj.getMonth() + 1}`.padStart(2, '0'))
-    .replace('M', `${dateObj.getMonth() + 1}`)
-    .replace('DD', `${dateObj.getDate()}`.padStart(2, '0'))
-    .replace('D', `${dateObj.getDate()}`)
+    .replace("YYYY", `${getYear(dateObj)}`)
+    .replace("YY", `${dateObj.getFullYear()}`.slice(2))
+    .replace("MM", `${dateObj.getMonth() + 1}`.padStart(2, "0"))
+    .replace("M", `${dateObj.getMonth() + 1}`)
+    .replace("DD", `${dateObj.getDate()}`.padStart(2, "0"))
+    .replace("D", `${dateObj.getDate()}`)
     .replace(
-      'dd',
-      `${
-        options?.weekNameStyle === 'zh-cn'
-          ? mapToChineseDay(dateObj.getDay())
-          : mapToEnglishDay(dateObj.getDay())
-      }`
+      "dd",
+      `${options?.weekNameStyle === "zh-cn" ? mapToChineseDay(dateObj.getDay()) : mapToEnglishDay(dateObj.getDay())}`,
     )
-    .replace('d', `${dateObj.getDay()}`)
-    .replace('HH', `${dateObj.getHours()}`.padStart(2, '0'))
-    .replace('H', `${dateObj.getHours()}`)
-    .replace('hh', `${mapToAmPmHour(dateObj.getHours()).hour}`.padStart(2, '0'))
-    .replace('h', `${mapToAmPmHour(dateObj.getHours()).hour}`)
-    .replace('mm', `${dateObj.getMinutes()}`.padStart(2, '0'))
-    .replace('m', `${dateObj.getMinutes()}`)
-    .replace('ss', `${dateObj.getSeconds()}`.padStart(2, '0'))
-    .replace('s', `${dateObj.getSeconds()}`)
-    .replace('SSS', `${dateObj.getMilliseconds()}`.padStart(3, '0'))
-    .replace('A', mapToAmPmHour(dateObj.getMilliseconds()).flag)
-    .replace('SSS', mapToAmPmHour(dateObj.getMilliseconds()).flag.toLocaleLowerCase())
+    .replace("d", `${dateObj.getDay()}`)
+    .replace("HH", `${dateObj.getHours()}`.padStart(2, "0"))
+    .replace("H", `${dateObj.getHours()}`)
+    .replace("hh", `${mapToAmPmHour(dateObj.getHours()).hour}`.padStart(2, "0"))
+    .replace("h", `${mapToAmPmHour(dateObj.getHours()).hour}`)
+    .replace("mm", `${dateObj.getMinutes()}`.padStart(2, "0"))
+    .replace("m", `${dateObj.getMinutes()}`)
+    .replace("ss", `${dateObj.getSeconds()}`.padStart(2, "0"))
+    .replace("s", `${dateObj.getSeconds()}`)
+    .replace("SSS", `${dateObj.getMilliseconds()}`.padStart(3, "0"))
+    .replace("A", mapToAmPmHour(dateObj.getMilliseconds()).flag)
+    .replace("SSS", mapToAmPmHour(dateObj.getMilliseconds()).flag.toLocaleLowerCase())
 }
 
 export const formatDatePresets = {
-  normal: 'YYYY-MM-DD HH:mm:ss',
-  normalWithoutYears: 'MM-DD HH:mm:ss',
-  normalWithoutSeconds: 'YYYY-MM-DD HH:mm',
+  normal: "YYYY-MM-DD HH:mm:ss",
+  normalWithoutYears: "MM-DD HH:mm:ss",
+  normalWithoutSeconds: "YYYY-MM-DD HH:mm",
   genNormalStyle: ({
     withoutYears,
     withoutMonths,
     withoutDate,
     withoutHours,
     withoutMinuts,
-    withoutSeconds
+    withoutSeconds,
   }: {
     withoutYears?: boolean
     withoutMonths?: boolean
@@ -192,15 +164,9 @@ export const formatDatePresets = {
     withoutSeconds?: boolean
   }) =>
     [
-      [
-        withoutYears ? undefined : 'YYYY',
-        withoutMonths ? undefined : 'MM',
-        withoutDate ? undefined : 'DD'
-      ].join('-'),
-      [withoutHours ? null : 'HH', withoutMinuts ? null : 'mm', withoutSeconds ? null : 'ss'].join(
-        ':'
-      )
-    ].join(' ')
+      [withoutYears ? undefined : "YYYY", withoutMonths ? undefined : "MM", withoutDate ? undefined : "DD"].join("-"),
+      [withoutHours ? null : "HH", withoutMinuts ? null : "mm", withoutSeconds ? null : "ss"].join(":"),
+    ].join(" "),
 } as const
 
 /**
@@ -208,8 +174,8 @@ export const formatDatePresets = {
  * extractDate('2020-08-24 18:54') // '08-24'
  * extractDate('2020-08-24 18:54', {year: true}) // '2020-08-24'
  */
- export function extractDate(dateString: string, options?: { year?: boolean }) {
-  return formatDate(dateString, options?.year ? 'YYYY-MM-DD' : 'MM-DD')
+export function extractDate(dateString: string, options?: { year?: boolean }) {
+  return formatDate(dateString, options?.year ? "YYYY-MM-DD" : "MM-DD")
 }
 
 /**
@@ -218,5 +184,5 @@ export const formatDatePresets = {
  * extractTime('2020-08-24 18:54:32', {milliseconds: true}) // '18:54:32'
  */
 export function extractTime(dateString: string, options?: { milliseconds?: boolean }) {
-  return formatDate(dateString, options?.milliseconds ? 'HH:mm:ss' : 'HH:mm')
+  return formatDate(dateString, options?.milliseconds ? "HH:mm:ss" : "HH:mm")
 }

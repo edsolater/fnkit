@@ -1,11 +1,11 @@
-import { AnyArr } from '../typings'
+import { AnyArr } from "../typings"
 
 /**
  * proxy for only calc used info not all
  */
 export function proxyFilter<T extends AnyArr>(
   array: T,
-  preficate: (item: T[number], index: number, arr: T) => unknown
+  preficate: (item: T[number], index: number, arr: T) => unknown,
 ): T {
   let resultArray: NonNullable<T>[] | undefined = undefined
   return new Proxy(array, {
@@ -33,6 +33,6 @@ export function proxyFilter<T extends AnyArr>(
         }
         return Reflect.get(resultArray, prop, receiver)
       }
-    }
+    },
   })
 }

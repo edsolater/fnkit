@@ -1,9 +1,9 @@
-import { isBigInt, isNaN, isNumber, isString } from '../dataType'
-import { ZeroBigint } from './constant'
-import { toFraction } from './numberishAtom'
-import { mod } from './operations'
-import { impureNumberish } from './parseNumberish'
-import { Numberish, type StringNumber } from './types'
+import { isBigInt, isNaN, isNumber, isString } from "../dataType"
+import { ZeroBigint } from "./constant"
+import { toFraction } from "./numberishAtom"
+import { mod } from "./operations"
+import { impureNumberish } from "./parseNumberish"
+import { Numberish, type StringNumber } from "./types"
 
 export function isMeaningfulNumber<T extends Numberish | undefined>(n: T): n is NonNullable<T> {
   if (n == null) return false
@@ -48,7 +48,7 @@ export function isZero<T extends Numberish | undefined>(v: T): v is NonNullable<
   const pure = impureNumberish(v)
   if (pure === 0) return true
   if (pure === 0n) return true
-  if (pure === '0') return true
+  if (pure === "0") return true
   if (isString(pure) && /^0(?:\.0*)?$/.test(pure)) return true
   const { numerator, denominator } = toFraction(pure)
   return numerator === ZeroBigint && denominator !== ZeroBigint
@@ -63,7 +63,7 @@ export function isNegative<T extends Numberish | undefined>(a: T): a is NonNulla
   const pure = impureNumberish(a)
   if (isNumber(pure)) return pure < 0
   if (isBigInt(pure)) return pure < 0n
-  if (isString(pure) && isStringNumber(pure)) return pure.trim() != '' && pure.trim().startsWith('-')
+  if (isString(pure) && isStringNumber(pure)) return pure.trim() != "" && pure.trim().startsWith("-")
   const { denominator = 1n, numerator } = toFraction(pure)
   return (numerator > 0n && denominator < 0n) || (numerator < 0n && denominator > 0n)
 }
@@ -73,7 +73,7 @@ export function isPositive<T extends Numberish | undefined>(a: T): a is NonNulla
   const pure = impureNumberish(a)
   if (isNumber(pure)) return pure > 0
   if (isBigInt(pure)) return pure > 0n
-  if (isString(pure) && isStringNumber(pure)) return pure.trim() != '' && !pure.trim().startsWith('-')
+  if (isString(pure) && isStringNumber(pure)) return pure.trim() != "" && !pure.trim().startsWith("-")
   const { denominator = 1n, numerator } = toFraction(pure)
   return (numerator > 0n && denominator > 0n) || (numerator < 0n && denominator < 0n)
 }
@@ -83,7 +83,7 @@ export function isGreaterThanOne<T extends Numberish | undefined>(a: T): a is No
   const pure = impureNumberish(a)
   if (isNumber(pure)) return pure > 1
   if (isBigInt(pure)) return pure > 1n
-  if (isString(pure) && isStringNumber(pure)) return pure.trim() != '' && pure.trim() !== '0' && pure.trim() !== '1'
+  if (isString(pure) && isStringNumber(pure)) return pure.trim() != "" && pure.trim() !== "0" && pure.trim() !== "1"
   const { denominator = 1n, numerator } = toFraction(pure)
   return numerator > denominator
 }
@@ -93,13 +93,13 @@ export function isLessThanOne<T extends Numberish | undefined>(a: T): a is NonNu
   const pure = impureNumberish(a)
   if (isNumber(pure)) return pure < 1
   if (isBigInt(pure)) return pure < 1n
-  if (isString(pure) && isStringNumber(pure)) return pure.trim() != '' && pure.trim() !== '0' && pure.trim() !== '1'
+  if (isString(pure) && isStringNumber(pure)) return pure.trim() != "" && pure.trim() !== "0" && pure.trim() !== "1"
   const { denominator = 1n, numerator } = toFraction(pure)
   return numerator < denominator
 }
 
 export function isStringNumber(v: any): v is StringNumber {
-  if (v === '') return false
+  if (v === "") return false
   if (isNumber(v)) return true
   if (isBigInt(v)) return true
   const n = Number(v)

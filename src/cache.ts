@@ -1,5 +1,5 @@
-import { WeakerMap } from './customizedClasses'
-import { isObjectLike } from './dataType'
+import { WeakerMap } from "./customizedClasses"
+import { isObjectLike } from "./dataType"
 
 // COUNT：使用次数 1
 type Key = string
@@ -13,7 +13,7 @@ type ArrayHash = `__hash__${number}`
 function createShallowMap<InputKey extends object | { [key: string]: unknown }, ReturnedValue>(
   options: {
     shallowCompare?: boolean
-  } = {}
+  } = {},
 ) {
   Object.assign(options, { shallowCompare: true } as Parameters<typeof createShallowMap>[0], options)
 
@@ -29,7 +29,7 @@ function createShallowMap<InputKey extends object | { [key: string]: unknown }, 
     isObjectLike(input)
       ? Object.entries(input)
           .map(([key, val]) => {
-            if (typeof val !== 'object' || val === null) return `${key}${val}`
+            if (typeof val !== "object" || val === null) return `${key}${val}`
             if (valueMap.has(val)) return valueMap.get(val)
             if (options.shallowCompare && canGoDeep) {
               const innerKey = calcKey(val, objectHashMap__inner, false)
@@ -37,7 +37,7 @@ function createShallowMap<InputKey extends object | { [key: string]: unknown }, 
             }
             valueMap.set(val, `__hash__${++hashNumberStamp}` as const)
           })
-          .join(' ')
+          .join(" ")
       : String(input)
 
   const returnedValueMap = new Map<Key, ReturnedValue>()
@@ -54,7 +54,7 @@ function createShallowMap<InputKey extends object | { [key: string]: unknown }, 
     has(arrayKey: InputKey) {
       const keyString = calcKey(arrayKey)
       return returnedValueMap.has(keyString)
-    }
+    },
   }
 }
 type AnyFunction = (...args: any[]) => void

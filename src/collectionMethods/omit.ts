@@ -1,5 +1,5 @@
-import { flap } from '.'
-import { AnyObj, isMap, MayArray } from '..'
+import { flap } from "."
+import { AnyObj, isMap, MayArray } from ".."
 
 /**
  * like typescript Omit
@@ -11,7 +11,7 @@ export function omit<T extends AnyObj, U extends keyof T>(collection: T, propNam
 export function omit<T extends Map<any, any>, U extends keyof T>(collection: T, propNameList: MayArray<U>): T
 export function omit<T extends AnyObj | Map<any, any>, U extends keyof T>(
   collection: T,
-  propNameList: MayArray<U>
+  propNameList: MayArray<U>,
 ): any {
   return isMap(collection) ? omitMap(collection, propNameList) : omitObject(collection, propNameList)
 }
@@ -49,9 +49,8 @@ function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
       getOwnPropertyDescriptor: (target, prop) => ({
         ...Object.getOwnPropertyDescriptor(obj, prop),
         enumerable: true,
-        configurable: true
-      })
-    }
+        configurable: true,
+      }),
+    },
   ) as T
 }
-

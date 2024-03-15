@@ -1,7 +1,7 @@
-import { clamp, map } from '..'
-import { getType } from '../dataType'
-import { Numberish } from '../numberish/types'
-import { DateParam, DateInfoAtom, TimeStamp } from './type'
+import { clamp, map } from ".."
+import { getType } from "../dataType"
+import { Numberish } from "../numberish/types"
+import { DateParam, DateInfoAtom, TimeStamp } from "./type"
 
 export const createDate: {
   (): Date
@@ -14,7 +14,7 @@ export const createDate: {
     hours?: Numberish,
     minutes?: Numberish,
     seconds?: Numberish,
-    milliseconds?: Numberish
+    milliseconds?: Numberish,
   ): Date
 } = (...params) => {
   if (params.length === 0) {
@@ -23,7 +23,7 @@ export const createDate: {
     const value = params[0]
     if (value instanceof Date) {
       return new Date(value)
-    } else if (getType(value) === 'Object') {
+    } else if (getType(value) === "Object") {
       const nowDate = new Date()
       const {
         year = getYear(nowDate),
@@ -32,7 +32,7 @@ export const createDate: {
         hours = getHours(nowDate),
         minutes = getMinutes(nowDate),
         seconds = getSeconds(nowDate),
-        milliseconds = getMilliseconds(nowDate)
+        milliseconds = getMilliseconds(nowDate),
       } = map(value as DateInfoAtom, Number)
       return new Date(year, month - 1, calendarDate, hours, minutes, seconds, milliseconds)
     }
@@ -52,7 +52,7 @@ export function setDate(oldDate: DateParam, options?: DateInfoAtom) {
     hours: options?.hours ?? getHours(oldDate),
     minutes: options?.minutes ?? getMinutes(oldDate),
     seconds: options?.seconds ?? getSeconds(oldDate),
-    milliseconds: options?.milliseconds ?? getMilliseconds(oldDate)
+    milliseconds: options?.milliseconds ?? getMilliseconds(oldDate),
   })
 }
 
@@ -77,12 +77,12 @@ export function offsetDateTime(
   offset: number,
   /** milliseconds by default */
   options?: {
-    unit?: 'years' | 'months' | 'days' | 'hours' | 'minutes' | 'seconds' | 'milliseconds'
-  }
+    unit?: "years" | "months" | "days" | "hours" | "minutes" | "seconds" | "milliseconds"
+  },
 ) {
-  if (options?.unit === 'months' || options?.unit === 'years') {
+  if (options?.unit === "months" || options?.unit === "years") {
     const { year, month, calendarDate, hours, minutes, seconds, milliseconds } = getFullDateInfo(baseDate)
-    const wiredTotalMonth = year * 12 + month + offset * (options?.unit === 'months' ? 1 : 12)
+    const wiredTotalMonth = year * 12 + month + offset * (options?.unit === "months" ? 1 : 12)
     const yearNumber = Math.floor(wiredTotalMonth / 12)
     const monthNumber = wiredTotalMonth % 12
     return createDate(yearNumber, monthNumber, calendarDate, hours, minutes, seconds, milliseconds)
@@ -90,15 +90,15 @@ export function offsetDateTime(
     const timestamp = getTime(baseDate)
     const offsetedTimestamp =
       timestamp +
-      (options?.unit === 'days'
+      (options?.unit === "days"
         ? offset * 24 * 60 * 60 * 1000
-        : options?.unit === 'hours'
-        ? offset * 60 * 60 * 1000
-        : options?.unit === 'minutes'
-        ? offset * 60 * 1000
-        : options?.unit === 'seconds'
-        ? offset * 1000
-        : offset)
+        : options?.unit === "hours"
+          ? offset * 60 * 60 * 1000
+          : options?.unit === "minutes"
+            ? offset * 60 * 1000
+            : options?.unit === "seconds"
+              ? offset * 1000
+              : offset)
     return createDate(offsetedTimestamp)
   }
 }
@@ -181,7 +181,7 @@ export const getFullDateInfo = (date?: DateParam) => {
     seconds: getSeconds(paramDate),
     milliseconds: getMilliseconds(paramDate),
     timestamp: getTimestamp(paramDate),
-    monthLength: getMonthLength(getYear(paramDate), getMonth(paramDate))
+    monthLength: getMonthLength(getYear(paramDate), getMonth(paramDate)),
   }
 }
 

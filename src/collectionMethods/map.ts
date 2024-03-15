@@ -1,5 +1,5 @@
-import { Collection, Entry } from '../'
-import { MayArray } from '../typings'
+import { Collection, Entry } from "../"
+import { MayArray } from "../typings"
 import {
   GetCollectionKey,
   GetCollectionValue,
@@ -7,9 +7,9 @@ import {
   flatMapCollectionEntries,
   forceEntry,
   mapCollection,
-  mapCollectionEntries
-} from './'
-import { toEntry } from './entries'
+  mapCollectionEntries,
+} from "./"
+import { toEntry } from "./entries"
 
 /**
  * {@link mapEntry `mapEntry()`}
@@ -21,14 +21,14 @@ import { toEntry } from './entries'
  */
 export function mapEntry<C extends Collection, V, K = GetCollectionKey<C>>(
   collection: C,
-  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => Entry<V, K>
+  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => Entry<V, K>,
 ): GetNewCollection<C, V, K> {
   return mapCollectionEntries(collection, mapCallback)
 }
 
 export function mapKey<C extends Collection, K>(
   collection: C,
-  mapCallback: (key: GetCollectionKey<C>, value: GetCollectionValue<C>, source: C) => K
+  mapCallback: (key: GetCollectionKey<C>, value: GetCollectionValue<C>, source: C) => K,
 ): GetNewCollection<C, GetCollectionValue<C>, K> {
   return mapEntry(collection, (v, k, s) => forceEntry(v, mapCallback(k, v, s)))
 }
@@ -45,11 +45,10 @@ export function mapKey<C extends Collection, K>(
  */
 export function map<C extends Collection, V, K = GetCollectionKey<C>>(
   collection: C,
-  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V
+  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
 ): GetNewCollection<C, V, K> {
   return mapCollection(collection, mapCallback)
 }
-
 
 /**
  * {@link flatMap `flatMap()`}: simliar to `array.prototype.flatMap()`
@@ -63,7 +62,7 @@ export function map<C extends Collection, V, K = GetCollectionKey<C>>(
  */
 export function flatMap<C extends Collection, V, K = GetCollectionKey<C>>(
   collection: C,
-  callback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>) => (V | Entry<V, K>)[]
+  callback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>) => (V | Entry<V, K>)[],
 ): GetNewCollection<C, V, K> {
   return flatMapEntry(collection, (value, key) => callback(value, key).map((newValue) => toEntry(newValue, key))) as any
 }
@@ -80,8 +79,8 @@ export function flatMapEntry<C extends Collection, V, K>(
   callback: (
     value: GetCollectionValue<C>,
     key: GetCollectionKey<C>,
-    source: C
-  ) => MayArray<Entry<V, K> | undefined> | undefined
+    source: C,
+  ) => MayArray<Entry<V, K> | undefined> | undefined,
 ): GetNewCollection<C, V, K> {
   return flatMapCollectionEntries(collection, callback)
 }

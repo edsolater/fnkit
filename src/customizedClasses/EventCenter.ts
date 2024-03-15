@@ -1,6 +1,6 @@
-import { map } from '../collectionMethods'
-import { AnyFn } from '../typings'
-import { createSubscription, Subscription } from './Subscription'
+import { map } from "../collectionMethods"
+import { AnyFn } from "../typings"
+import { createSubscription, Subscription } from "./Subscription"
 
 type EventConfig = {
   [eventName: string]: AnyFn
@@ -19,13 +19,13 @@ type EventCenterCreateOptions<T extends EventConfig> = {
     [P in keyof T as `${P & string}`]?: (utils: {
       fn: (...params: Parameters<T[P]>) => void
       eventName: P
-      emit: EventCenter<T>['emit']
+      emit: EventCenter<T>["emit"]
       isFirst: boolean
     }) => void
   }
   whenAnyEventListenerRegistered?: (utils: {
     fn: (...params: any[]) => void
-    emit: EventCenter<T>['emit']
+    emit: EventCenter<T>["emit"]
     isFirst: boolean
   }) => void
 }
@@ -50,7 +50,7 @@ export type EventCenter<Config extends EventConfig> = {
    */
   registEventHandlers<U extends Partial<Config>>(
     subscriptionFns: U,
-    options?: EventListenerOptions
+    options?: EventListenerOptions,
   ): { [P in keyof U]: Subscription }
 
   /** core for event consumer */
@@ -58,10 +58,10 @@ export type EventCenter<Config extends EventConfig> = {
    * create a factory
    */
   on<EventName extends keyof Config>(
-    eventName: EventName
+    eventName: EventName,
   ): (
     subscriptionFn: (...params: Parameters<Config[EventName]>) => void,
-    options?: EventListenerOptions
+    options?: EventListenerOptions,
   ) => Subscription
   /**
    * subscribe
@@ -69,12 +69,12 @@ export type EventCenter<Config extends EventConfig> = {
   on<EventName extends keyof Config>(
     eventName: EventName,
     subscriptionFn: (...params: Parameters<Config[EventName]>) => void,
-    options?: EventListenerOptions
+    options?: EventListenerOptions,
   ): Subscription
 
   onAnyEvent<EventName extends keyof Config>(
     subscriptionFn: (eventName: EventName, cllbackParams: Parameters<Config[EventName]>) => void,
-    options?: EventListenerOptions
+    options?: EventListenerOptions,
   ): Subscription
 
   /** clear all registed events for specified event */
@@ -133,7 +133,7 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     } else if (options?.shouldCacheAllEmitedValues) {
       emitedValueCache!.set(eventName, (emitedValueCache!.get(eventName) ?? []).concat(paramters))
     }
-  }) as EventCenter<T>['emit']
+  }) as EventCenter<T>["emit"]
 
   function singlyOn(eventName: string, fn: AnyFn, eventListenerOptions?: EventListenerOptions): Subscription {
     const callbackList = storedCallbackStore.get(eventName) ?? new Set()
@@ -145,7 +145,7 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
       fn,
       emit,
       eventName,
-      isFirst: !storedCallbackStore.has(eventName)
+      isFirst: !storedCallbackStore.has(eventName),
     })
 
     if (eventListenerOptions?.initWithMultiPrevEmitedValues) {
@@ -162,12 +162,12 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     return createSubscription({
       onUnsubscribe() {
         storedCallbackStore.get(eventName)?.delete(fn)
-      }
+      },
     })
   }
   function onAnyEvent<EventName extends keyof T>(
     fn: (eventName: EventName, cllbackParams: Parameters<T[EventName]>) => void,
-    eventListenerOptions?: EventListenerOptions
+    eventListenerOptions?: EventListenerOptions,
   ): Subscription {
     anyEventCommonCallbacks.add(fn)
 
@@ -192,7 +192,7 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     return createSubscription({
       onUnsubscribe() {
         anyEventCommonCallbacks.delete(fn)
-      }
+      },
     })
   }
 
@@ -205,13 +205,13 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     } else {
       return singlyOn(...(args as [string, AnyFn, EventListenerOptions]))
     }
-  }) as EventCenter<T>['on']
+  }) as EventCenter<T>["on"]
 
   const registEvents = ((subscriptionFns, options) =>
     map(
       subscriptionFns,
-      (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn as AnyFn, options)
-    )) as EventCenter<T>['registEventHandlers']
+      (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn as AnyFn, options),
+    )) as EventCenter<T>["registEventHandlers"]
 
   function clearAll() {
     storedCallbackStore.clear()
@@ -227,7 +227,7 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     emit,
     clearAll,
     clear,
-    _eventCenterId
+    _eventCenterId,
   } as EventCenter<T>
 
   return eventCenter

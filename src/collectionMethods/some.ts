@@ -1,6 +1,6 @@
-import { Collection, isArray } from '../'
-import { GetCollectionKey, GetCollectionValue } from './'
-import { getEntryKey, getEntryValue, toEntries } from './entries'
+import { Collection, isArray } from "../"
+import { GetCollectionKey, GetCollectionValue } from "./"
+import { getEntryKey, getEntryValue, toEntries } from "./entries"
 
 /**
  * design for arry object set and map
@@ -13,7 +13,7 @@ import { getEntryKey, getEntryValue, toEntries } from './entries'
  */
 export function some<C extends Collection>(
   collection: C,
-  predicate: (value: GetCollectionValue<C>, key: GetCollectionKey<C>) => unknown
+  predicate: (value: GetCollectionValue<C>, key: GetCollectionKey<C>) => unknown,
 ): boolean {
   if (isArray(collection)) {
     // @ts-expect-error faster for build-in method, no need type check

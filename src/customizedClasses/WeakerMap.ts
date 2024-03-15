@@ -1,4 +1,4 @@
-import { isObject } from '../dataType'
+import { isObject } from "../dataType"
 
 const createWrapperRef = <T extends object>(v: T) => new WeakRef(v)
 const createWrapperRefIfNeeded = <T>(v: T) => (isObject(v) ? createWrapperRef(v) : v)

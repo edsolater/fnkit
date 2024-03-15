@@ -1,14 +1,11 @@
-import shrinkToValue from '../wrapper/shrinkFn'
+import shrinkToValue from "../wrapper/shrinkFn"
 
 export type CallbackCenterRegistedCallback<T> = (payloads: { data: T }) => void
 export type CallbackCenterOptions = {
   canInitInvoke?: boolean
 }
 export type CallbackCenter<T> = {
-  on: (
-    inputCallback: CallbackCenterRegistedCallback<T>,
-    options?: CallbackCenterOptions | undefined
-  ) => void
+  on: (inputCallback: CallbackCenterRegistedCallback<T>, options?: CallbackCenterOptions | undefined) => void
   setData: (dispatch: T | ((prevData: T | undefined) => T)) => void
 }
 // TODO: should add debug entry
@@ -18,14 +15,14 @@ export function createCallbackCenter<T>(initData?: T): CallbackCenter<T> {
       inputCallback: CallbackCenterRegistedCallback<T>
       options?: CallbackCenterOptions
     }[],
-    data: initData
+    data: initData,
   }
 
   // TODO: should return abort controller
-  const on: (
-    inputCallback: CallbackCenterRegistedCallback<T>,
-    options?: CallbackCenterOptions
-  ) => void = (inputCallback, options) => {
+  const on: (inputCallback: CallbackCenterRegistedCallback<T>, options?: CallbackCenterOptions) => void = (
+    inputCallback,
+    options,
+  ) => {
     store.callbacks.push({ inputCallback, options })
     if (options?.canInitInvoke && store.data) {
       inputCallback({ data: store.data })

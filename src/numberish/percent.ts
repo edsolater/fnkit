@@ -1,8 +1,8 @@
-import { Numberish } from './types'
-import { eq, gt } from './compare'
-import { toStringNumber } from './numberishAtom'
-import { mul } from './operations'
-import { toFixedDecimal } from './utils'
+import { Numberish } from "./types"
+import { eq, gt } from "./compare"
+import { toStringNumber } from "./numberishAtom"
+import { mul } from "./operations"
+import { toFixedDecimal } from "./utils"
 
 /**
  * @example
@@ -33,16 +33,16 @@ export function toPercentString(
     // TODO: imply it!!
     /** by default, 0.00001 */
     min?: number
-  }
+  },
 ): string {
   const nPart = (() => {
     try {
       const stringPart = toFixedDecimal(mul(n ?? 0, options?.alreadyPercented ? 1 : 100), options?.fixed ?? 2)
-      if (eq(n, 0)) return '0'
-      if (!options?.exact && stringPart === '0.00') return options?.alwaysSigned ? '<+0.01' : '<0.01'
+      if (eq(n, 0)) return "0"
+      if (!options?.exact && stringPart === "0.00") return options?.alwaysSigned ? "<+0.01" : "<0.01"
       return options?.alwaysSigned ? getSign(stringPart) + toStringNumber(getUnsignNumber(stringPart)) : stringPart
     } catch (err) {
-      return '0'
+      return "0"
     }
   })()
   return options?.noUnit ? nPart : `${nPart}%`
@@ -56,12 +56,12 @@ export function toPercentString(
  * @returns js:number
  */
 export function parsePercentString(s: `${string}%` | number): number {
-  const isPercentString = typeof s === 'string' && s.endsWith('%')
-  return isPercentString ? Number(s.replace('%', '')) / 100 : (s as number)
+  const isPercentString = typeof s === "string" && s.endsWith("%")
+  return isPercentString ? Number(s.replace("%", "")) / 100 : (s as number)
 }
 
 function getSign(s: Numberish) {
-  return gt(s, 0) ? '+' : '-'
+  return gt(s, 0) ? "+" : "-"
 }
 function getUnsignNumber(s: Numberish) {
   return gt(s, 0) ? s : mul(s, -1)

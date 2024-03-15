@@ -1,7 +1,7 @@
-import { every } from '../'
-import { isArray, isFunction, isObject } from '../dataType'
-import { mergeObjectsWithConfigs } from '../mergeObjects'
-import { AnyArr, AnyFn, AnyObj } from '../typings/constants'
+import { every } from "../"
+import { isArray, isFunction, isObject } from "../dataType"
+import { mergeObjectsWithConfigs } from "../mergeObjects"
+import { AnyArr, AnyFn, AnyObj } from "../typings/constants"
 
 /**
  * a merge version with {@link mergeArrs} and {@link mergeObjs} and {@link mergeFns}

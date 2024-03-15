@@ -1,4 +1,4 @@
-import { ParsedDurationInfo } from './type'
+import { ParsedDurationInfo } from "./type"
 
 /**
  *  differ than {@link parseDurationAbsolute `parseDurationAbsolute()`}
@@ -19,7 +19,7 @@ export function parseDuration(timestamp: number): ParsedDurationInfo {
     hours: 0,
     minutes: 0,
     seconds: 0,
-    milliseconds: 0
+    milliseconds: 0,
   }
   values.exact = Math.max(diff, 0)
   values.full = Math.max(Math.floor(diff), 0)
@@ -52,19 +52,19 @@ export function parseDurationAbsolute(timestamp: number): ParsedDurationInfo {
     hours: timestamp / 60 / 60 / 1000,
     minutes: timestamp / 60 / 1000,
     seconds: timestamp / 1000,
-    milliseconds: timestamp
+    milliseconds: timestamp,
   }
 }
 
 export function isDurationInfo(value: any): value is ParsedDurationInfo {
   return (
     value &&
-    typeof value === 'object' &&
-    'full' in value &&
-    'days' in value &&
-    'hours' in value &&
-    'minutes' in value &&
-    'seconds' in value &&
-    'milliseconds' in value
+    typeof value === "object" &&
+    "full" in value &&
+    "days" in value &&
+    "hours" in value &&
+    "minutes" in value &&
+    "seconds" in value &&
+    "milliseconds" in value
   )
 }

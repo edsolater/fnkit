@@ -1,11 +1,11 @@
-import { flap } from '../collectionMethods'
-import { isFunction, isObjectLike, isPromise } from '../dataType'
-import { AnyFn, MayPromise, type MayArray, type UndefinedKeys } from '../typings'
-import { shrinkFn } from '../wrapper'
-import { WeakerMap } from './WeakerMap'
-import { WeakerSet } from './WeakerSet'
+import { flap } from "../collectionMethods"
+import { isFunction, isObjectLike, isPromise } from "../dataType"
+import { AnyFn, MayPromise, type MayArray, type UndefinedKeys } from "../typings"
+import { shrinkFn } from "../wrapper"
+import { WeakerMap } from "./WeakerMap"
+import { WeakerSet } from "./WeakerSet"
 
-const subscribableTag = Symbol('subscribable')
+const subscribableTag = Symbol("subscribable")
 
 export type SubscribeFn<T> = (value: T, prevValue: T | undefined) => void
 
@@ -33,15 +33,15 @@ type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) => MayPr
  */
 export function createSubscribable<T>(
   defaultValue: T | (() => T),
-  options?: { subscribeFns?: MayArray<SubscribeFn<T>> }
+  options?: { subscribeFns?: MayArray<SubscribeFn<T>> },
 ): Subscribable<T>
 export function createSubscribable<T>(
   defaultValue?: T | undefined | (() => T | undefined),
-  options?: { subscribeFns?: MayArray<SubscribeFn<T | undefined>> }
+  options?: { subscribeFns?: MayArray<SubscribeFn<T | undefined>> },
 ): Subscribable<T | undefined>
 export function createSubscribable<T>(
   defaultValue?: T | (() => T),
-  options?: { subscribeFns?: MayArray<SubscribeFn<T>> }
+  options?: { subscribeFns?: MayArray<SubscribeFn<T>> },
 ): Subscribable<T | undefined> {
   const subscribeFnsStore = new Set<SubscribeFn<T>>(options?.subscribeFns ? flap(options.subscribeFns) : undefined)
   const cleanFnsStore = new Map<SubscribeFn<T>, AnyFn>()
@@ -89,7 +89,7 @@ export function createSubscribable<T>(
         unsubscribe() {
           subscribeFnsStore.delete(cb)
           cleanFnsStore.delete(cb)
-        }
+        },
       }
     },
     set: changeValue,
@@ -107,7 +107,7 @@ export function createSubscribable<T>(
     },
     [Symbol.dispose]: () => {
       subscribable.destroy()
-    }
+    },
   })
 
   return subscribable
@@ -120,17 +120,17 @@ export function isSubscribable<T>(value: any): value is Subscribable<T> {
 export function createSubscribableFromPromise<T>(
   promise: Promise<T>,
   /* used when promise is pending */
-  defaultValue: T
+  defaultValue: T,
 ): Subscribable<T>
 export function createSubscribableFromPromise<T>(
   promise: Promise<T>,
   /* used when promise is pending */
-  defaultValue?: T
+  defaultValue?: T,
 ): Subscribable<T | undefined>
 export function createSubscribableFromPromise<T>(
   promise: Promise<T>,
   /* used when promise is pending */
-  defaultValue?: T | undefined
+  defaultValue?: T | undefined,
 ): Subscribable<T | undefined> {
   const subscribable = createSubscribable(defaultValue)
   promise.then((v) => subscribable.set(v))

@@ -1,5 +1,5 @@
-import { isFunction } from './dataType'
-import { AnyFn } from './typings'
+import { isFunction } from "./dataType"
+import { AnyFn } from "./typings"
 
 /**
  * merge without access, you can config transformer for detail control
@@ -8,7 +8,7 @@ import { AnyFn } from './typings'
  */
 export function mergeObjectsWithConfigs<T extends object | Function>(
   objs: T[],
-  transformer: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any = ({ valueA, valueB }) => valueB
+  transformer: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any = ({ valueA, valueB }) => valueB,
 ): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]!
@@ -47,7 +47,7 @@ export function mergeObjectsWithConfigs<T extends object | Function>(
           return Reflect.getOwnPropertyDescriptor(obj, prop)
         }
       }
-    }
+    },
   }) as T
 }
 
@@ -110,7 +110,7 @@ export function mergeObjects<T extends object | Function | undefined>(...objs: T
           return Reflect.getOwnPropertyDescriptor(obj, prop)
         }
       }
-    }
+    },
   }) as T
 }
 
@@ -144,13 +144,13 @@ export function createEmptyObjectByOlds<T extends Record<string | symbol, any>, 
 export function createEmptyObjectByOlds<
   T extends Record<string | symbol, any>,
   U extends Record<string | symbol, any>,
-  V extends Record<string | symbol, any>
+  V extends Record<string | symbol, any>,
 >(...objs: [T, U, V]): { [key in keyof T | keyof U | keyof V]: undefined }
 export function createEmptyObjectByOlds<
   T extends Record<string | symbol, any>,
   U extends Record<string | symbol, any>,
   V extends Record<string | symbol, any>,
-  W extends Record<string | symbol, any>
+  W extends Record<string | symbol, any>,
 >(...objs: [T, U, V, W]): { [key in keyof T | keyof U | keyof V | keyof W]: undefined }
 export function createEmptyObjectByOlds(...objs: (object | undefined)[]): object
 export function createEmptyObjectByOlds(...objs: (object | undefined)[]): any {
@@ -173,7 +173,7 @@ export function createEmptyObject(keys: (string | symbol)[]) {
 function getValueByConfig<T extends object>(
   objs: T[],
   key: string | symbol,
-  valueMatchRule: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any
+  valueMatchRule: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any,
 ) {
   let valueA = undefined
   for (const obj of objs) {

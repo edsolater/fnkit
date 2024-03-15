@@ -1,5 +1,5 @@
-import { isArray } from './dataType'
-import { AnyArr, AnyObj } from './typings/constants'
+import { isArray } from "./dataType"
+import { AnyArr, AnyObj } from "./typings/constants"
 
 /**
  * what ever it takes, it return an empty array with same type

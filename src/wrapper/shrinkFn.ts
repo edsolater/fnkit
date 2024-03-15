@@ -1,4 +1,4 @@
-import { MayArray, MayFn, MayParameter, DeMayArray, DeMayFn, AnyFn, isFunction, flap } from '..'
+import { MayArray, MayFn, MayParameter, DeMayArray, DeMayFn, AnyFn, isFunction, flap } from ".."
 
 /**
  * @example
@@ -6,7 +6,7 @@ import { MayArray, MayFn, MayParameter, DeMayArray, DeMayFn, AnyFn, isFunction, 
  */
 export const flatWithFn = <T extends MayArray<MayFn<any>>>(
   wrapValue: T,
-  params?: MayParameter<DeMayArray<T>>
+  params?: MayParameter<DeMayArray<T>>,
 ): DeMayFn<DeMayArray<T>>[] =>
   //@ts-expect-error type force
   flap(wrapValue).map((mayFn) => shrinkToValue(mayFn, params))
@@ -34,5 +34,5 @@ export function shrinkFn<T>(mayValue: T, params?: MayParameters<T>): MayReturn<T
 export function shrinkFn<T>(mayValue: T, params?: MayParameters<T>): MayReturn<T> {
   return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue
 }
-type MayParameters<T> = Parameters<Extract<T, AnyFn>>;
-type MayReturn<T > = T extends AnyFn ?  ReturnType<T>:T;
+type MayParameters<T> = Parameters<Extract<T, AnyFn>>
+type MayReturn<T> = T extends AnyFn ? ReturnType<T> : T

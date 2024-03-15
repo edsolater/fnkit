@@ -1,4 +1,4 @@
-import { DeMayArray, DeMayDeepArray, MayArray } from '../typings/tools'
+import { DeMayArray, DeMayDeepArray, MayArray } from "../typings/tools"
 
 /**
  * only array can flat

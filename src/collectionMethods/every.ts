@@ -1,5 +1,5 @@
-import { AnyObj, isArray } from '../'
-import { AnyArr, Keyof, SKeyof, Valueof } from '../typings'
+import { AnyObj, isArray } from "../"
+import { AnyArr, Keyof, SKeyof, Valueof } from "../typings"
 
 /**
  * design for arry object set and map
@@ -11,11 +11,11 @@ import { AnyArr, Keyof, SKeyof, Valueof } from '../typings'
  */
 export function every<T extends AnyArr, U>(
   arr: T,
-  predicate: (item: T[number], idx: number, arr: T) => unknown
+  predicate: (item: T[number], idx: number, arr: T) => unknown,
 ): boolean
 export function every<O extends AnyObj, V>(
   collection: O,
-  predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => unknown
+  predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => unknown,
 ): boolean
 export function every(collection, predicate): boolean {
   return isArray(collection)
@@ -25,14 +25,14 @@ export function every(collection, predicate): boolean {
 
 export function everyEntry<O extends AnyArr>(
   collection: O,
-  predicate: (entry: [key: SKeyof<O>, value: Valueof<O>], obj: O) => unknown
+  predicate: (entry: [key: SKeyof<O>, value: Valueof<O>], obj: O) => unknown,
 ): boolean {
   return Object.entries(collection).every(([key, value]) => predicate([key as SKeyof<O>, value], collection))
 }
 
 export function everyKey<O extends AnyArr>(
   collection: O,
-  predicate: (key: Keyof<O>, value: Valueof<O>, obj: O) => unknown
+  predicate: (key: Keyof<O>, value: Valueof<O>, obj: O) => unknown,
 ): boolean {
   return everyEntry(collection, ([key, value], collection) => predicate(key, value, collection))
 }

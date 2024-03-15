@@ -1,6 +1,6 @@
 import { AnyFn } from "../typings"
 
-export interface Subscription{
+export interface Subscription {
   unsubscribe(): void
 }
 

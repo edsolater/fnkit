@@ -1,5 +1,5 @@
-import { Collection } from '../collectionMethods'
-import { AnyFn, Falsy, Primitive } from './constants'
+import { Collection } from "../collectionMethods"
+import { AnyFn, Falsy, Primitive } from "./constants"
 
 export type MayArray<T> = T | Array<T>
 /** flap */
@@ -13,13 +13,14 @@ export type Wrap<T, Params extends any[] = any[]> = MayArray<MayFn<T, Params>>
 export type DeWrap<T extends MayArray<MayFn<any>>> = DeMayFn<DeMayArray<T>>
 
 export type MayDeepArray<T> = T | Array<MayDeepArray<T>>
-export type DeMayDeepArray<T> = T extends MayDeepArray<infer U> // can't recursively unwrap a recursively wrapped value , so have to handle special case first
-  ? U
-  : T extends Array<any>
-  ? DeMayDeepArray<T[number]>
-  : T
+export type DeMayDeepArray<T> =
+  T extends MayDeepArray<infer U> // can't recursively unwrap a recursively wrapped value , so have to handle special case first
+    ? U
+    : T extends Array<any>
+      ? DeMayDeepArray<T[number]>
+      : T
 
-export type MayObj<T, KeyName extends string = 'defaultKey'> = T | { [key in KeyName]: T }
+export type MayObj<T, KeyName extends string = "defaultKey"> = T | { [key in KeyName]: T }
 export type DeMayObj<T extends MayObj<any>> = T extends Record<string, any> ? T[keyof T] : T
 export type MayObjKey<T extends MayObj<any>> = T extends Primitive ? never : T extends Record<infer R, any> ? R : never
 
@@ -120,16 +121,16 @@ export type PascalCaseFromKebabCase<S extends string> =
   S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}-${infer p6}-${infer p7}`
     ? `${Capitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}${Capitalize<p6>}${Capitalize<p7>}`
     : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}-${infer p6}`
-    ? `${Capitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}${Capitalize<p6>}`
-    : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}`
-    ? `${Capitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}`
-    : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}`
-    ? `${Capitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}`
-    : S extends `${infer p1}-${infer p2}-${infer p3}`
-    ? `${Capitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}`
-    : S extends `${infer p1}-${infer p2}`
-    ? `${Capitalize<p1>}${Capitalize<p2>}`
-    : S
+      ? `${Capitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}${Capitalize<p6>}`
+      : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}`
+        ? `${Capitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}`
+        : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}`
+          ? `${Capitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}`
+          : S extends `${infer p1}-${infer p2}-${infer p3}`
+            ? `${Capitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}`
+            : S extends `${infer p1}-${infer p2}`
+              ? `${Capitalize<p1>}${Capitalize<p2>}`
+              : S
 
 /**
  * @example
@@ -161,16 +162,16 @@ export type CamelCaseFromKebabCase<S extends string> =
   S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}-${infer p6}-${infer p7}`
     ? `${Uncapitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}${Capitalize<p6>}${Capitalize<p7>}`
     : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}-${infer p6}`
-    ? `${Uncapitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}${Capitalize<p6>}`
-    : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}`
-    ? `${Uncapitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}`
-    : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}`
-    ? `${Uncapitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}`
-    : S extends `${infer p1}-${infer p2}-${infer p3}`
-    ? `${Uncapitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}`
-    : S extends `${infer p1}-${infer p2}`
-    ? `${Uncapitalize<p1>}${Capitalize<p2>}`
-    : S
+      ? `${Uncapitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}${Capitalize<p6>}`
+      : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}`
+        ? `${Uncapitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}${Capitalize<p5>}`
+        : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}`
+          ? `${Uncapitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}${Capitalize<p4>}`
+          : S extends `${infer p1}-${infer p2}-${infer p3}`
+            ? `${Uncapitalize<p1>}${Capitalize<p2>}${Capitalize<p3>}`
+            : S extends `${infer p1}-${infer p2}`
+              ? `${Uncapitalize<p1>}${Capitalize<p2>}`
+              : S
 
 /**
  * @example
@@ -197,16 +198,16 @@ export type SnakeCase<S extends string> =
   S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}-${infer p6}-${infer p7}`
     ? `${p1}_${p2}_${p3}_${p4}_${p5}_${p6}_${p7}`
     : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}-${infer p6}`
-    ? `${p1}_${p2}_${p3}_${p4}_${p5}_${p6}`
-    : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}`
-    ? `${p1}_${p2}_${p3}_${p4}_${p5}`
-    : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}`
-    ? `${p1}_${p2}_${p3}_${p4}`
-    : S extends `${infer p1}-${infer p2}-${infer p3}`
-    ? `${p1}_${p2}_${p3}`
-    : S extends `${infer p1}-${infer p2}`
-    ? `${p1}_${p2}`
-    : S
+      ? `${p1}_${p2}_${p3}_${p4}_${p5}_${p6}`
+      : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}-${infer p5}`
+        ? `${p1}_${p2}_${p3}_${p4}_${p5}`
+        : S extends `${infer p1}-${infer p2}-${infer p3}-${infer p4}`
+          ? `${p1}_${p2}_${p3}_${p4}`
+          : S extends `${infer p1}-${infer p2}-${infer p3}`
+            ? `${p1}_${p2}_${p3}`
+            : S extends `${infer p1}-${infer p2}`
+              ? `${p1}_${p2}`
+              : S
 //#endregion
 
 //#region ------------------- keyof / valueof -------------------
@@ -248,10 +249,10 @@ export type ReplaceType<Old, From, To> = {
   [T in keyof Old]: Old[T] extends From // to avoid case: Old[T] is an Object,
     ? Exclude<Old[T], From> | To // when match,  directly replace
     : Old[T] extends Primitive // judge whether need recursively replace
-    ? From extends Old[T] // it's an Object
-      ? Exclude<Old[T], From> | To // directly replace
-      : Old[T] // stay same
-    : ReplaceType<Old[T], From, To> // recursively replace
+      ? From extends Old[T] // it's an Object
+        ? Exclude<Old[T], From> | To // directly replace
+        : Old[T] // stay same
+      : ReplaceType<Old[T], From, To> // recursively replace
 }
 /**
  * @see https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir
@@ -313,10 +314,10 @@ export type ListAccess<Arr extends object[], Property extends keyof Arr[number]>
 export type FromPrivateString<S extends string> = S extends `${infer U extends number}`
   ? U
   : S extends `${infer U extends bigint}`
-  ? U
-  : S extends `${infer U extends boolean}`
-  ? U
-  : S
+    ? U
+    : S extends `${infer U extends boolean}`
+      ? U
+      : S
 
 export type Optional<O extends object, K extends keyof O = keyof O> = Omit<O, K> & Partial<Pick<O, K>>
 export type PartRequired<O extends object, K extends keyof O = keyof O> = Omit<O, K> & Required<Pick<O, K>>

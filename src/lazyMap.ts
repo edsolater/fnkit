@@ -1,5 +1,5 @@
-import { addItem } from './oldMethodsArray'
-import { AnyFn } from './typings'
+import { addItem } from "./oldMethodsArray"
+import { AnyFn } from "./typings"
 
 const invokedRecord = new Map<string, (LazyMapSettings<any, any> & { idleId: number })[]>()
 

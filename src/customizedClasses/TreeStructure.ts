@@ -1,4 +1,4 @@
-import { assert } from '../oldMethodsMagic'
+import { assert } from "../oldMethodsMagic"
 
 export type TreeNode<T extends object> = {
   info: T
@@ -15,7 +15,7 @@ function createTreeNode<T extends object>(info: T) {
   return {
     info: info,
     parent: undefined, // not added yet, should add `TreeStructure#updateParentChildren`
-    children: [] // not added yet, should add `TreeStructure#updateSelfParentProperty`
+    children: [], // not added yet, should add `TreeStructure#updateSelfParentProperty`
   } as TreeNode<T>
 }
 
@@ -37,18 +37,18 @@ export class TreeStructure<T extends object> {
 
   private updateParentChildren(childNode: TreeNode<T>, parentInfo: T) {
     const cachedParent = this.getCachedNode(parentInfo)
-    assert(cachedParent, 'to avoid create multi tree, parent must exist')
+    assert(cachedParent, "to avoid create multi tree, parent must exist")
     if (!cachedParent.children.includes(childNode)) cachedParent.children.push(childNode)
   }
 
   private updateSelfParentProperty(node: TreeNode<T>, parentInfo: T) {
     const cachedParent = this.getCachedNode(parentInfo)
-    assert(cachedParent, 'to avoid create multi tree, parent must exist')
+    assert(cachedParent, "to avoid create multi tree, parent must exist")
     node.parent = cachedParent
   }
 
   private updateRootNode(node: TreeNode<T>) {
-    assert(!this.rootNode, 'root already fullfilled!')
+    assert(!this.rootNode, "root already fullfilled!")
     this.rootNode = node
   }
 
@@ -68,7 +68,7 @@ export class TreeStructure<T extends object> {
   }
 
   *readByBFS() {
-    assert(this.rootNode, 'root not exist!')
+    assert(this.rootNode, "root not exist!")
     let toTravel = [this.rootNode]
     while (toTravel.length > 0) {
       const currentList = [...toTravel]
@@ -86,7 +86,7 @@ export class TreeStructure<T extends object> {
 
   getPathFromRoot(info: T): [root: T, ...middle: T[], self: T] | [self: T] {
     const self = this.getCachedNode(info)
-    assert(self, 'node is not recored or is not exist')
+    assert(self, "node is not recored or is not exist")
     const pathNodes = [] as T[]
     let toTravel = self
     while (true) {

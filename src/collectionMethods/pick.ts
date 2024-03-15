@@ -1,4 +1,4 @@
-import { AnyObj, flap, isMap, MayArray } from '..'
+import { AnyObj, flap, isMap, MayArray } from ".."
 
 /**
  * like typescript Pick
@@ -11,7 +11,7 @@ export function pick<T extends AnyObj, U extends keyof T>(collection: T, propNam
 export function pick<T extends Map<any, any>, U extends keyof T>(collection: T, propNameList: MayArray<U>): T
 export function pick<T extends AnyObj | Map<any, any>, U extends keyof T>(
   collection: T,
-  propNameList: MayArray<U>
+  propNameList: MayArray<U>,
 ): any {
   return isMap(collection) ? pickMap(collection, propNameList) : pickObject(collection, propNameList)
 }
@@ -49,8 +49,8 @@ function pickObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
       getOwnPropertyDescriptor: (target, prop) => ({
         ...Object.getOwnPropertyDescriptor(obj, prop),
         enumerable: true,
-        configurable: true
-      })
-    }
+        configurable: true,
+      }),
+    },
   ) as T
 }

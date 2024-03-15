@@ -1,8 +1,8 @@
-import { isObject } from '../dataType'
-import { shakeTailingZero } from '../numberish/trimZero'
-import { shrinkToValue } from '../wrapper'
-import { parseDuration } from './parseDuration'
-import { ParsedDurationInfo } from './type'
+import { isObject } from "../dataType"
+import { shakeTailingZero } from "../numberish/trimZero"
+import { shrinkToValue } from "../wrapper"
+import { parseDuration } from "./parseDuration"
+import { ParsedDurationInfo } from "./type"
 
 /**
  * date format string list (case insensitive)):
@@ -27,27 +27,25 @@ export function formatDuration(
   formatString: string | ((durationInfo: ParsedDurationInfo) => string),
   options?: {
     shakeMillisecondsTailingZero?: boolean
-  }
+  },
 ) {
-  const durationInfo = parseDuration(
-    isObject(parsedDurationInfo) ? parsedDurationInfo.full : parsedDurationInfo
-  )
+  const durationInfo = parseDuration(isObject(parsedDurationInfo) ? parsedDurationInfo.full : parsedDurationInfo)
   return ` ${shrinkToValue(formatString, [durationInfo])} `
     .replace(/(\W+)[d](\W+)/gi, `$1${durationInfo.days}$2`)
-    .replace(/(\W+)[dd](\W+)/gi, `$1${String(durationInfo.days).padStart(2, '0')}$2`)
+    .replace(/(\W+)[dd](\W+)/gi, `$1${String(durationInfo.days).padStart(2, "0")}$2`)
     .replace(/(\W+)[h](\W+)/gi, `$1${durationInfo.hours}$2`)
-    .replace(/(\W+)[hh](\W+)/gi, `$1${String(durationInfo.hours).padStart(2, '0')}$2`)
+    .replace(/(\W+)[hh](\W+)/gi, `$1${String(durationInfo.hours).padStart(2, "0")}$2`)
     .replace(/(\W+)[m](\W+)/gi, `$1${durationInfo.minutes}$2`)
-    .replace(/(\W+)[mm](\W+)/gi, `$1${String(durationInfo.minutes).padStart(2, '0')}$2`)
+    .replace(/(\W+)[mm](\W+)/gi, `$1${String(durationInfo.minutes).padStart(2, "0")}$2`)
     .replace(/(\W+)[s](\W+)/gi, `$1${durationInfo.seconds}$2`)
-    .replace(/(\W+)[ss](\W+)/gi, `$1${String(durationInfo.seconds).padStart(2, '0')}$2`)
+    .replace(/(\W+)[ss](\W+)/gi, `$1${String(durationInfo.seconds).padStart(2, "0")}$2`)
     .replace(
       /(\W+)[sss](\W+)/gi,
       `$1${
         options?.shakeMillisecondsTailingZero
-          ? shakeTailingZero(String(durationInfo.milliseconds).padStart(3, '0'))
-          : String(durationInfo.milliseconds).padStart(3, '0')
-      }$2`
+          ? shakeTailingZero(String(durationInfo.milliseconds).padStart(3, "0"))
+          : String(durationInfo.milliseconds).padStart(3, "0")
+      }$2`,
     )
     .trim()
 }

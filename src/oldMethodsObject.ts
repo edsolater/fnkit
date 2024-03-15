@@ -1,7 +1,7 @@
-import { flap, unifyItem } from './collectionMethods'
-import { isObjectLike, isFunction, isObject } from './dataType'
-import { AnyObj } from './typings/constants'
-import { SKeyof, Valueof } from './typings/tools'
+import { flap, unifyItem } from "./collectionMethods"
+import { isObjectLike, isFunction, isObject } from "./dataType"
+import { AnyObj } from "./typings/constants"
+import { SKeyof, Valueof } from "./typings/tools"
 
 /** 给配置对象添加默认值 */
 export function addDefault<T extends object, W extends Partial<T>>(initConfig: T, defaultConfig: W): T & W {
@@ -16,7 +16,7 @@ export function addDefault<T extends object, W extends Partial<T>>(initConfig: T
  */
 export function deepCloneObject<O extends object>(inputObject: O): O {
   return Object.fromEntries(
-    Object.entries(inputObject).map(([key, value]) => [key, isObjectLike(value) ? deepCloneObject(value) : value])
+    Object.entries(inputObject).map(([key, value]) => [key, isObjectLike(value) ? deepCloneObject(value) : value]),
   ) as any
 }
 
@@ -43,7 +43,7 @@ export function appendEntries<T extends object, U extends keyof any, V>(
 
 export function flatMapObjectEntry<T>(
   target: T,
-  flatMapper: (entry: [key: SKeyof<T>, value: Valueof<T>]) => any[]
+  flatMapper: (entry: [key: SKeyof<T>, value: Valueof<T>]) => any[],
 ): any {
   //@ts-ignore
   return Object.fromEntries(Object.entries(target ?? {}).flatMap(flatMapper)) as any
@@ -59,9 +59,9 @@ export function reduceObjectEntry<T extends object, R>(
     acc: R,
     currentEntry: [key: U, value: T[U]],
     index: number,
-    allEntries: Array<[key: U, value: T[U]]>
+    allEntries: Array<[key: U, value: T[U]]>,
   ) => R,
-  initialValue: R
+  initialValue: R,
 ): R {
   //@ts-expect-error
   return Object.entries(obj).reduce(reducer, initialValue)
@@ -92,11 +92,11 @@ export function produce<O extends object>(target: O, producer: (darft: O) => voi
  */
 export function groupObjectByKey<T extends AnyObj>(
   obj: T,
-  judger: (key: keyof T, value: T[keyof T]) => boolean
+  judger: (key: keyof T, value: T[keyof T]) => boolean,
 ): [Partial<T>, Partial<T>]
 export function groupObjectByKey<T extends AnyObj, U extends keyof T>(
   obj: T,
-  propNameList: ReadonlyArray<U>
+  propNameList: ReadonlyArray<U>,
 ): [Pick<T, U>, Omit<T, U>]
 export function groupObjectByKey(obj, param2) {
   return reduceObjectEntry(
@@ -107,7 +107,7 @@ export function groupObjectByKey(obj, param2) {
       targetBucket[key] = obj[key]
       return acc
     },
-    [{}, {}]
+    [{}, {}],
   )
 }
 
@@ -136,7 +136,7 @@ export function cloneObject<T extends AnyObj>(original: T): T {
       ownKeys: (target) => unifyItem(Reflect.ownKeys(target).concat(Reflect.ownKeys(original))),
       // for Object.keys to filter
       getOwnPropertyDescriptor: (target, key) =>
-        key in target ? Object.getOwnPropertyDescriptor(target, key) : Object.getOwnPropertyDescriptor(original, key)
-    }
+        key in target ? Object.getOwnPropertyDescriptor(target, key) : Object.getOwnPropertyDescriptor(original, key),
+    },
   ) as T
 }

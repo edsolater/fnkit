@@ -1,9 +1,9 @@
-import { isPrimitive, isArray, isObjectLike, isSymbol, isValuablePrimitive } from './dataType'
-import { MayArray } from './typings/tools'
+import { isPrimitive, isArray, isObjectLike, isSymbol, isValuablePrimitive } from "./dataType"
+import { MayArray } from "./typings/tools"
 
 type SortOptions<T extends object> = MayArray<{
   key: keyof T
-  direction: 'ascending' | 'descending'
+  direction: "ascending" | "descending"
 }>
 
 type FilterOptions<T extends object> = MayArray<(value: T) => boolean | undefined>
@@ -19,8 +19,8 @@ export function sortTableList<T extends object>(target: T[], settings: SortOptio
       const valueB = b[key]
       if (isValuablePrimitive(valueA) && isValuablePrimitive(valueB)) {
         if (valueA === valueB) continue
-        if (valueA < valueB) return (-1 * (direction === 'ascending' ? 1 : -1)) as 1 | -1
-        if (valueA > valueB) return (1 * (direction === 'ascending' ? 1 : -1)) as 1 | -1
+        if (valueA < valueB) return (-1 * (direction === "ascending" ? 1 : -1)) as 1 | -1
+        if (valueA > valueB) return (1 * (direction === "ascending" ? 1 : -1)) as 1 | -1
       }
     }
     return 0
@@ -38,12 +38,12 @@ export function filterTableList<T extends object>(target: T[], settings: FilterO
 export function searchFromTableList<T extends object>(
   target: T[],
   text: string,
-  { canFuzzyMatching = true }: { canFuzzyMatching?: boolean } = {}
+  { canFuzzyMatching = true }: { canFuzzyMatching?: boolean } = {},
 ) {
   const searchFilter = (item: T, targetText: string) => {
-    const allValueText = Object.values(item).filter(isPrimitive).join(' ')
+    const allValueText = Object.values(item).filter(isPrimitive).join(" ")
     return canFuzzyMatching
-      ? new RegExp(`${[...targetText].join('.*')}`).test(allValueText)
+      ? new RegExp(`${[...targetText].join(".*")}`).test(allValueText)
       : allValueText.includes(targetText)
   }
   return filterTableList(target, [(item) => searchFilter(item, text)])

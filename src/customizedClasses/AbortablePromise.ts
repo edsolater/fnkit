@@ -4,22 +4,22 @@ export class AbortablePromise<T> extends Promise<T> implements AbortController {
    * !not elegant
    * try not to use it, just use `.then()` and `.catch()`
    */
-  promiseState: 'pending' | 'fulfilled' | 'rejected' = 'pending'
+  promiseState: "pending" | "fulfilled" | "rejected" = "pending"
 
   constructor(
     exector: (
       resolve: (value: T | PromiseLike<T>) => void,
       reject: (reason?: any) => void,
-      abortSignal: AbortSignal
+      abortSignal: AbortSignal,
     ) => void,
-    forceAbortController: AbortController = new AbortController()
+    forceAbortController: AbortController = new AbortController(),
   ) {
     super((resolve, reject) => exector(resolve, reject, forceAbortController.signal))
     this.innerAbortController = forceAbortController
     this.then(() => {
-      this.promiseState = 'fulfilled'
+      this.promiseState = "fulfilled"
     }).catch(() => {
-      this.promiseState = 'rejected'
+      this.promiseState = "rejected"
     })
   }
 
@@ -37,7 +37,7 @@ export class AbortablePromise<T> extends Promise<T> implements AbortController {
 }
 
 export function createAbortableAsyncTask<T>(
-  task: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void, aborted: () => boolean) => void
+  task: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void, aborted: () => boolean) => void,
 ): { result: Promise<T>; abort(): void } {
   const abortController = new AbortController()
   const abortableTask = new Promise<T>((resolve, reject) => {
@@ -45,6 +45,6 @@ export function createAbortableAsyncTask<T>(
   })
   return {
     result: abortableTask,
-    abort: () => abortController.abort()
+    abort: () => abortController.abort(),
   }
 }

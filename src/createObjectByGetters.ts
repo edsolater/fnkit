@@ -1,5 +1,5 @@
-import { isFunction } from './dataType'
-import { AnyFn } from './typings'
+import { isFunction } from "./dataType"
+import { AnyFn } from "./typings"
 
 /**
  *
@@ -7,7 +7,7 @@ import { AnyFn } from './typings'
  * createObjectByGetters({ aa: () => 'hello' }) //=> { aa: 'hello' }
  */
 export function createObjectByGetters<O extends Record<keyof any, unknown>>(
-  getterDescroptions: O
+  getterDescroptions: O,
 ): {
   [K in keyof O]: O[K] extends undefined ? undefined : O[K] extends AnyFn ? ReturnType<NonNullable<O[K]>> : O[K]
 } {
@@ -15,8 +15,6 @@ export function createObjectByGetters<O extends Record<keyof any, unknown>>(
     get(target, p, receiver) {
       const rawGetter = Reflect.get(target, p, receiver)
       return isFunction(rawGetter) ? rawGetter() : rawGetter
-    }
+    },
   }) as any
 }
-
-

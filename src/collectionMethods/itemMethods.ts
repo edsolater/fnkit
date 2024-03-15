@@ -1,5 +1,5 @@
-import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject } from '../dataType'
-import { pick } from './pick'
+import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject } from "../dataType"
+import { pick } from "./pick"
 
 export type ItemList<T> =
   | Map<any, T>
@@ -33,10 +33,7 @@ export function toMap<T>(i: ItemList<T>, key?: (item: T) => any) {
   return new Map(Object.entries(i))
 }
 
-export function toRecord<T, K extends keyof any>(
-  i: ItemList<T>,
-  key: (item: T, key: unknown) => K
-): Record<K, T> {
+export function toRecord<T, K extends keyof any>(i: ItemList<T>, key: (item: T, key: unknown) => K): Record<K, T> {
   if (isUndefined(i)) return {} as Record<K, T>
   if (isMap(i)) {
     const result = {} as Record<keyof any, T>

@@ -1,9 +1,9 @@
-import { MayFn, shrinkToValue, wrapePromise } from '..'
+import { MayFn, shrinkToValue, wrapePromise } from ".."
 
 const defaultExpireTime = 200 //(ms)
-const expireMessage = 'task is too long'
+const expireMessage = "task is too long"
 
-export type FailReason = { type: 'expire'; details: unknown } | { type: 'error'; details: unknown }
+export type FailReason = { type: "expire"; details: unknown } | { type: "error"; details: unknown }
 
 /**
  * ignore taskFn's result if expired, not stop it.
@@ -95,14 +95,14 @@ export default function mayFail<T>(
     onExpire?(): void
     /** task has throw error */
     onError?(err: unknown): void
-  } = {}
+  } = {},
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       options.onExpire?.()
       options.fallbackValue != null
         ? resolve(options.fallbackValue)
-        : reject({ type: 'expire', details: expireMessage })
+        : reject({ type: "expire", details: expireMessage })
     }, options.expireAfter ?? defaultExpireTime)
     const result = shrinkToValue(taskFn) as T | Promise<T> | PromiseLike<T>
     const promisedResult = wrapePromise(result)
@@ -114,9 +114,7 @@ export default function mayFail<T>(
       .catch((error) => {
         clearTimeout(timeoutId)
         options.onError?.(error)
-        options.fallbackValue != null
-          ? resolve(options.fallbackValue)
-          : reject({ type: 'error', details: error })
+        options.fallbackValue != null ? resolve(options.fallbackValue) : reject({ type: "error", details: error })
       })
   })
 }

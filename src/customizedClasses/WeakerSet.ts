@@ -2,8 +2,8 @@
 //   hello(): string
 // }
 
-import { map } from '../collectionMethods'
-import { isObject } from '../dataType'
+import { map } from "../collectionMethods"
+import { isObject } from "../dataType"
 
 const weakMapCache = new WeakMap<object, WeakRef<any>>()
 const createWrapperRef = <T extends object>(v: T): WeakRef<T> => {
@@ -24,7 +24,7 @@ const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() :
 export class WeakerSet<T> implements Set<T> {
   private inner: Set<T | WeakRef<T & object>> = new Set()
   private cbCenter = {
-    onAddNewItem: [] as ((item: T) => void)[]
+    onAddNewItem: [] as ((item: T) => void)[],
   }
 
   constructor(iterable?: Iterable<T> | null) {

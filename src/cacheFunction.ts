@@ -1,5 +1,5 @@
-import { AnyFn, AnyObj } from './typings'
-import { cache } from './cache'
+import { AnyFn, AnyObj } from "./typings"
+import { cache } from "./cache"
 
 /**
  * invoke only once, return the cached result when invoke again
@@ -7,7 +7,7 @@ import { cache } from './cache'
  */
 export function createCachedFunction<F extends AnyFn>(
   fn: F,
-  getCacheIdByParams: (...args: Parameters<F>) => any = ((p1) => p1) as any
+  getCacheIdByParams: (...args: Parameters<F>) => any = ((p1) => p1) as any,
 ): F {
   let cachedResult: Map<any, ReturnType<F>> = new Map()
   return function (...args: Parameters<F>) {
@@ -38,6 +38,6 @@ export function createCachedObject<T extends AnyObj>(obj: T): T {
     },
     set(target, key, value) {
       return Reflect.set(cachedObj, key, value)
-    }
+    },
   })
 }

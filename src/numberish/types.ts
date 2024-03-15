@@ -1,5 +1,5 @@
-import { Primitive } from '../typings/constants'
-import type { RPNItem } from './numberExpression'
+import { Primitive } from "../typings/constants"
+import type { RPNItem } from "./numberExpression"
 
 export type StringNumber = string
 export type MathematicalExpression = string

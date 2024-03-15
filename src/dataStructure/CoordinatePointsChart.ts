@@ -1,4 +1,4 @@
-import { insertAt } from '../oldMethodsArray'
+import { insertAt } from "../oldMethodsArray"
 
 type Point = {
   x: number
@@ -46,9 +46,9 @@ export function createCoordinatePointsChart(): CoordinatePointsChart {
     points: coordinateList,
     addPoint,
     addPoints,
-    getY
+    getY,
   }
-  
+
   return coordinateMatrix
 }
 
@@ -60,7 +60,7 @@ function getPredicatedY(x: number, point1: Point, point2: Point) {
   return ((y1 - y2) * (x - x1)) / (x1 - x2) + y1
 }
 
-function getTargetIndex(sortedList: Point[], targetX: Point['x']) {
+function getTargetIndex(sortedList: Point[], targetX: Point["x"]) {
   if (!sortedList.length) return 0
 
   let determined = false

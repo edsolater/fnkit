@@ -1,23 +1,23 @@
-import { isObject, isString } from '../dataType'
-import { switchCase } from '../switchCase'
-import { toFraction } from './numberishAtom'
-import { add, div, minus, mul, pow } from './operations'
-import { Fraction, MathematicalExpression, type BasicNumberish } from './types'
+import { isObject, isString } from "../dataType"
+import { switchCase } from "../switchCase"
+import { toFraction } from "./numberishAtom"
+import { add, div, minus, mul, pow } from "./operations"
+import { Fraction, MathematicalExpression, type BasicNumberish } from "./types"
 
-export type Operator = '+' | '-' | '*' | '/' | '^' | (string & {})
+export type Operator = "+" | "-" | "*" | "/" | "^" | (string & {})
 export type Priority = number
 const operators: Record<Operator, Priority> = {
-  '+': 1,
-  '-': 1,
-  '*': 2,
-  '/': 2,
-  '^': 3
+  "+": 1,
+  "-": 1,
+  "*": 2,
+  "/": 2,
+  "^": 3,
 }
 
 export type RPNItem = { isOperator: true; value: Operator } | { isOperator: false; value: BasicNumberish }
 
 export function isRPNItem(item: unknown): item is RPNItem {
-  return isObject(item) && 'isOperator' in item
+  return isObject(item) && "isOperator" in item
 }
 
 export function parseRPNToFraction(rpn: RPNItem[]): Fraction {
@@ -35,23 +35,23 @@ export function parseRPNToFraction(rpn: RPNItem[]): Fraction {
         throw `invalid rpn, can't parse`
       }
       switch (item.value) {
-        case '+': {
+        case "+": {
           numberishStack.push(toFraction(add(num1, num2)))
           break
         }
-        case '-': {
+        case "-": {
           numberishStack.push(toFraction(minus(num1, num2)))
           break
         }
-        case '*': {
+        case "*": {
           numberishStack.push(toFraction(mul(num1, num2)))
           break
         }
-        case '/': {
+        case "/": {
           numberishStack.push(toFraction(div(num1, num2)))
           break
         }
-        case '^': {
+        case "^": {
           numberishStack.push(toFraction(pow(num1, num2)))
           break
         }
@@ -61,7 +61,7 @@ export function parseRPNToFraction(rpn: RPNItem[]): Fraction {
     }
   }
   if (numberishStack.length !== 1) {
-    throw 'error: invalid rpn'
+    throw "error: invalid rpn"
   }
   const resultN = numberishStack[0]
   return resultN
@@ -75,9 +75,9 @@ export function toRPN(expression: MathematicalExpression): RPNItem[] {
   const operatorStack: string[] = []
   const rpnQueue: RPNItem[] = []
 
-  let currentToken = ''
+  let currentToken = ""
   const recordNumberTokenToRPNQueue = () =>
-    recordToRPNQueue(currentToken, { isOperator: false, onAfterPush: () => (currentToken = '') })
+    recordToRPNQueue(currentToken, { isOperator: false, onAfterPush: () => (currentToken = "") })
   const recordLastOperatorToRPNQueue = () =>
     operatorStack.length > 0 && recordToRPNQueue(operatorStack.pop()!, { isOperator: true })
   const recordToRPNQueue = (value: string | undefined, options?: { isOperator?: boolean; onAfterPush?(): void }) => {
@@ -88,17 +88,17 @@ export function toRPN(expression: MathematicalExpression): RPNItem[] {
   }
 
   const charIsNumberToken = ({ char, nextChar, prevChar }: charLoopParams) =>
-    char === '.' ||
-    (char >= '0' && char <= '9') ||
-    (char === '-' && nextChar != null && /\d/.test(nextChar)) ||
-    (prevChar != null && nextChar != null && char === 'e')
+    char === "." ||
+    (char >= "0" && char <= "9") ||
+    (char === "-" && nextChar != null && /\d/.test(nextChar)) ||
+    (prevChar != null && nextChar != null && char === "e")
   const charIsSpace = ({ char }: charLoopParams) => /\s/.test(char)
   const charIsOperator = ({ char }: charLoopParams) => {
     const isKnownOperator = operators.hasOwnProperty(char)
     return isKnownOperator
   }
-  const charIsLeftParenthesis = ({ char }: charLoopParams) => char === '('
-  const charIsRightParenthesis = ({ char }: charLoopParams) => char === ')'
+  const charIsLeftParenthesis = ({ char }: charLoopParams) => char === "("
+  const charIsRightParenthesis = ({ char }: charLoopParams) => char === ")"
 
   const handleNumberToken = ({ char }: charLoopParams) => (currentToken += char)
   const handleSpace = () => recordNumberTokenToRPNQueue()
@@ -111,7 +111,7 @@ export function toRPN(expression: MathematicalExpression): RPNItem[] {
   }
   const handleLeftParenthesis = ({ char }: charLoopParams) => operatorStack.push(char)
   const handleRightParenthesis = () => {
-    while (operatorStack[operatorStack.length - 1] !== '(') {
+    while (operatorStack[operatorStack.length - 1] !== "(") {
       recordLastOperatorToRPNQueue()
     }
     // now the top of the stack is '('
@@ -127,7 +127,7 @@ export function toRPN(expression: MathematicalExpression): RPNItem[] {
       [charIsSpace, handleSpace],
       [charIsOperator, handleOperator],
       [charIsLeftParenthesis, handleLeftParenthesis],
-      [charIsRightParenthesis, handleRightParenthesis]
+      [charIsRightParenthesis, handleRightParenthesis],
     ])
   }
 

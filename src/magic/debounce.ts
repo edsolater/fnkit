@@ -1,4 +1,4 @@
-import { createCurrentTimestamp } from '../'
+import { createCurrentTimestamp } from "../"
 
 const defaultDebouneDelay = 400
 const defaultThrottleDelay = 400
@@ -11,7 +11,7 @@ export function debounce<F extends (...args: any[]) => void>(
   fn: F,
   options?: {
     debounceDelay?: number
-  }
+  },
 ): F {
   let lastInvokedTimestamp = 0
   const { debounceDelay = defaultDebouneDelay } = options ?? {}
@@ -33,7 +33,7 @@ export function throttle<F extends (...args: any[]) => void>(
   fn: F,
   options?: {
     delay?: number
-  }
+  },
 ): F {
   const middleParams = [] as Parameters<F>[]
   let currentTimoutId: any | null = null

@@ -1,8 +1,8 @@
-import { isNumber, isBigInt } from '../dataType'
-import { Numberish } from './types'
-import { ZeroBigint } from './constant'
-import { toFraction } from './numberishAtom'
-import { minus } from './operations'
+import { isNumber, isBigInt } from "../dataType"
+import { Numberish } from "./types"
+import { ZeroBigint } from "./constant"
+import { toFraction } from "./numberishAtom"
+import { minus } from "./operations"
 
 /**
  * @example

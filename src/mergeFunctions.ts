@@ -1,4 +1,4 @@
-import { AnyFn } from './typings/constants'
+import { AnyFn } from "./typings/constants"
 
 /**
  * @todo it's type intelligense is not very smart for parameters
@@ -14,13 +14,13 @@ export function mergeFunction<T extends AnyFn, U extends (...args: Parameters<T>
 export function mergeFunction<
   T extends AnyFn,
   U extends (...args: Parameters<T>) => any,
-  V extends (...args: Parameters<T>) => any
+  V extends (...args: Parameters<T>) => any,
 >(...fns: [T, U, V]): (...params: Parameters<T>) => [ReturnType<T>, ReturnType<U>, ReturnType<V>]
 export function mergeFunction<
   T extends AnyFn,
   U extends (...args: Parameters<T>) => any,
   V extends (...args: Parameters<T>) => any,
-  W extends (...args: Parameters<T>) => any
+  W extends (...args: Parameters<T>) => any,
 >(...fns: [T, U, V, W]): (...params: Parameters<T>) => [ReturnType<T>, ReturnType<U>, ReturnType<V>, ReturnType<W>]
 export function mergeFunction<T extends AnyFn>(...fns: T[]): (...params: Parameters<T>) => ReturnType<T>[]
 export function mergeFunction<T extends AnyFn>(...fns: T[]): (...params: Parameters<T>) => ReturnType<T>[] {
