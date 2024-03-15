@@ -1,24 +1,24 @@
 import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject } from "../dataType"
 import { pick } from "./pick"
 
-export type ItemList<T> =
-  | Map<any, T>
+export type Items<T, K = any> =
+  | Map<K, T>
   | Set<T>
   | T[]
-  | Record<keyof any, T>
+  | Record<K & string, T>
   | IterableIterator<T>
   | Iterable<T>
   | undefined
 
 /** accept all may iterable data type */
-export function toList<T>(i: ItemList<T>) {
+export function toList<T>(i: Items<T>) {
   if (isUndefined(i)) return []
   if (isMap(i)) return Array.from(i.values())
   if (isIterable(i)) return Array.from(i)
   return Object.values(i)
 }
 
-export function toMap<T>(i: ItemList<T>, key?: (item: T) => any) {
+export function toMap<T>(i: Items<T>, key?: (item: T) => any) {
   if (isUndefined(i)) return new Map()
   if (isMap(i)) return i
   if (isArray(i)) return new Map(i.map((item) => [key?.(item) ?? item, item]))
@@ -33,7 +33,7 @@ export function toMap<T>(i: ItemList<T>, key?: (item: T) => any) {
   return new Map(Object.entries(i))
 }
 
-export function toRecord<T, K extends keyof any>(i: ItemList<T>, key: (item: T, key: unknown) => K): Record<K, T> {
+export function toRecord<T, K extends keyof any>(i: Items<T>, key: (item: T, key: unknown) => K): Record<K, T> {
   if (isUndefined(i)) return {} as Record<K, T>
   if (isMap(i)) {
     const result = {} as Record<keyof any, T>
@@ -68,7 +68,7 @@ export function toRecord<T, K extends keyof any>(i: ItemList<T>, key: (item: T, 
   return i
 }
 
-export function count(i: ItemList<any>) {
+export function count(i: Items<any>) {
   if (isUndefined(i)) return 0
   if (isMap(i) || isSet(i)) return i.size
   if (isArray(i)) return i.length
@@ -85,7 +85,7 @@ export function count(i: ItemList<any>) {
 /**
  * get value of Itemsable, regardless of order
  */
-export function get<T>(i: ItemList<T>, key: string | number): T | undefined {
+export function get<T>(i: Items<T>, key: string | number): T | undefined {
   if (isUndefined(i)) return undefined
   if (isMap(i)) return i.get(key)
   if (isArray(i) && isNumber(key)) return i[key]
@@ -103,7 +103,7 @@ export function get<T>(i: ItemList<T>, key: string | number): T | undefined {
 /**
  * get first value of Itemsable
  */
-export function getByIndex(i: ItemList<any>, order: number) {
+export function getByIndex(i: Items<any>, order: number) {
   if (isUndefined(i)) return undefined
   const key = isUndefined(i) || isArray(i) || isSet(i) || isIterable(i) ? order : Object.keys(i)[order]
   return get(i, key)
@@ -113,7 +113,7 @@ export function getByIndex(i: ItemList<any>, order: number) {
  * like set/map's has, but can use for all Itemsable
  *
  */
-export function hasValue<T>(i: ItemList<T>, item: T) {
+export function hasValue<T>(i: Items<T>, item: T) {
   if (isUndefined(i)) return false
   if (isMap(i)) return new Set(i.values()).has(item)
   if (isArray(i)) return i.includes(item)
@@ -136,7 +136,7 @@ export function hasValue<T>(i: ItemList<T>, item: T) {
 /**
  * {@link hasValue} is for value, this is for key
  */
-export function has<T>(i: ItemList<T>, key: any) {
+export function has<T>(i: Items<T>, key: any) {
   if (isUndefined(i)) return false
   if (isMap(i)) return i.has(key)
   if (isArray(i) && isNumber(key)) return i[key] !== undefined
@@ -152,9 +152,9 @@ export function has<T>(i: ItemList<T>, key: any) {
   return i[key] !== undefined
 }
 
-export function turncate<T extends ItemList<any>>(i: T, count?: number): T
-export function turncate<T extends ItemList<any>>(i: T, range?: [start: number, end?: number]): T
-export function turncate<T extends ItemList<any>>(i: T, num?: [start: number, end?: number] | number): T {
+export function turncate<T extends Items<any>>(i: T, count?: number): T
+export function turncate<T extends Items<any>>(i: T, range?: [start: number, end?: number]): T
+export function turncate<T extends Items<any>>(i: T, num?: [start: number, end?: number] | number): T {
   if (num == null) return i
   const range = isArray(num) ? num : [0, num]
   if (isUndefined(i)) return i
