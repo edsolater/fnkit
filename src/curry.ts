@@ -1,6 +1,5 @@
 import { overwriteFunctionName } from "./oldMethodsFunctionFactory"
 
-//TODO: 这个类型描述是抄的，感觉太过复杂了
 type Tail<F extends Function, S extends Number> = S extends 0
   ? F extends (...args: infer TArgs) => any
     ? TArgs
@@ -47,8 +46,8 @@ type Curried<T extends (...args: any) => any, TReturn = ReturnType<T>> = <
 type Curry = <F extends (...args: any) => any>(func: F) => Curried<F>
 
 /**
- * 柯里化
- * @param fn 任意函数
+ * currify the function
+ * @param fn any function
  */
 export const curry: Curry = (fn) =>
   overwriteFunctionName(
