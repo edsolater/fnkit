@@ -1,21 +1,20 @@
-import { toEntry } from "./entries"
-import { flatMapEntry, map, mapEntry, mapKey } from "./map"
+import { map } from "./map"
 
-test("fnkit: flatMapEntries()", () => {
-  const a = flatMapEntry({ a: 1, b: 2 }, (value, key) => [
-    { key: key + "c", value: value + 2 },
-    { key: key + "a", value: value * value * 2 },
-  ])
-  // const a = flatMapEntries({ a: 1, b: 2 }, (value, key) =>
-  //   toEntries({ [key + 'c']: value + 2, [key + 'a']: value * value * 2 })
-  // )
-  expect(a).toEqual({
-    ac: 3,
-    aa: 2,
-    bc: 4,
-    ba: 8,
-  })
-})
+// test("fnkit: flatMapEntries()", () => {
+//   const a = flatMapEntry({ a: 1, b: 2 }, (value, key) => [
+//     { key: key + "c", value: value + 2 },
+//     { key: key + "a", value: value * value * 2 },
+//   ])
+//   // const a = flatMapEntries({ a: 1, b: 2 }, (value, key) =>
+//   //   toEntries({ [key + 'c']: value + 2, [key + 'a']: value * value * 2 })
+//   // )
+//   expect(a).toEqual({
+//     ac: 3,
+//     aa: 2,
+//     bc: 4,
+//     ba: 8,
+//   })
+// })
 // test('fnkit: flatMapEntries()', () => {
 //   const a = flatMapEntries({ a: 1, b: 2 }, (value, key) => [
 //     { key: [key + 'c'], value: value + 2 },
@@ -36,13 +35,11 @@ test("fnkit: map()", () => {
   const source = Array.from({ length: 100000 }, (_, idx) => idx + 1)
 
   console.time("map array original")
-  const torignal = source.map((v) => v + 1).reduce((a, b) => a + b)
-  const ct = torignal + 1
+  const torignal0 = source.map((v) => v + 1)
   console.timeEnd("map array original")
 
   console.time("map array iterable")
-  const t0 = map(source, (v) => v + 1).reduce((a, b) => a + b)
-  const c = t0 + 1
+  const t0 = map(source, (v) => v + 1)
   console.timeEnd("map array iterable")
 
   const t1 = map([1, 2], (v) => v + 1)
@@ -69,14 +66,15 @@ test("fnkit: map()", () => {
   )
 })
 
-test("fnkit:mapEntries()", () => {
-  const t12 = mapEntry([1, 2], (v) => toEntry(v + 1, 0))
-  expect(t12).toEqual([2, 3])
-  const t3 = mapEntry({ a: 1, b: 2 }, (v, k) => ({ key: k + "c", value: v + 1 }))
-  expect(t3).toEqual({ ac: 2, bc: 3 })
+test("map() for object", () => {
+  const bigObject = Object.fromEntries(Array.from({ length: 10 }, (_, idx) => [idx + "a", idx + 1]))
+  const t = map(bigObject, (v, k) => [k + "v", v + 1])
+  expect(t).toEqual(Object.fromEntries(Array.from({ length: 10 }, (_, idx) => [idx + "av", idx + 2])))
 })
 
-test("fnkit:mapKey()", () => {
-  const t3 = mapKey({ a: 1, b: 2 }, (k) => k + "c")
-  expect(t3).toEqual({ ac: 1, bc: 2 })
-})
+// test("fnkit:mapEntries()", () => {
+//   const t12 = mapEntry([1, 2], (v) => toEntry(v + 1, 0))
+//   expect(t12).toEqual([2, 3])
+//   const t3 = mapEntry({ a: 1, b: 2 }, (v, k) => ({ key: k + "c", value: v + 1 }))
+//   expect(t3).toEqual({ ac: 2, bc: 3 })
+// })

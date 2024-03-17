@@ -4,11 +4,7 @@
  */
 
 import {
-  AnyArr,
-  AnyMap,
-  AnyObj,
-  AnySet,
-  Collection,
+  Items,
   Entry,
   GetCollectionKey,
   GetCollectionValue,
@@ -24,6 +20,7 @@ import {
   isUndefined,
   MayArray,
   shakeUndefinedItem,
+  type Collection,
 } from "../"
 
 /**
@@ -50,29 +47,13 @@ export function forceEntry<E, K>(value: E, key: K): Entry<E, K> {
  * @returns a list of Entry
  * @requires {@link isArray `isArray()`} {@link isMap `isMap()`} {@link isObject `isObject()`} {@link isSet `isSet()`}
  */
-export function forceEntries<N extends any | Entry, Key = any, Value = any>(
-  target: Collection<Value, Key>,
-  mapFn?: (v: Value, k: Key) => N,
-): Iterable<Entry<Value, Key>> {
-  const jsEntries: Iterable<[any, any]> =
-    isArray(target) || isSet(target) || isMap(target) ? target.entries() : Object.entries(target)
-  return mapJSInnerEntries(jsEntries, (v, k) => forceEntry(mapFn ? mapFn(v, k) : v, k))
-}
-
-/**
- * split collection into pieces
- * ! return iterable
- * @param target Entriesable
- * @returns a list of Entry
- * @requires {@link isArray `isArray()`} {@link isMap `isMap()`} {@link isObject `isObject()`} {@link isSet `isSet()`}
- */
 export function toEntries<N extends any | Entry, Key = any, Value = any>(
   target: Collection<Value, Key>,
   mapFn?: (v: Value, k: Key) => N,
 ): Iterable<Entry<Value, Key>> {
   const jsEntries: Iterable<[any, any]> =
-    isArray(target) || isSet(target) || isMap(target) ? target.entries() : Object.entries(target)
-  return mapJSInnerEntries(jsEntries, (v, k) => toEntry(mapFn ? mapFn(v, k) : v, k))
+    isArray(target) || isSet(target) || isMap(target) ? target.entries() : Object.entries(target ?? {})
+  return shakeJSEntries(jsEntries, (v, k) => toEntry(mapFn ? mapFn(v, k) : v, k))
 }
 /**
  * split collection into pieces
@@ -86,25 +67,27 @@ export function toFlatEntries<N extends MayArray<any | Entry>, Key = any, Value 
   mapFn?: (v: Value, k: Key) => N,
 ): Iterable<MayArray<Entry | N | undefined>> {
   const jsEntries: Iterable<[any, any]> =
-    isArray(target) || isSet(target) || isMap(target) ? target.entries() : Object.entries(target)
-  return flatMapJSInnerEntries(jsEntries, (v, k) => {
+    isArray(target) || isSet(target) || isMap(target) ? target.entries() : Object.entries(target ?? {})
+  return flatMapJSEntries(jsEntries, (v, k) => {
     const nv = mapFn?.(v, k)
     return isArray(nv) ? nv.map((i) => toEntry(i ?? v, k)) : isUndefined(nv) ? undefined : toEntry(nv ?? v, k)
   })
 }
 
-function* mapEntries<E extends Entry, U>(
+function* mapEntries<E extends Entry, U = GetEntryValue<E>>(
   entries: Iterable<E>,
-  mapFn: (value: GetEntryValue<E>, key: GetEntryKey<E>) => U,
+  mapFn?: (value: GetEntryValue<E>, key: GetEntryKey<E>) => U,
 ): Iterable<U> {
   for (const entry of entries) {
-    yield mapFn(getEntryValue(entry), getEntryKey(entry))
+    yield mapFn ? mapFn(getEntryValue(entry), getEntryKey(entry)) : getEntryValue(entry)
   }
 }
 
-function* mapJSInnerEntries<K, V, U>(entries: Iterable<[K, V]>, mapFn: (value: V, key: K) => U): Iterable<U> {
+function shakeJSEntries<K, V>(entries: Iterable<[K, V]>): Iterable<V>
+function shakeJSEntries<K, V, U>(entries: Iterable<[K, V]>, mapFn: (value: V, key: K) => U): Iterable<U>
+function* shakeJSEntries<K, V, U = V>(entries: Iterable<[K, V]>, mapFn?: (value: V, key: K) => U): Iterable<U | V> {
   for (const [key, value] of entries) {
-    const nv = mapFn(value, key)
+    const nv = mapFn ? mapFn(value, key) : value
     if (isUndefined(nv)) {
       continue
     } else {
@@ -112,7 +95,7 @@ function* mapJSInnerEntries<K, V, U>(entries: Iterable<[K, V]>, mapFn: (value: V
     }
   }
 }
-function* flatMapJSInnerEntries<K, V>(entries: Iterable<[K, V]>, mapFn: (value: V, key: K) => unknown): Iterable<any> {
+function* flatMapJSEntries<K, V>(entries: Iterable<[K, V]>, mapFn: (value: V, key: K) => unknown): Iterable<any> {
   for (const [key, value] of entries) {
     const newEntry = mapFn(value, key)
     if (isArray(newEntry)) {
@@ -160,32 +143,63 @@ export function entryToCollection<K = any, V = any>(
 ): Record<K & string, V>
 export function entryToCollection(entries: Iterable<Entry<any, any>>, format: string): any
 export function entryToCollection(entries: Iterable<Entry<any, any>>, format: string): any {
-  if (format === "Array") return Array.from(mapEntries(entries, (item) => item))
-  if (format === "Set") return new Set(mapEntries(entries, (item) => item))
+  if (format === "Array") return Array.from(mapEntries(entries))
+  if (format === "Set") return new Set(mapEntries(entries))
   if (format === "Map") return new Map(mapEntries(entries, (v, k) => [k, v]))
   if (format === "Object") return Object.fromEntries(mapEntries(entries, (v, k) => [isSymbol(k) ? k : String(k), v]))
   throw new Error(`format ${format} is not supported`)
 }
 
-export function mapCollection<C extends Collection, U, K = GetCollectionKey<C>>(
+export function mapCollectionValue<C extends Items, V = GetCollectionValue<C>, K = GetCollectionKey<C>>(
   collection: C,
-  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => U | undefined,
-): GetNewCollection<C, U, K> {
-  return isArray(collection)
-    ? shakeUndefinedItem(collection.map(mapCallback as any)) // use build-in array methods if possiable
-    : entryToCollection(
-        forceEntries(collection, (v, k) => mapCallback(v, k, collection)),
-        getType(collection),
-      )
+  cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V | undefined,
+): GetNewCollection<C, V, K> {
+  if (isArray(collection)) {
+    return (collection as any[]).map(cb as any) as any
+  } else if (isSet(collection)) {
+    const outputSet = new Set<V>()
+    if (cb.length === 1) {
+      for (const v of collection as Set<unknown>) {
+        //@ts-expect-error force parameter length is 1
+        const mappedV = cb(v)
+        if (mappedV !== undefined) outputSet.add(mappedV)
+      }
+    } else {
+      for (const [idx, v] of collection.entries()) {
+        // @ts-ignore
+        const mappedV = cb(v, idx, collection)
+        if (mappedV !== undefined) outputSet.add(mappedV)
+      }
+    }
+    return outputSet as any
+  } else if (isMap(collection)) {
+    const outputSet = new Map<K, V>()
+    for (const [key, value] of collection as Map<any, any>) {
+      // @ts-ignore
+      const mappedV = cb(value, key, collection)
+      if (mappedV == undefined) continue
+      outputSet.set(key, mappedV)
+    }
+    return outputSet as any
+  } else {
+    const outputSet: Record<string, V> = {}
+    for (const key in collection) {
+      // @ts-ignore
+      const mappedV = cb(collection[key], key, collection)
+      if (mappedV === undefined) continue
+      outputSet[key] = mappedV
+    }
+    return outputSet as any
+  }
 }
 
-export function mapCollectionEntries<C extends Collection, U, K = GetCollectionKey<C>>(
+export function mapCollectionEntries<C extends Items, U, K = GetCollectionKey<C>>(
   collection: C,
   mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => Entry<U, K> | undefined,
 ): GetNewCollection<C, U, K> {
   return isArray(collection)
     ? // @ts-ignore
-      shakeUndefinedItem(collection.map((i, idx, source) => mapCallback(i, idx, source)?.value)) // use build-in array methods if possiable
+      collection.map((i, idx, source) => mapCallback(i, idx, source)?.value) // use build-in array methods if possiable
     : entryToCollection(
         toEntries(collection, (v, k) => mapCallback(v, k, collection)),
         getType(collection),
@@ -195,7 +209,7 @@ export function mapCollectionEntries<C extends Collection, U, K = GetCollectionK
  * mapCallback return multi entry, means add extra item
  * mapCallback return undefined, means delete item
  */
-export function flatMapCollectionEntries<C extends Collection, U, K = GetCollectionKey<C>>(
+export function flatMapCollectionEntries<C extends Items, U, K = GetCollectionKey<C>>(
   collection: C,
   mapCallback: (
     value: GetCollectionValue<C>,

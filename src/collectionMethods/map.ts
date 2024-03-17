@@ -1,15 +1,11 @@
-import { Collection, Entry } from "../"
-import { MayArray } from "../typings"
+import { isArray, isIterable, isMap, isSet, isUndefined } from "../"
 import {
   GetCollectionKey,
   GetCollectionValue,
   GetNewCollection,
-  flatMapCollectionEntries,
-  forceEntry,
-  mapCollection,
-  mapCollectionEntries,
+  type Collection,
+  type Entries
 } from "./"
-import { toEntry } from "./entries"
 
 /**
  * {@link mapEntry `mapEntry()`}
@@ -19,18 +15,43 @@ import { toEntry } from "./entries"
  * @example
  * console.log(mapEntry({ a: 1, b: 2 }, (value, key) => [key + 'c', value + 2])) // {  ac: 3, bc: 4 }
  */
-export function mapEntry<C extends Collection, V, K = GetCollectionKey<C>>(
-  collection: C,
-  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => Entry<V, K>,
-): GetNewCollection<C, V, K> {
-  return mapCollectionEntries(collection, mapCallback)
-}
-
-export function mapKey<C extends Collection, K>(
-  collection: C,
-  mapCallback: (key: GetCollectionKey<C>, value: GetCollectionValue<C>, source: C) => K,
-): GetNewCollection<C, GetCollectionValue<C>, K> {
-  return mapEntry(collection, (v, k, s) => forceEntry(v, mapCallback(k, v, s)))
+export function mapEntry<E extends Entries, V, K = GetCollectionKey<E>>(
+  collection: E,
+  cb: (value: GetCollectionValue<E>, key: GetCollectionKey<E>, source: E) => [K, V],
+): GetNewCollection<E, V, K> {
+  if (isMap(collection)) {
+    const outputSet = new Map<K, V>()
+    for (const [key, value] of collection as Map<any, any>) {
+      // @ts-ignore
+      const [mappedK, mappedV] = cb(value, key, collection)
+      if (mappedV == undefined) continue
+      outputSet.set(mappedK, mappedV)
+    }
+    return outputSet as any
+  } else if (isIterable(collection)) {
+    // @ts-ignore
+    return (function* () {
+      if (cb.length <= 1) {
+        for (const iterator of toIterableValue(collection)) {
+          //@ts-expect-error force parameter length is 1
+          yield cb(iterator)
+        }
+      }
+      for (const [key, value] of toIterableEntries(collection)) {
+        yield cb(value, key, collection)
+      }
+    })()
+  } else {
+    const outputSet: Record<any, V> = {}
+    for (const key in collection) {
+      // @ts-ignore
+      const [mappedK, mappedV] = cb(collection[key], key, collection)
+      if (mappedV === undefined) continue
+      // @ts-ignore
+      outputSet[mappedK] = mappedV
+    }
+    return outputSet as any
+  }
 }
 
 /**
@@ -45,44 +66,123 @@ export function mapKey<C extends Collection, K>(
  */
 export function map<C extends Collection, V, K = GetCollectionKey<C>>(
   collection: C,
-  mapCallback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
+  cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
 ): GetNewCollection<C, V, K> {
-  return mapCollection(collection, mapCallback)
+  if (isArray(collection)) {
+    return (collection as any[]).map(cb as any) as any
+  } else if (isSet(collection)) {
+    const outputSet = new Set<V>()
+    if (cb.length <= 1) {
+      for (const v of collection as Set<unknown>) {
+        //@ts-expect-error force parameter length is 1
+        const mappedV = cb(v)
+        if (mappedV !== undefined) outputSet.add(mappedV)
+      }
+    } else {
+      for (const [idx, v] of collection.entries()) {
+        // @ts-ignore
+        const mappedV = cb(v, idx, collection)
+        if (mappedV !== undefined) outputSet.add(mappedV)
+      }
+    }
+    return outputSet as any
+  } else if (isMap(collection)) {
+    const outputSet = new Map<K, V>()
+    for (const [key, value] of collection as Map<any, any>) {
+      // @ts-ignore
+      const mappedV = cb(value, key, collection)
+      if (mappedV == undefined) continue
+      outputSet.set(key, mappedV)
+    }
+    return outputSet as any
+  } else if (isIterable(collection)) {
+    // @ts-ignore
+    return (function* () {
+      if (cb.length <= 1) {
+        for (const iterator of toIterableValue(collection)) {
+          //@ts-expect-error force parameter length is 1
+          yield cb(iterator)
+        }
+      }
+      for (const [key, value] of toIterableEntries(collection)) {
+        yield cb(value, key, collection)
+      }
+    })()
+  } else {
+    const outputSet: Record<string, V> = {}
+    for (const key in collection) {
+      // @ts-ignore
+      const mappedV = cb(collection[key], key, collection)
+      if (mappedV === undefined) continue
+      outputSet[key] = mappedV
+    }
+    return outputSet as any
+  }
 }
 
-/**
- * {@link flatMap `flatMap()`}: simliar to `array.prototype.flatMap()`
- * @requires {@link mapEntry `mapEntry()`}
- *
- * @example
- * console.log(flatMap([1, 2], (v) => v + 1)) // [2, 3]
- * console.log(flatMap({ a: 1, b: 2}, (v, k) => [k + 'v', v + 1])) // { av: 2, bv: 3 }
- * console.log(flatMap(new Set([1, 2]), (v) => v + 1)) // Set { 2, 3 }
- * console.log(flatMap(new Map([['a', 1], ['b', 2]]), (v) => v + 1)) // Map { 'a' => 2, 'b' => 3 }
- */
-export function flatMap<C extends Collection, V, K = GetCollectionKey<C>>(
+/** iterator map */
+export function* imap<C extends Collection, V>(
   collection: C,
-  callback: (value: GetCollectionValue<C>, key: GetCollectionKey<C>) => (V | Entry<V, K>)[],
-): GetNewCollection<C, V, K> {
-  return flatMapEntry(collection, (value, key) => callback(value, key).map((newValue) => toEntry(newValue, key))) as any
+  cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
+): IterableIterator<V> {
+  if (cb.length <= 1) {
+    for (const value of toIterableValue(collection)) {
+      //@ts-expect-error force parameter length is 1
+      yield cb(value)
+    }
+  } else {
+    for (const [key, value] of toIterableEntries(collection)) {
+      yield cb(value, key, collection)
+    }
+  }
 }
 
-/**
- * entry version of array.prototype.flapMap() , just object an map
- * @requires {@link toEntries `toEntries()`} {@link fromEntries `fromEntries()`} {@link getType `getType()`}
- * @example
- * console.log(flatMapEntries({ a: 1, b: 2 }, (value, key) => ({ [key + 'c']: value + 2 }))) // {  ac: 3, bc: 4 }
- * console.log(flatMapEntries({ a: 1, b: 2 }, (value, key) => ({ [key]: value, [key + 'c']: value + 2 }))) // { a: 1, ac: 3, b: 2, bc: 4 }
- */
-export function flatMapEntry<C extends Collection, V, K>(
+/** iterator map */
+export function* imapEntry<C extends Collection, V, K = GetCollectionKey<C>>(
   collection: C,
-  callback: (
-    value: GetCollectionValue<C>,
-    key: GetCollectionKey<C>,
-    source: C,
-  ) => MayArray<Entry<V, K> | undefined> | undefined,
-): GetNewCollection<C, V, K> {
-  return flatMapCollectionEntries(collection, callback)
+  cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => [K, V],
+): IterableIterator<[K, V]> {
+  for (const [key, value] of toIterableEntries(collection)) {
+    yield cb(value, key, collection)
+  }
 }
 
-// TODO: asyncMap (already in bonsai)
+function toIterableValue<C extends Collection>(collection: C): IterableIterator<GetCollectionValue<C>> {
+  if (isUndefined(collection)) {
+    return [] as any
+  } else if (isIterable(collection)) {
+    return collection as any
+  } else if (isArray(collection) || isSet(collection)) {
+    return collection as any
+  } else if (isMap(collection)) {
+    return collection.values() as any
+  } else {
+    return Object.values(collection) as any
+  }
+}
+
+function toIterableEntries<C extends Collection>(
+  collection: C,
+): IterableIterator<[key: GetCollectionKey<C>, value: GetCollectionValue<C>]> {
+  if (isUndefined(collection)) {
+    return [] as any
+  } else if (isIterable(collection)) {
+    return collection as any
+  } else if (isSet(collection)) {
+    return getSetOrderEntries(collection) as any
+  } else if (isArray(collection)) {
+    return collection.entries() as any
+  } else if (isMap(collection)) {
+    return collection as any
+  } else {
+    return Object.entries(collection) as any
+  }
+}
+
+// build-in set entries is [T, T], i think it's not good
+function* getSetOrderEntries<T>(set: Set<T>): Iterable<[number, T]> {
+  let idx = 0
+  for (const iterator of set) {
+    yield [idx++, iterator]
+  }
+}

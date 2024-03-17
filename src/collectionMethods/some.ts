@@ -1,4 +1,4 @@
-import { Collection, isArray } from "../"
+import { Items, isArray } from "../"
 import { GetCollectionKey, GetCollectionValue } from "./"
 import { getEntryKey, getEntryValue, toEntries } from "./entries"
 
@@ -11,7 +11,7 @@ import { getEntryKey, getEntryValue, toEntries } from "./entries"
  * console.log(some({ a: 1, b: 2 }, (v) => v >= 1)) // true
  * @version 0.0.1
  */
-export function some<C extends Collection>(
+export function some<C extends Items>(
   collection: C,
   predicate: (value: GetCollectionValue<C>, key: GetCollectionKey<C>) => unknown,
 ): boolean {

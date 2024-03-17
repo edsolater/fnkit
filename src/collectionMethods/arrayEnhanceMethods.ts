@@ -1,7 +1,7 @@
-import { Collection, GetCollectionKey } from "."
+import { Items, GetCollectionKey } from "."
 import { isArray, isMap, isSet } from "../dataType"
 
-export function getKeys<T extends Collection>(...collection: readonly T[]): GetCollectionKey<T>[] {
+export function getKeys<T extends Items>(...collection: readonly T[]): GetCollectionKey<T>[] {
   if (isMap(collection) || isArray(collection) || isSet(collection)) {
     // @ts-expect-error error for wrong type intelligense
     return [...collection.keys()]
