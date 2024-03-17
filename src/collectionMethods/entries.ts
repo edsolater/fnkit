@@ -21,6 +21,7 @@ import {
   MayArray,
   shakeUndefinedItem,
   type Collection,
+  isIterable,
 } from "../"
 
 /**
@@ -227,4 +228,42 @@ export function flatMapCollectionEntries<C extends Items, U, K = GetCollectionKe
         }),
       )
     : entryToCollection(toFlatEntries(collection, (v, k) => mapCallback(v, k, collection)) as any, getType(collection))
+}
+
+export function toIterableValue<C extends Collection>(collection: C): IterableIterator<GetCollectionValue<C>> {
+  if (isUndefined(collection)) {
+    return [] as any
+  } else if (isIterable(collection)) {
+    return collection as any
+  } else if (isArray(collection) || isSet(collection)) {
+    return collection as any
+  } else if (isMap(collection)) {
+    return collection.values() as any
+  } else {
+    return Object.values(collection) as any
+  }
+}
+export function toIterableEntries<C extends Collection>(
+  collection: C,
+): IterableIterator<[key: GetCollectionKey<C>, value: GetCollectionValue<C>]> {
+  if (isUndefined(collection)) {
+    return [] as any
+  } else if (isIterable(collection)) {
+    return collection as any
+  } else if (isSet(collection)) {
+    return getSetOrderEntries(collection) as any
+  } else if (isArray(collection)) {
+    return collection.entries() as any
+  } else if (isMap(collection)) {
+    return collection as any
+  } else {
+    return Object.entries(collection) as any
+  }
+}
+// build-in set entries is [T, T], i think it's not good
+function* getSetOrderEntries<T>(set: Set<T>): Iterable<[number, T]> {
+  let idx = 0
+  for (const iterator of set) {
+    yield [idx++, iterator]
+  }
 }

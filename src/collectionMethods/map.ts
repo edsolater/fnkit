@@ -1,11 +1,6 @@
-import { isArray, isIterable, isMap, isSet, isUndefined } from "../"
-import {
-  GetCollectionKey,
-  GetCollectionValue,
-  GetNewCollection,
-  type Collection,
-  type Entries
-} from "./"
+import { isArray, isIterable, isMap, isSet } from "../"
+import { GetCollectionKey, GetCollectionValue, GetNewCollection, type Collection, type Entries } from "./"
+import { toIterableValue, toIterableEntries } from "./entries"
 
 /**
  * {@link mapEntry `mapEntry()`}
@@ -144,45 +139,5 @@ export function* imapEntry<C extends Collection, V, K = GetCollectionKey<C>>(
 ): IterableIterator<[K, V]> {
   for (const [key, value] of toIterableEntries(collection)) {
     yield cb(value, key, collection)
-  }
-}
-
-function toIterableValue<C extends Collection>(collection: C): IterableIterator<GetCollectionValue<C>> {
-  if (isUndefined(collection)) {
-    return [] as any
-  } else if (isIterable(collection)) {
-    return collection as any
-  } else if (isArray(collection) || isSet(collection)) {
-    return collection as any
-  } else if (isMap(collection)) {
-    return collection.values() as any
-  } else {
-    return Object.values(collection) as any
-  }
-}
-
-function toIterableEntries<C extends Collection>(
-  collection: C,
-): IterableIterator<[key: GetCollectionKey<C>, value: GetCollectionValue<C>]> {
-  if (isUndefined(collection)) {
-    return [] as any
-  } else if (isIterable(collection)) {
-    return collection as any
-  } else if (isSet(collection)) {
-    return getSetOrderEntries(collection) as any
-  } else if (isArray(collection)) {
-    return collection.entries() as any
-  } else if (isMap(collection)) {
-    return collection as any
-  } else {
-    return Object.entries(collection) as any
-  }
-}
-
-// build-in set entries is [T, T], i think it's not good
-function* getSetOrderEntries<T>(set: Set<T>): Iterable<[number, T]> {
-  let idx = 0
-  for (const iterator of set) {
-    yield [idx++, iterator]
   }
 }
