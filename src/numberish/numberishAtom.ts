@@ -81,7 +81,8 @@ export function toFraction(from: Numberish): Fraction {
 export function toStringNumber(from: Numberish | undefined, options?: NumberishOption): string {
   if (from === undefined) return "0"
   const stringNumber = (() => {
-    if (isNumber(from)) return from > Number.MAX_SAFE_INTEGER ? String(BigInt(from)) : String(from)
+    if (isNumber(from))
+      return from > Number.MAX_SAFE_INTEGER ? String(BigInt(from)) : from.toFixed(options?.decimals ?? 6)
     if (isBigInt(from)) return String(from)
     if (isString(from) && !isMathematicalExpression(from)) return from
     const { decimal = 0, numerator, denominator = 1n } = toFraction(from)

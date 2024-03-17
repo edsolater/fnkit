@@ -73,7 +73,7 @@ export function isPositive<T extends Numberish | undefined>(a: T): a is NonNulla
   const pure = impureNumberish(a)
   if (isNumber(pure)) return pure > 0
   if (isBigInt(pure)) return pure > 0n
-  if (isString(pure) && isStringNumber(pure)) return pure.trim() != "" && !pure.trim().startsWith("-")
+  if (isString(pure) && isStringNumber(pure)) return pure.trim() != "" && !pure.trim().startsWith("-") && pure !== "0"
   const { denominator = 1n, numerator } = toFraction(pure)
   return (numerator > 0n && denominator > 0n) || (numerator < 0n && denominator < 0n)
 }
