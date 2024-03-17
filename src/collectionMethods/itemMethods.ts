@@ -33,6 +33,14 @@ export function toMap<T>(i: Items<T>, key?: (item: T) => any) {
   return new Map(Object.entries(i))
 }
 
+export function toSet<T>(i: Items<T>) {
+  if (isUndefined(i)) return new Set()
+  if (isSet(i)) return i
+  if (isArray(i)) return new Set(i)
+  if (isIterable(i)) return new Set([...i])
+  return new Set(Object.values(i))
+}
+
 export function toRecord<T, K extends keyof any>(i: Items<T>, key: (item: T, key: unknown) => K): Record<K, T> {
   if (isUndefined(i)) return {} as Record<K, T>
   if (isMap(i)) {
@@ -66,6 +74,14 @@ export function toRecord<T, K extends keyof any>(i: Items<T>, key: (item: T, key
     return result
   }
   return i
+}
+export function toIterable<T>(i: Items<T>): Iterable<T> {
+  if (isUndefined(i)) return []
+  if (isMap(i)) return i.values()
+  if (isSet(i)) return i.values()
+  if (isArray(i)) return i.values()
+  if (isIterable(i)) return i
+  return Object.values(i)
 }
 
 export function count(i: Items<any>) {
