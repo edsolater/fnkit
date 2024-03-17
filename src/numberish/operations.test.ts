@@ -24,7 +24,6 @@ test("numberish: operator add", () => {
 })
 
 test("operator:mul", () => {
-  //FIXME: error here
   expect(toStringNumber(multiply(add(90, 10), "112.4988"))).toBe("11249.88")
 })
 
