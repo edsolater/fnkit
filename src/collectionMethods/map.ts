@@ -3,6 +3,7 @@ import { GetCollectionKey, GetCollectionValue, GetNewCollection, type Collection
 import { toIterableValue, toIterableEntries } from "./entries"
 
 /**
+ * change collection's both value and key
  * {@link mapEntry `mapEntry()`}
  *
  * entry version of array.prototype.map() , just object an map
@@ -50,6 +51,7 @@ export function mapEntry<E extends Entries, V, K = GetCollectionKey<E>>(
 }
 
 /**
+ * only change collection's value
  * {@link map `map()`}: simliar to array.prototype.map()
  * @requires {@link mapEntry `mapEntry()`}
  *

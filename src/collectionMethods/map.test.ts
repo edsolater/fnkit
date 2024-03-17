@@ -1,4 +1,4 @@
-import { map } from "./map"
+import { map, mapEntry } from "./map"
 
 // test("fnkit: flatMapEntries()", () => {
 //   const a = flatMapEntry({ a: 1, b: 2 }, (value, key) => [
@@ -68,8 +68,11 @@ test("fnkit: map()", () => {
 
 test("map() for object", () => {
   const bigObject = Object.fromEntries(Array.from({ length: 10 }, (_, idx) => [idx + "a", idx + 1]))
-  const t = map(bigObject, (v, k) => [k + "v", v + 1])
+  const t = mapEntry(bigObject, (v, k) => [k + "v", v + 1])
   expect(t).toEqual(Object.fromEntries(Array.from({ length: 10 }, (_, idx) => [idx + "av", idx + 2])))
+
+  const t2 = map(bigObject, (v, k) => [k + "v", v + 1])
+  expect(t2).toEqual(Object.fromEntries(Array.from({ length: 10 }, (_, idx) => [idx + "a", [idx + "av", idx + 2]])))
 })
 
 // test("fnkit:mapEntries()", () => {
