@@ -115,7 +115,7 @@ export function containKey<T extends string | number | symbol>(
   obj: unknown,
   ...keys: T[]
 ): obj is { [K in T]: unknown } {
-  return isObject(obj) && flap(keys).every((key: string | number | symbol) => key in obj) // TODO: flap's type should be smarter
+  return isObject(obj) && flap(keys).every((key: string | number | symbol) => key in obj) 
 }
 /**
  *  shallow clone like {...obj}, but don't access it's getter
