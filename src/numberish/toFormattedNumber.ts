@@ -1,7 +1,7 @@
 /**
  * it's format content, not face like
  */
-import { fall } from "../fall"
+import { pipeDo } from "../pipeDo"
 import { Numberish } from "./types"
 import { toStringNumber } from "./numberishAtom"
 import { toFixedDecimal } from "./utils"
@@ -79,16 +79,18 @@ export function toFormattedNumber(n: Numberish | undefined, options?: NumberishF
     if (!options || (options.decimals && options.decimals > 0)) return "0" + "." + "0".repeat(options?.decimals ?? 2)
   }
   return options?.shortExpression
-    ? fall(n, [
+    ? pipeDo(
+        n,
         (s) => toStringNumber(s, { decimals: ((options?.decimals === "auto" ? 2 : options?.decimals) ?? 2) + 1 }),
         (s) => fixDecimal(s, options),
         (s) => handleShortExpression(s, options),
-      ])
-    : fall(n, [
+      )
+    : pipeDo(
+        n,
         (s) => toStringNumber(s, { decimals: ((options?.decimals === "auto" ? 2 : options?.decimals) ?? 2) + 1 }),
         (s) => fixDecimal(s, options),
         (s) => groupSeparater(s, options),
-      ])
+      )
 }
 
 function groupSeparater(str: string, options?: Pick<NumberishFormatOptions, "groupSeparator" | "groupSize">) {
