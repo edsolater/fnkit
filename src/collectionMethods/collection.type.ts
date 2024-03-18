@@ -13,8 +13,6 @@ export type GetCollectionKey<T extends Collection> = T extends Array<any>
   ? number
   : T extends Record<infer K, any>
   ? K
-  : T extends undefined
-  ? undefined
   : never
 
 export type GetCollectionValue<T extends Collection> = T extends Array<infer V>
@@ -27,8 +25,6 @@ export type GetCollectionValue<T extends Collection> = T extends Array<infer V>
   ? V
   : T extends Record<keyof any, infer V>
   ? V
-  : T extends undefined
-  ? undefined
   : never
 
 export type GetNewCollection<

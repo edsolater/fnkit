@@ -1,6 +1,9 @@
-import { isArray, isIterable, isMap, isSet } from "../dataType"
+import { cache, cacheFn } from "../cache"
+import { isArray, isIterable, isMap, isNumber, isSet, isString, isUndefined } from "../dataType"
+import { switchCase } from "../switchCase"
 import type { Entries, GetCollectionKey, GetCollectionValue, GetNewCollection, Collection } from "./collection.type"
 import { toIterableEntries, toIterableValue } from "./entries"
+import { count } from "./itemMethods"
 
 /**
  * change collection's both value and key
@@ -64,9 +67,19 @@ export function mapEntry<E extends Entries, V, K = GetCollectionKey<E>>(
 export function map<C extends Collection, V, K = GetCollectionKey<C>>(
   collection: C,
   cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
+  options?: {
+    /**
+     *  only calc needed value when needed
+     * 'auto' means if collection size is too big, use lazy mode
+     */
+    lazy?: boolean | "auto"
+  },
 ): GetNewCollection<C, V, K> {
-  if (isArray(collection)) {
-    return collection.map(cb as any) as any
+  if (isUndefined(collection)) return collection as any
+  const needLazy = !options || options?.lazy === "auto" ? count(collection) > 1000 : options?.lazy
+   if (isArray(collection)) {
+    //@ts-expect-error 🤔
+    return needLazy ? lazyMapArray(collection, cb) : (collection.map(cb as any) as any)
   } else if (isSet(collection)) {
     const outputSet = new Set<V>()
     if (cb.length <= 1) {
@@ -92,17 +105,7 @@ export function map<C extends Collection, V, K = GetCollectionKey<C>>(
     }
     return outputMap as GetNewCollection<C, V, K>
   } else if (isIterable(collection)) {
-    return (function* () {
-      if (cb.length <= 1) {
-        for (const iterator of toIterableValue(collection)) {
-          //@ts-expect-error force parameter length is 1
-          yield cb(iterator)
-        }
-      }
-      for (const [key, value] of toIterableEntries(collection)) {
-        yield cb(value, key, collection)
-      }
-    })() as GetNewCollection<C, V, K>
+    return iterableMap(collection, cb) as GetNewCollection<C, V, K>
   } else {
     const outputRecord: Record<string, V> = {}
     for (const key in collection) {
@@ -111,6 +114,56 @@ export function map<C extends Collection, V, K = GetCollectionKey<C>>(
       outputRecord[key] = mappedV
     }
     return outputRecord as GetNewCollection<C, V, K>
+  }
+}
+
+/** only calc when query the real value */
+function lazyMapArray<T, U>(array: T[], cb: (value: T, idx: number, source: T[]) => U) {
+  let mappedArray: U[] = []
+  const getItems = cacheFn(() => {
+    for (let i = 0; i < array.length; i++) {
+      if (i in mappedArray) continue
+      mappedArray[i] = cb(array[i], i, array)
+    }
+    return mappedArray
+  })
+  return new Proxy([], {
+    get(_target, key) {
+      if (isNumber(key) || (isString(key) && /^\d+$/.test(String(key)))) {
+        if (key in mappedArray) return mappedArray[key]
+        if (key in array) {
+          const mappedValue = cb(array[key], +key, array)
+          mappedArray[key] = mappedValue
+          return mappedValue
+        } else {
+          return undefined // empty value
+        }
+      }
+      if (key === "length") return array.length
+      if (key === Symbol.iterator) return iterableMap(array, cb)
+      return Reflect.get(getItems(), key)
+    },
+  })
+}
+
+/**
+ *
+ * @param collection
+ * @param cb
+ */
+function* iterableMap<C extends Collection, V>(
+  collection: C,
+  cb: (value: GetCollectionValue<C>, idx: GetCollectionKey<C>, source: C) => V,
+): Iterable<V> {
+  if (cb.length <= 1) {
+    for (const iterator of toIterableValue(collection)) {
+      //@ts-expect-error force parameter length is 1
+      yield cb(iterator)
+    }
+  } else {
+    for (const [idx, iterator] of toIterableEntries(collection)) {
+      yield cb(iterator, idx, collection)
+    }
   }
 }
 
@@ -131,4 +184,3 @@ export function map<C extends Collection, V, K = GetCollectionKey<C>>(
 //     }
 //   }
 // }
-

@@ -76,3 +76,18 @@ export function cache<F extends AnyFunction>(originalFn: F): CachedFunction<F> {
     }
   }
 }
+
+/** result will be calc only once */
+export function cacheFn<F extends AnyFunction>(originalFn: F): CachedFunction<F> {
+  let output: { result: ReturnType<F> } | undefined = undefined
+  //@ts-expect-error
+  return (...args: Parameters<F>) => {
+    if (output) return output.result
+    else {
+      //@ts-expect-error
+      const returnedValue: ReturnType<F> = originalFn(...args)
+      output = { result: returnedValue }
+      return returnedValue
+    }
+  }
+}

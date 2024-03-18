@@ -32,7 +32,7 @@ import { map, mapEntry } from "./map"
 // })
 
 test("map()", () => {
-  const source = Array.from({ length: 100000 }, (_, idx) => idx + 1)
+  const source = Array.from({ length: 1002000 }, (_, idx) => idx + 1)
 
   console.time("map array original")
   const torignal0 = source.map((v) => v + 1)
@@ -41,6 +41,11 @@ test("map()", () => {
   console.time("map array iterable")
   const t0 = map(source, (v) => v + 1)
   console.timeEnd("map array iterable")
+
+  console.time("map t0 compare")
+  expect(t0[3000]).toBe(torignal0[3000])
+  expect(t0[3000000]).toBe(torignal0[3000000])
+  console.timeEnd("map t0 compare")
 
   const t1 = map([1, 2], (v) => v + 1)
   expect(t1).toEqual([2, 3])
