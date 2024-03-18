@@ -1,6 +1,6 @@
-import { isArray, isIterable, isMap, isSet } from "../"
-import { GetCollectionKey, GetCollectionValue, GetNewCollection, type Collection, type Entries } from "./"
-import { toIterableValue, toIterableEntries } from "./entries"
+import { isArray, isIterable, isMap, isSet } from "../dataType"
+import type { Entries, GetCollectionKey, GetCollectionValue, GetNewCollection, Collection } from "./collection.type"
+import { toIterableEntries, toIterableValue } from "./entries"
 
 /**
  * change collection's both value and key
@@ -66,34 +66,32 @@ export function map<C extends Collection, V, K = GetCollectionKey<C>>(
   cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
 ): GetNewCollection<C, V, K> {
   if (isArray(collection)) {
-    return (collection as any[]).map(cb as any) as any
+    return collection.map(cb as any) as any
   } else if (isSet(collection)) {
     const outputSet = new Set<V>()
     if (cb.length <= 1) {
       for (const v of collection as Set<unknown>) {
         //@ts-expect-error force parameter length is 1
         const mappedV = cb(v)
-        if (mappedV !== undefined) outputSet.add(mappedV)
+        outputSet.add(mappedV)
       }
     } else {
       for (const [idx, v] of collection.entries()) {
         // @ts-ignore
         const mappedV = cb(v, idx, collection)
-        if (mappedV !== undefined) outputSet.add(mappedV)
+        outputSet.add(mappedV)
       }
     }
     return outputSet as any
   } else if (isMap(collection)) {
-    const outputSet = new Map<K, V>()
+    const outputMap = new Map<K, V>()
     for (const [key, value] of collection as Map<any, any>) {
       // @ts-ignore
       const mappedV = cb(value, key, collection)
-      if (mappedV == undefined) continue
-      outputSet.set(key, mappedV)
+      outputMap.set(key, mappedV)
     }
-    return outputSet as any
+    return outputMap as GetNewCollection<C, V, K>
   } else if (isIterable(collection)) {
-    // @ts-ignore
     return (function* () {
       if (cb.length <= 1) {
         for (const iterator of toIterableValue(collection)) {
@@ -104,42 +102,33 @@ export function map<C extends Collection, V, K = GetCollectionKey<C>>(
       for (const [key, value] of toIterableEntries(collection)) {
         yield cb(value, key, collection)
       }
-    })()
+    })() as GetNewCollection<C, V, K>
   } else {
-    const outputSet: Record<string, V> = {}
+    const outputRecord: Record<string, V> = {}
     for (const key in collection) {
       // @ts-ignore
       const mappedV = cb(collection[key], key, collection)
-      if (mappedV === undefined) continue
-      outputSet[key] = mappedV
+      outputRecord[key] = mappedV
     }
-    return outputSet as any
+    return outputRecord as GetNewCollection<C, V, K>
   }
 }
 
-/** iterator map */
-export function* imap<C extends Collection, V>(
-  collection: C,
-  cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
-): IterableIterator<V> {
-  if (cb.length <= 1) {
-    for (const value of toIterableValue(collection)) {
-      //@ts-expect-error force parameter length is 1
-      yield cb(value)
-    }
-  } else {
-    for (const [key, value] of toIterableEntries(collection)) {
-      yield cb(value, key, collection)
-    }
-  }
-}
+// /** iterator map
+// just use `pipeDo(toIterable(i), a => map(a, a+1))` is ok*/
+// export function* imap<C extends Collection, V>(
+//   collection: C,
+//   cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
+// ): IterableIterator<V> {
+//   if (cb.length <= 1) {
+//     for (const value of toIterableValue(collection)) {
+//       //@ts-expect-error force parameter length is 1
+//       yield cb(value)
+//     }
+//   } else {
+//     for (const [key, value] of toIterableEntries(collection)) {
+//       yield cb(value, key, collection)
+//     }
+//   }
+// }
 
-/** iterator map */
-export function* imapEntry<C extends Collection, V, K = GetCollectionKey<C>>(
-  collection: C,
-  cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => [K, V],
-): IterableIterator<[K, V]> {
-  for (const [key, value] of toIterableEntries(collection)) {
-    yield cb(value, key, collection)
-  }
-}

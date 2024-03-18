@@ -31,7 +31,7 @@ import { map, mapEntry } from "./map"
 //   })
 // })
 
-test("fnkit: map()", () => {
+test("map()", () => {
   const source = Array.from({ length: 100000 }, (_, idx) => idx + 1)
 
   console.time("map array original")

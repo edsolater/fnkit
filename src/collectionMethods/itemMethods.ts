@@ -67,14 +67,6 @@ export function toRecord<T, K extends keyof any>(i: Collection<T>, key: (item: T
   }
   return i
 }
-export function toIterable<T>(i: Collection<T>): Iterable<T> {
-  if (isUndefined(i)) return []
-  if (isMap(i)) return i.values()
-  if (isSet(i)) return i.values()
-  if (isArray(i)) return i.values()
-  if (isIterable(i)) return i
-  return Object.values(i)
-}
 
 export function count(i: Collection) {
   if (isUndefined(i)) return 0

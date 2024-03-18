@@ -22,6 +22,7 @@ import {
   shakeUndefinedItem,
   type Collection,
   isIterable,
+  type Entries,
 } from "../"
 
 /**
@@ -258,6 +259,25 @@ export function toIterableEntries<C extends Collection>(
     return collection as any
   } else {
     return Object.entries(collection) as any
+  }
+}
+
+/** auto-detect whether it should use {@link toIterableValue} or {@link toIterableEntries} */
+export function toIterable<C extends Items>(collection: C): IterableIterator<GetCollectionValue<C>>
+export function toIterable<C extends Entries>(
+  collection: C,
+): IterableIterator<[GetCollectionKey<C>, GetCollectionValue<C>]>
+export function toIterable<C extends Collection>(
+  collection: C,
+): IterableIterator<GetCollectionValue<C> | [GetCollectionKey<C>, GetCollectionValue<C>]> {
+  if (isUndefined(collection)) {
+    return [] as any
+  } else if (isIterable(collection)) {
+    return collection as any
+  } else if (isArray(collection) || isSet(collection)) {
+    return collection as any
+  } else {
+    return toIterableEntries(collection)
   }
 }
 // build-in set entries is [T, T], i think it's not good
