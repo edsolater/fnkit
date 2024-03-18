@@ -252,7 +252,7 @@ export function toIterableEntries<C extends Collection>(
   } else if (isIterable(collection)) {
     return collection as any
   } else if (isSet(collection)) {
-    return getSetOrderEntries(collection) as any
+    return (collection.entries()) as any
   } else if (isArray(collection)) {
     return collection.entries() as any
   } else if (isMap(collection)) {
@@ -278,12 +278,5 @@ export function toIterable<C extends Collection>(
     return collection as any
   } else {
     return toIterableEntries(collection)
-  }
-}
-// build-in set entries is [T, T], i think it's not good
-function* getSetOrderEntries<T>(set: Set<T>): Iterable<[number, T]> {
-  let idx = 0
-  for (const iterator of set) {
-    yield [idx++, iterator]
   }
 }

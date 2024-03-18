@@ -1,7 +1,6 @@
-import { cache, cacheFn } from "../cache"
+import { cacheFn } from "../cache"
 import { isArray, isIterable, isMap, isNumber, isSet, isString, isUndefined } from "../dataType"
-import { switchCase } from "../switchCase"
-import type { Entries, GetCollectionKey, GetCollectionValue, GetNewCollection, Collection } from "./collection.type"
+import type { Collection, Entries, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./collection.type"
 import { toIterableEntries, toIterableValue } from "./entries"
 import { count } from "./itemMethods"
 
@@ -76,26 +75,32 @@ export function map<C extends Collection, V, K = GetCollectionKey<C>>(
   },
 ): GetNewCollection<C, V, K> {
   if (isUndefined(collection)) return collection as any
-  const needLazy = !options || options?.lazy === "auto" ? count(collection) > 1000 : options?.lazy
-   if (isArray(collection)) {
+  if (isArray(collection)) {
+    const needLazy = !options || options?.lazy === "auto" ? count(collection) > 1000 : options?.lazy
     //@ts-expect-error 🤔
     return needLazy ? lazyMapArray(collection, cb) : (collection.map(cb as any) as any)
   } else if (isSet(collection)) {
-    const outputSet = new Set<V>()
-    if (cb.length <= 1) {
-      for (const v of collection as Set<unknown>) {
-        //@ts-expect-error force parameter length is 1
-        const mappedV = cb(v)
-        outputSet.add(mappedV)
-      }
+    const needLazy = !options || options?.lazy === "auto" ? count(collection) > 1000 : options?.lazy
+    if (needLazy) {
+      //@ts-expect-error force
+      return lazyMapSet(collection, cb)
     } else {
-      for (const [idx, v] of collection.entries()) {
-        // @ts-ignore
-        const mappedV = cb(v, idx, collection)
-        outputSet.add(mappedV)
+      const outputSet = new Set<V>()
+      if (cb.length <= 1) {
+        for (const v of collection as Set<unknown>) {
+          //@ts-expect-error force parameter length is 1
+          const mappedV = cb(v)
+          outputSet.add(mappedV)
+        }
+      } else {
+        for (const [idx, v] of collection.entries()) {
+          // @ts-ignore
+          const mappedV = cb(v, idx, collection)
+          outputSet.add(mappedV)
+        }
       }
+      return outputSet as any
     }
-    return outputSet as any
   } else if (isMap(collection)) {
     const outputMap = new Map<K, V>()
     for (const [key, value] of collection as Map<any, any>) {
@@ -107,33 +112,74 @@ export function map<C extends Collection, V, K = GetCollectionKey<C>>(
   } else if (isIterable(collection)) {
     return iterableMap(collection, cb) as GetNewCollection<C, V, K>
   } else {
-    const outputRecord: Record<string, V> = {}
-    for (const key in collection) {
-      // @ts-ignore
-      const mappedV = cb(collection[key], key, collection)
-      outputRecord[key] = mappedV
+    const needLazy = !options || options?.lazy === "auto" ? true : options?.lazy
+    if (needLazy) {
+      //@ts-expect-error 🤔
+      return lazyMapRecord(collection, cb)
+    } else {
+      const outputRecord: Record<string, V> = {}
+      for (const key in collection) {
+        // @ts-ignore
+        const mappedV = cb(collection[key], key, collection)
+        outputRecord[key] = mappedV
+      }
+      return outputRecord as GetNewCollection<C, V, K>
     }
-    return outputRecord as GetNewCollection<C, V, K>
   }
 }
 
 /** only calc when query the real value */
+function lazyMapSet<T, U>(set: Set<T>, cb: (value: T, key: T, source: Set<T>) => U) {
+  let haveLoadAll: boolean = false
+  let mappedSet = new Set<U>()
+  const getItems = cacheFn(() => {
+    if (haveLoadAll) return mappedSet
+    for (const value of set) {
+      // if (mappedSet) continue
+      const mappedSetValue = cb(value, value, set)
+      mappedSet.add(mappedSetValue)
+    }
+    haveLoadAll = true
+    return mappedSet
+  })
+  const lazySet = new Proxy(mappedSet, {
+    get(_target, key) {
+      if (key === "set") {
+        return function set(value: U) {
+          mappedSet.add(value)
+          return lazySet
+        }
+      }
+      if (key === "size") return set.size
+      if (key === Symbol.iterator) return iterableMap(set, cb)
+
+      getItems()
+      return Reflect.get(mappedSet, key, mappedSet)
+    },
+  })
+  return lazySet
+}
+
+/** only calc when query the real value */
 function lazyMapArray<T, U>(array: T[], cb: (value: T, idx: number, source: T[]) => U) {
+  let haveLoadAll: boolean = false
   let mappedArray: U[] = []
   const getItems = cacheFn(() => {
+    if (haveLoadAll) return mappedArray
     for (let i = 0; i < array.length; i++) {
       if (i in mappedArray) continue
       mappedArray[i] = cb(array[i], i, array)
     }
+    haveLoadAll = true
     return mappedArray
   })
-  return new Proxy([], {
-    get(_target, key) {
+  return new Proxy(mappedArray, {
+    get(target, key) {
       if (isNumber(key) || (isString(key) && /^\d+$/.test(String(key)))) {
-        if (key in mappedArray) return mappedArray[key]
+        if (key in target) return target[key]
         if (key in array) {
           const mappedValue = cb(array[key], +key, array)
-          mappedArray[key] = mappedValue
+          target[key] = mappedValue
           return mappedValue
         } else {
           return undefined // empty value
@@ -141,8 +187,64 @@ function lazyMapArray<T, U>(array: T[], cb: (value: T, idx: number, source: T[])
       }
       if (key === "length") return array.length
       if (key === Symbol.iterator) return iterableMap(array, cb)
-      return Reflect.get(getItems(), key)
+      return Reflect.get(getItems(), key, target)
     },
+  })
+}
+/** only calc when query the real value */
+function lazyMapRecord<T, K extends keyof any, U>(
+  record: Record<K, T>,
+  cb: (value: T, key: K, source: Record<K, T>) => U,
+) {
+  let mappedRecord = {} as Record<K, U>
+  let keys: (string | symbol)[]
+  let keySet: Set<string | symbol>
+
+  function getKeys() {
+    if (!keys) {
+      keys = Reflect.ownKeys(record)
+    }
+    return keys!
+  }
+  function getKeySet() {
+    if (!keySet) {
+      keySet = new Set(getKeys())
+    }
+    return keySet!
+  }
+
+  const getValue = (target: Record<K, U>, key: string | symbol): any => {
+    if (!getKeySet().has(key)) return undefined
+    if (key in target) return target[key]
+    if (key in record) {
+      const mappedValue = cb(record[key], key as K, record)
+      target[key] = mappedValue
+      return mappedValue
+    } else {
+      return undefined
+    }
+  }
+  return new Proxy(mappedRecord, {
+    get: getValue,
+    has: (_target, p) => Boolean(getKeySet().has(p)),
+    ownKeys: (_target) => getKeys(),
+    getOwnPropertyDescriptor: (target, p) => {
+      if (!getKeySet().has(p)) return undefined
+      return {
+        configurable: true,
+        enumerable: true,
+        value: getValue(target, p),
+      }
+    },
+    set: (target, p, newValue, receiver) => {
+      getKeySet().add(p)
+      if (!getKeys().includes(p)) {
+        getKeys()
+      }
+      Reflect.set(target, p, newValue, receiver)
+      return true
+    },
+    setPrototypeOf: (target, v) => Reflect.setPrototypeOf(target, v),
   })
 }
 

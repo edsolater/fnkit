@@ -5,8 +5,8 @@ export type ItemEntry<Item = any> = Entry<Item, number>
 
 export type GetCollectionKey<T extends Collection> = T extends Array<any>
   ? number
-  : T extends Set<any>
-  ? number
+  : T extends Set<infer K>
+  ? K
   : T extends Map<infer K, any>
   ? K
   : T extends Iterable<any>
