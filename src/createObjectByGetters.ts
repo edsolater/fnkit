@@ -6,7 +6,7 @@ import { AnyFn } from "./typings"
  * @example
  * createObjectByGetters({ aa: () => 'hello' }) //=> { aa: 'hello' }
  */
-export function createObjectByGetters<O extends Record<keyof any, unknown>>(
+export function createObjectFromGetters<O extends Record<keyof any, unknown>>(
   getterDescroptions: O,
 ): {
   [K in keyof O]: O[K] extends undefined ? undefined : O[K] extends AnyFn ? ReturnType<NonNullable<O[K]>> : O[K]

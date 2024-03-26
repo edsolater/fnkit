@@ -252,7 +252,7 @@ export function toIterableEntries<C extends Collection>(
   } else if (isIterable(collection)) {
     return collection as any
   } else if (isSet(collection)) {
-    return (collection.entries()) as any
+    return collection.entries() as any
   } else if (isArray(collection)) {
     return collection.entries() as any
   } else if (isMap(collection)) {
@@ -263,20 +263,23 @@ export function toIterableEntries<C extends Collection>(
 }
 
 /** auto-detect whether it should use {@link toIterableValue} or {@link toIterableEntries} */
-export function toIterable<C extends Items>(collection: C): IterableIterator<GetCollectionValue<C>>
-export function toIterable<C extends Entries>(
+export function toIterable<C extends Collection>(collection: C): IterableIterator<GetCollectionValue<C>>
+export function toIterable<C extends Collection>(
   collection: C,
+  options: { entries: true },
 ): IterableIterator<[GetCollectionKey<C>, GetCollectionValue<C>]>
 export function toIterable<C extends Collection>(
   collection: C,
+  options?: { entries?: boolean },
 ): IterableIterator<GetCollectionValue<C> | [GetCollectionKey<C>, GetCollectionValue<C>]> {
   if (isUndefined(collection)) {
     return [] as any
   } else if (isIterable(collection)) {
     return collection as any
-  } else if (isArray(collection) || isSet(collection)) {
-    return collection as any
-  } else {
+  }
+  if (options?.entries) {
     return toIterableEntries(collection)
+  } else {
+    return toIterableValue(collection)
   }
 }

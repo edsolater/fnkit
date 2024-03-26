@@ -1,4 +1,4 @@
-import { DeMayDeepArray, MayArray } from "../typings/tools"
+import { DeMayDeepArray, type DeMayArray } from "../typings/tools"
 
 /**
  * only array can flat
@@ -6,21 +6,20 @@ import { DeMayDeepArray, MayArray } from "../typings/tools"
  * flat([3, [4]]) //=> [3, 4]
  * @version 0.0.1
  */
+export function flap<A>(wrapValue: A): DeMayArray<DeMayArray<A>>[]
 export function flap<A, D extends number = 0>(
   wrapValue: A,
   deth?: D,
-): A extends readonly any[] ? (D extends 0 ? A : FlatArray<A, D>[]) : [A] {
-  //@ts-expect-error type force
+): A extends readonly any[] ? (D extends 0 ? A : FlatArray<A, D>[]) : [A]
+export function flap<A, D extends number = 0>(wrapValue: A, deth?: D): any {
   if (wrapValue == null) return []
-
   if (deth === undefined || deth === 0) {
-    //@ts-expect-error type force
     return Array.isArray(wrapValue) ? wrapValue : [wrapValue]
   } else {
-    //@ts-expect-error type force
     return [wrapValue].flat(deth + 1)
   }
 }
+
 type AddOne<N> = N extends 1
   ? 2
   : N extends 2
