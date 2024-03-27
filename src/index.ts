@@ -33,9 +33,10 @@ export * from "./oldMethodsObject"
 export * from "./oldMethodsString"
 export * from "./pickProperty" // FP style utils to get property easily
 export * from "./pipe"
-export * from "./pipeDo"
 export * from "./pipeAsyncDo"
+export * from "./pipeDo"
 export * from "./promisify" // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
+export * from "./runTasks"
 export * from "./switchCase" // FP style switch
 export * from "./tableList"
 export * from "./toPrimitiveValue"
