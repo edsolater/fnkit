@@ -1,9 +1,11 @@
+import { uncapitalize } from "../changeCase"
 import { map } from "../collectionMethods"
+import { isString } from "../dataType"
 import { AnyFn } from "../typings"
 import { createSubscription, Subscription } from "./Subscription"
 
 type EventConfig = {
-  [eventName: string]: AnyFn
+  [eventName: string]: Parameters<AnyFn>
 }
 
 let eventCenterIdCounter = 1
@@ -17,7 +19,7 @@ type EventCenterCreateOptions<T extends EventConfig> = {
 
   whenEventListenerRegistered?: {
     [P in keyof T as `${P & string}`]?: (utils: {
-      fn: (...params: Parameters<T[P]>) => void
+      fn: (...params: T[P]) => void
       eventName: P
       emit: EventCenter<T>["emit"]
       isFirst: boolean
@@ -40,15 +42,21 @@ export type EventListenerOptions = {
   initWithPrevEmitedValue?: boolean
 }
 
-export type EventCenter<Config extends EventConfig> = {
+type EventCenterOn<Config extends EventConfig> = {
+  [P in keyof Config as `on${Capitalize<string & P>}`]: (
+    subscriptionFn: (...params: Config[P]) => void,
+    options?: EventListenerOptions,
+  ) => Subscription
+}
+type EventCenterBase<Config extends EventConfig> = {
   /** core for event provider */
-  emit<EventName extends keyof Config>(eventName: EventName, parameters: Parameters<Config[EventName]>): void
+  emit<EventName extends keyof Config>(eventName: EventName, parameters: Config[EventName]): void
 
   /**
    * same as {@link EventCenter['on']} but will regist multi listeners at once
    * @deprecated just use on
    */
-  registEventHandlers<U extends Partial<Config>>(
+  multiOn<U extends Partial<Config>>(
     subscriptionFns: U,
     options?: EventListenerOptions,
   ): { [P in keyof U]: Subscription }
@@ -59,21 +67,18 @@ export type EventCenter<Config extends EventConfig> = {
    */
   on<EventName extends keyof Config>(
     eventName: EventName,
-  ): (
-    subscriptionFn: (...params: Parameters<Config[EventName]>) => void,
-    options?: EventListenerOptions,
-  ) => Subscription
+  ): (subscriptionFn: (...params: Config[EventName]) => void, options?: EventListenerOptions) => Subscription
   /**
    * subscribe
    */
   on<EventName extends keyof Config>(
     eventName: EventName,
-    subscriptionFn: (...params: Parameters<Config[EventName]>) => void,
+    subscriptionFn: (...params: Config[EventName]) => void,
     options?: EventListenerOptions,
   ): Subscription
 
-  onAnyEvent<EventName extends keyof Config>(
-    subscriptionFn: (eventName: EventName, cllbackParams: Parameters<Config[EventName]>) => void,
+  listenWhateverEvent<EventName extends keyof Config>(
+    subscriptionFn: (eventName: EventName, cllbackParams: Config[EventName]) => void,
     options?: EventListenerOptions,
   ): Subscription
 
@@ -83,6 +88,8 @@ export type EventCenter<Config extends EventConfig> = {
   /** clear registed for specified event */
   clear(eventName: keyof Config): void
 }
+export type EventCenter<Config extends EventConfig> = EventCenterBase<Config> &
+  Omit<EventCenterOn<Config>, keyof EventCenterBase<any>>
 
 /**
  * @example
@@ -165,8 +172,8 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
       },
     })
   }
-  function onAnyEvent<EventName extends keyof T>(
-    fn: (eventName: EventName, cllbackParams: Parameters<T[EventName]>) => void,
+  function listenWhateverEvent<EventName extends keyof T>(
+    fn: (eventName: EventName, cllbackParams: T[EventName]) => void,
     eventListenerOptions?: EventListenerOptions,
   ): Subscription {
     anyEventCommonCallbacks.add(fn)
@@ -207,11 +214,11 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     }
   }) as EventCenter<T>["on"]
 
-  const registEvents = ((subscriptionFns, options) =>
+  const multiOn = ((subscriptionFns, options) =>
     map(
       subscriptionFns,
       (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn as AnyFn, options),
-    )) as EventCenter<T>["registEventHandlers"]
+    )) as EventCenter<T>["multiOn"]
 
   function clearAll() {
     storedCallbackStore.clear()
@@ -220,15 +227,25 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     storedCallbackStore.delete(eventName)
   }
 
-  const eventCenter = {
-    onAnyEvent,
-    registEventHandlers: registEvents,
+  const eventCenterBase = {
+    listenWhateverEvent,
+    multiOn,
     on,
     emit,
     clearAll,
     clear,
     _eventCenterId,
-  } as EventCenter<T>
+  } as EventCenterBase<T>
+  const eventCenter = new Proxy(eventCenterBase, {
+    get(target, p, receiver) {
+      if (p in target) return Reflect.get(target, p, receiver)
+      if (isString(p) && p.startsWith("on") && p.length > 2) {
+        const eventName = uncapitalize(p.slice(2))
+        return createOnFactory(eventName)
+      }
+      return undefined
+    },
+  }) as EventCenter<T>
 
   return eventCenter
 }

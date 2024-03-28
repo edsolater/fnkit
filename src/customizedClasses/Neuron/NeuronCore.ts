@@ -18,7 +18,7 @@ export type NeuronCore<T> = {
 
 export function createNeuronCore<T>(options?: {}): NeuronCore<T> {
   const linkedNeurons = new WeakerMap<NeuronCore<T>, Subscription>()
-  const eventCenter = createEventCenter<{ changeValue: (item: T) => void }>()
+  const eventCenter = createEventCenter<{ changeValue: [item: T] }>()
   const subscribe = eventCenter.on("changeValue")
   const link: NeuronCore<T>["link"] = (neuronB) => {
     const subscription = subscribe((v) => neuronB.infuse?.(v))
