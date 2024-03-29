@@ -14,6 +14,11 @@ function generateEventCenterId() {
 }
 
 type EventCenterCreateOptions<T extends EventConfig> = {
+  /**
+   * !important
+   * remove all inner cached values or callbacks for friendly GC
+   */
+  destoryAfterEmit?: keyof T
   shouldCacheAllEmitedValues?: boolean
   shouldCachEmitedValue?: boolean
 
@@ -83,10 +88,10 @@ type EventCenterBase<Config extends EventConfig> = {
   ): Subscription
 
   /** clear all registed events for specified event */
-  clearAll(): void
+  clear(): void
 
-  /** clear registed for specified event */
-  clear(eventName: keyof Config): void
+  /** delete registed for specified event */
+  delete(eventName: keyof Config): void
 }
 export type EventCenter<Config extends EventConfig> = EventCenterBase<Config> &
   Omit<EventCenterOn<Config>, keyof EventCenterBase<any>>
@@ -139,6 +144,13 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
       emitedValueCache!.set(eventName, (emitedValueCache!.get(eventName) ?? []).concat(paramters))
     } else if (options?.shouldCacheAllEmitedValues) {
       emitedValueCache!.set(eventName, (emitedValueCache!.get(eventName) ?? []).concat(paramters))
+    }
+
+    // destory if needed(in next frame by setTimeout)
+    if (options?.destoryAfterEmit === eventName) {
+      storedCallbackStore.clear()
+      anyEventCommonCallbacks.clear()
+      emitedValueCache?.clear()
     }
   }) as EventCenter<T>["emit"]
 
@@ -220,10 +232,10 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
       (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn as AnyFn, options),
     )) as EventCenter<T>["multiOn"]
 
-  function clearAll() {
+  function clear() {
     storedCallbackStore.clear()
   }
-  function clear(eventName: keyof T) {
+  function deleteCallback(eventName: keyof T) {
     storedCallbackStore.delete(eventName)
   }
 
@@ -232,8 +244,8 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     multiOn,
     on,
     emit,
-    clearAll,
     clear,
+    delete: deleteCallback,
     _eventCenterId,
   } as EventCenterBase<T>
   const eventCenter = new Proxy(eventCenterBase, {
