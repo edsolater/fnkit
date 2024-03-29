@@ -9,4 +9,5 @@ export type Nullish = undefined | null
 export type Falsy = Nullish | false | 0 | ""
 export type NonFalsy<T> = Exclude<T, Falsy>
 export type ID = string | number
+export type IDNumber =  number
 export type SessionID = ID

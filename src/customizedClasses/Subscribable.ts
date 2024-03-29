@@ -1,15 +1,19 @@
 import { flap } from "../collectionMethods"
 import { isFunction, isObjectLike, isPromise } from "../dataType"
-import { AnyFn, MayPromise, type MayArray, type UndefinedKeys } from "../typings"
+import { AnyFn, MayPromise, type IDNumber, type MayArray } from "../typings"
 import { shrinkFn } from "../wrapper"
-import { WeakerMap } from "./WeakerMap"
-import { WeakerSet } from "./WeakerSet"
 
 const subscribableTag = Symbol("subscribable")
+
+let subscribableId = 0
+function genSubscribableId() {
+  return subscribableId++
+}
 
 export type SubscribeFn<T> = (value: T, prevValue: T | undefined) => void
 
 export interface Subscribable<T> {
+  id: IDNumber
   // when set this, means this object is a subscribable
   [subscribableTag]: boolean
 
@@ -82,6 +86,7 @@ export function createSubscribable<T>(
 
   const subscribable = Object.assign(() => innerValue, {
     [subscribableTag]: true,
+    id: genSubscribableId(),
     subscribe(cb: any) {
       if (innerValue != null) invokeSubscribedCallbacks(cb, innerValue, undefined) // immediately invoke callback, if has value
       subscribeFnsStore.add(cb)
