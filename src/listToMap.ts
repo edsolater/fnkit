@@ -3,7 +3,7 @@
  * @example
  * listToMap([{id:'xxx', name:'hello'}, {id:'yy', name:'world'}], i => i.id) => {xxx: {id:'xxx', name:'hello'}, yy: {id:'yy', name:'world'}}
  */
-export function listToMap<T, S extends string, V = T>(
+export function listToRecord<T, S extends string, V = T>(
   source: T[],
   getKey: (item: T, index: number) => S,
   getValue?: (item: T, index: number) => V,
@@ -15,7 +15,7 @@ export function listToMap<T, S extends string, V = T>(
 /**
  * @returns a js Map object instead of a plain object
  */
-export function listToJSMap<T, S, V = T>(
+export function listToMap<T, S, V = T>(
   source: T[],
   getKey: (item: T, index: number) => S,
   getValue?: (item: T, index: number) => V,
