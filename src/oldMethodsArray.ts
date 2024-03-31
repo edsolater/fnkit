@@ -115,20 +115,6 @@ export function removeItemByIndex<T extends any[]>(arr: T, fromIndex: number, en
   return newArray as T
 }
 
-export function addItem<T, U>(arr: T[], ...items: U[]): (T | U)[]
-export function addItem<T, U>(set: Set<T>, ...items: U[]): Set<T | U>
-export function addItem(arr, ...items) {
-  if (isArray(arr)) {
-    return [...arr, ...items]
-  }
-  // Set
-  if (isSet(arr)) {
-    const newSet = new Set(arr)
-    items.forEach((item) => newSet.add(item))
-    return newSet
-  }
-}
-
 export function removeItem<T>(arr: T[], ...items: T[]): T[]
 export function removeItem<T>(set: Set<T>, ...items: T[]): Set<T>
 export function removeItem(arr, ...items) {

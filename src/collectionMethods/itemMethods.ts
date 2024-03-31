@@ -1,4 +1,6 @@
-import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject } from "../dataType"
+import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject, isString } from "../dataType"
+import { cloneObject } from "../oldMethodsObject"
+import { shrinkFn } from "../wrapper"
 import { Collection } from "./collection.type"
 import { pick } from "./pick"
 
@@ -98,6 +100,68 @@ export function get<T>(i: Collection<T>, key: string | number): T | undefined {
     }
   }
   return i[key]
+}
+
+/** mutate, no key */
+
+export function addItem<T, U>(i: Array<T>, value: U): Array<T | U>
+export function addItem<T, U>(i: Set<T>, value: U): Set<T | U>
+export function addItem<T, K, U>(i: Map<K, T>, value: U): Map<K | number, T | U>
+export function addItem<T extends object, U>(i: T, value: U): T & { [key: number]: U }
+export function addItem<T>(i: Collection<T>, value: T) {
+  if (isUndefined(i)) return
+  if (isMap(i)) {
+    return i.set(i.size, value)
+  } else if (isArray(i)) {
+    const newArray = i
+    newArray.push(value)
+    return newArray
+  } else if (isSet(i)) {
+    const newSet = i
+    return newSet.add(value)
+  } else if (isIterable(i)) {
+    throw new Error("Iterable does not support add")
+  } else {
+    const newRecord = i
+    newRecord[count(i)] = value
+    return newRecord
+  }
+}
+/** have key */
+export function setItem<T, U>(i: Array<T>, key: number, value: U | ((v: T | undefined) => U)): Array<T | U>
+export function setItem<T, U>(i: Set<T>, key: number, value: U | ((v: T | undefined) => U)): Set<T | U>
+export function setItem<T, K, U>(i: Map<K, T>, key: K, value: U | ((v: T | undefined) => U)): Map<K, T | U>
+export function setItem<T extends object, K extends keyof any, U>(
+  i: T,
+  key: K,
+
+  value: U | ((v: T[K extends keyof T ? K : keyof T] | undefined) => U),
+): T & { [key in K]: U }
+export function setItem<T>(i: Collection<T>, key: unknown, value: T | ((v: T | undefined) => T)) {
+  if (isUndefined(i)) return
+  if (isMap(i)) {
+    const newMap = i
+    newMap.set(key, shrinkFn(value, [i.get(key)]))
+    return newMap
+  } else if (isArray(i) && isNumber(key)) {
+    const newArray = i
+    newArray[key] = shrinkFn(value, [i[key]])
+    return newArray
+  } else if (isSet(i) && isNumber(key)) {
+    const values = [...i.values()]
+    values[key] = shrinkFn(value, [values[key]])
+    i.clear()
+    values.forEach((v) => i.add(v))
+    return i
+  } else if (isIterable(i)) {
+    throw new Error("Iterable does not support set")
+  } else {
+    if (isString(key) || isNumber(key)) {
+      const newRecord = i
+      newRecord[key] = shrinkFn(value, [i[key]])
+      return newRecord
+    }
+  }
 }
 
 /**
