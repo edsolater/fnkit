@@ -3,17 +3,11 @@ import { NumberishOption, toBigint, toNumber } from "./changeFormats"
 import { TenBigint } from "./constant"
 import { toFraction, toStringNumber } from "./numberishAtom"
 import { buildFromAnatomyNumberInfo, parseAnatomyNumberInfo } from "./parseAnatomyNumberInfo"
-import { isBigIntable, isInt, isNumberSafeInteger } from "./selfIs"
+import { isBigIntable, isInt, isNumberSafeInteger, isOne, isZero } from "./selfIs"
 import { trimZero } from "./trimZero"
 import { BasicNumberish, Fraction, Numberish } from "./types"
 
-type MathOperateOption = {
-  /**
-   * will always not number
-   * @deprecated should always auto-exact. No need to set this maunally
-   */
-  exact?: boolean
-}
+type MathOperateOption = {}
 
 /**
  * 1 + 2 = 3
@@ -23,7 +17,9 @@ type MathOperateOption = {
  * @todo should just add virculy
  */
 export function add(a: Numberish, b: Numberish, options?: MathOperateOption): Numberish {
-  if (!options?.exact && isNumberSafeInteger(a) && isNumberSafeInteger(b)) {
+  if (isZero(a)) return b
+  if (isZero(b)) return a
+  if (isNumberSafeInteger(a) && isNumberSafeInteger(b)) {
     const output = a + b
     if (!isNumberSafeInteger(output)) {
       return exactAdd(a, b)
@@ -80,7 +76,11 @@ export function addS(...params: Parameters<typeof add>): string {
  * multiply('9007199254740991.4', '112.4988') //=> '1013299107519255843.31032'
  */
 export function multiply(a: Numberish, b: Numberish, options?: MathOperateOption): Numberish {
-  if (!options?.exact && isNumberSafeInteger(a) && isNumberSafeInteger(b)) {
+  if (isZero(a) || isZero(b)) return 0
+  if (isOne(a)) return b
+  if (isOne(b)) return a
+
+  if (isNumberSafeInteger(a) && isNumberSafeInteger(b)) {
     const output = a * b
     if (!isNumberSafeInteger(output)) {
       return exactMultiply(a, b)
@@ -138,7 +138,7 @@ export function excutiveReciprocal(a: BasicNumberish): Fraction {
  * minus('9007199254740991.4', '112.4988') //=> '9007199254740878.9012'
  */
 export function minus(a: Numberish, b: Numberish, options?: MathOperateOption): Numberish {
-  if (!options?.exact && isNumberSafeInteger(a) && isNumberSafeInteger(b)) {
+  if (isNumberSafeInteger(a) && isNumberSafeInteger(b)) {
     const output = a - b
     if (!isNumberSafeInteger(output)) {
       return exactMinus(a, b)
