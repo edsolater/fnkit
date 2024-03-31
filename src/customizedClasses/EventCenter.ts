@@ -82,7 +82,7 @@ type EventCenterBase<Config extends EventConfig> = {
     options?: EventListenerOptions,
   ): Subscription
 
-  listenWhateverEvent<EventName extends keyof Config>(
+  listenAnyEvent<EventName extends keyof Config>(
     subscriptionFn: (eventName: EventName, cllbackParams: Config[EventName]) => void,
     options?: EventListenerOptions,
   ): Subscription
@@ -240,7 +240,7 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
   }
 
   const eventCenterBase = {
-    listenWhateverEvent,
+    listenAnyEvent: listenWhateverEvent,
     multiOn,
     on,
     emit,
