@@ -9,7 +9,7 @@ function genSubscribableId() {
   return subscribableId++
 }
 
-export type SubscribeFn<T> = (value: T, prevValue: T | undefined) => void
+export type SubscribeFn<T> = ((value: T, prevValue: T | undefined) => void) & { once?: boolean }
 
 export interface Subscribable<T> {
   id: IDNumber
@@ -22,6 +22,13 @@ export interface Subscribable<T> {
     options?: {
       /** if multi same key subscribeFns are registed, only last one will work  */
       key?: string
+      /** when callback is invoking, this subscribe is removed */
+      once?: boolean
+      /**
+       * @default true
+       * when immediately is true, callback will be invoked immediately if subscribable has value
+       */
+      immediately?: boolean
     },
   ) => { isWorking: () => boolean; unsubscribe(): void }
   /** set inner value */
@@ -62,53 +69,74 @@ export function createSubscribable<T>(defaultValue?: T | (() => T), options?: {}
         if (innerValue !== newValue) {
           const oldValue = innerValue
           innerValue = newValue // update holded data
-          subscribeFnsKeyedStore.forEach((cb) => invokeSubscribedCallbacks(cb, newValue, oldValue))
-          subscribeFnsKeylessStore.forEach((cb) => invokeSubscribedCallbacks(cb, newValue, oldValue))
+          invokeSubscribedCallbacks(newValue, oldValue)
         }
       })
     } else {
       if (innerValue !== newValue) {
         const oldValue = innerValue
         innerValue = newValue // update holded data
-        subscribeFnsKeyedStore.forEach((cb) => invokeSubscribedCallbacks(cb, newValue, oldValue))
-        subscribeFnsKeylessStore.forEach((cb) => invokeSubscribedCallbacks(cb, newValue, oldValue))
+        invokeSubscribedCallbacks(newValue, oldValue)
       }
     }
   }
 
-  function invokeSubscribedCallbacks(cb: SubscribeFn<T>, newValue: T | undefined, prevValue: T | undefined) {
+  function invokeSubscribedCallbacks(newValue: T | undefined, prevValue: T | undefined) {
+    subscribeFnsKeyedStore.forEach((cb, key) => {
+      invokeSubscribedCallback(cb, newValue, prevValue)
+      if (cb.once) {
+        runCleanFn(cb)
+        subscribeFnsKeyedStore.delete(key)
+      }
+    })
+    subscribeFnsKeylessStore.forEach((cb) => {
+      invokeSubscribedCallback(cb, newValue, prevValue)
+      if (cb.once) {
+        runCleanFn(cb)
+        subscribeFnsKeylessStore.delete(cb)
+      }
+    })
+  }
+
+  function runCleanFn(cb: SubscribeFn<T>) {
     const oldCleanFn = cleanFnsStore.get(cb)
     if (oldCleanFn) {
       oldCleanFn(innerValue)
       cleanFnsStore.delete(cb)
     }
+  }
+
+  function invokeSubscribedCallback(cb: SubscribeFn<T>, newValue: T | undefined, prevValue: T | undefined) {
+    runCleanFn(cb)
     const cleanFn = cb(newValue as T /*  type force */, prevValue)
     if (isFunction(cleanFn)) cleanFnsStore.set(cb, cleanFn)
   }
 
-  function subscribe(cb: any, options?: { key?: string }) {
+  function subscribe(cb: any, options?: { key?: string; once?: boolean; immediately?: boolean }) {
+    const subscribeFn = options?.once ? Object.assign(cb, { once: options.once }) : cb
     // immediately invoke callback, if has value
-    if (innerValue != null) invokeSubscribedCallbacks(cb, innerValue, undefined)
+    if ((options?.immediately ?? true) && innerValue != null)
+      invokeSubscribedCallback(subscribeFn, innerValue, undefined)
     if (options?.key) {
-      subscribeFnsKeyedStore.set(options.key, cb)
+      subscribeFnsKeyedStore.set(options.key, subscribeFn)
     } else {
-      subscribeFnsKeylessStore.add(cb)
+      subscribeFnsKeylessStore.add(subscribeFn)
     }
     return {
       isWorking() {
         if (options?.key) {
-          return subscribeFnsKeyedStore.get(options.key) === cb
+          return subscribeFnsKeyedStore.get(options.key) === subscribeFn
         } else {
-          return subscribeFnsKeylessStore.has(cb)
+          return subscribeFnsKeylessStore.has(subscribeFn)
         }
       },
       unsubscribe() {
         if (options?.key) {
           subscribeFnsKeyedStore.delete(options.key)
         } else {
-          subscribeFnsKeylessStore.delete(cb)
+          subscribeFnsKeylessStore.delete(subscribeFn)
         }
-        cleanFnsStore.delete(cb)
+        cleanFnsStore.delete(subscribeFn)
       },
     }
   }

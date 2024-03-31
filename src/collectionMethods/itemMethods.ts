@@ -164,6 +164,37 @@ export function setItem<T>(i: Collection<T>, key: unknown, value: T | ((v: T | u
   }
 }
 
+export function deleteItem<T>(i: Array<T>, key: number): Array<T>
+export function deleteItem<T>(i: Set<T>, key: number): Set<T>
+export function deleteItem<T, K>(i: Map<K, T>, key: K): Map<K, T>
+export function deleteItem<T extends object, K extends keyof any>(i: T, key: K): T
+export function deleteItem<T>(i: Collection<T>, key: any) {
+  if (isUndefined(i)) return
+  if (isMap(i)) {
+    const newMap = i
+    newMap.delete(key)
+    return newMap
+  } else if (isArray(i) && isNumber(key)) {
+    const newArray = i
+    newArray.splice(key, 1)
+    return newArray
+  } else if (isSet(i) && isNumber(key)) {
+    const values = [...i.values()]
+    values.splice(key, 1)
+    i.clear()
+    values.forEach((v) => i.add(v))
+    return i
+  } else if (isIterable(i)) {
+    throw new Error("Iterable does not support delete")
+  } else {
+    if (isString(key) || isNumber(key)) {
+      const newRecord = i
+      delete newRecord[key]
+      return newRecord
+    }
+  }
+}
+
 /**
  * get first value of Itemsable
  */
