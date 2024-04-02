@@ -6,7 +6,7 @@
 import { NumberishOption, isArray, isBigInt, isNumber, isObject, isString } from ".."
 import { OneBigint, TenBigint } from "./constant"
 import { isMathematicalExpression, isRPNItem, parseRPNToFraction, toRPN } from "./numberExpression"
-import { BasicNumberish, Fraction, Numberish } from "./types"
+import { BasicNumberish, Fraction, Numberish, type StringNumber } from "./types"
 import { shakeTailingZero } from "./trimZero"
 import { padZeroR } from "./padZero"
 
@@ -78,7 +78,7 @@ export function toFraction(from: Numberish): Fraction {
  * toString({ decimal: 7, all: '40000000' }) //=> '4'
  *
  */
-export function toStringNumber(from: Numberish | undefined, options?: NumberishOption): string {
+export function toStringNumber(from: Numberish | undefined, options?: NumberishOption): StringNumber {
   if (from === undefined) return "0"
   const stringNumber = (() => {
     if (isNumber(from))
