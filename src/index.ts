@@ -37,6 +37,7 @@ export * from "./pipeAsyncDo"
 export * from "./pipeDo"
 export * from "./promisify" // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
 export * from "./runTasks"
+export * from "./shallowMap"
 export * from "./switchCase" // FP style switch
 export * from "./tableList"
 export * from "./toPrimitiveValue"
