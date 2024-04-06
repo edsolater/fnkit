@@ -102,8 +102,15 @@ export function get<T>(i: Collection<T>, key: string | number): T | undefined {
   return i[key]
 }
 
-/** mutate, no key */
+export function getFirstItem<T>(i: Collection<T>) {
+  return getByIndex(i, 0)
+}
 
+export function getLastItem<T>(i: Collection<T>) {
+  return getByIndex(i, count(i) - 1)
+}
+
+/** mutate, no key */
 export function addItem<T, U>(i: Array<T>, value: U): Array<T | U>
 export function addItem<T, U>(i: Set<T>, value: U): Set<T | U>
 export function addItem<T, K, U>(i: Map<K, T>, value: U): Map<K | number, T | U>

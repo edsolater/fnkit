@@ -54,21 +54,6 @@ export function createRange(start: number, stop: number, step = 1): number[] {
   )
 }
 
-/**
- * @example
- * getFirstItem([2,3]) //=> 2
- */
-export function getFirstItem<T>(arr: T[]): T | undefined {
-  return arr[0]
-}
-
-/**
- * @example
- * getLastItem([2,3]) //=> 3
- */
-export function getLastItem<T>(arr: T[]): T | undefined {
-  return arr.length > 0 ? arr[arr.length - 1] : undefined
-}
 
 /**
  * 以${groupSize}为一组，进行分割
