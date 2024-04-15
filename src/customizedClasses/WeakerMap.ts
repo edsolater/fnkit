@@ -4,16 +4,25 @@ const createWrapperRef = <T extends object>(v: T) => new WeakRef(v)
 const createWrapperRefIfNeeded = <T>(v: T) => (isObject(v) ? createWrapperRef(v) : v)
 const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() : v)
 
-/** it wont prevent GC for both key and value , and weakMap can be traverse
+/** 
+ * it wont prevent GC for both key and value , and weakMap can be traverse
+ * 
+ * ! it relay on WebAPI's {@link FinalizationRegistry} and WEAKREF
+ * 
  * @todo test it!!!
  */
 export class WeakerMap<K, V> implements Map<K, V> {
-  private innerKeys: WeakMap<K & object, WeakRef<K & object>> = new WeakMap()
+  private innerKeyMap: WeakMap<K & object, WeakRef<K & object>> = new WeakMap()
   // could find by value
   private reverseInnerKeys: WeakMap<WeakRef<K & object>, K & object> = new WeakMap()
 
   // if key is object , it wrap weakRef to allow GC
-  private innerMap: Map<K | WeakRef<K & object>, V | WeakRef<V & object>> = new Map() // must have a Map to looply access key
+  private innerValueMap: Map<K | WeakRef<K & object>, V | WeakRef<V & object>> = new Map() // must have a Map to looply access key
+
+  // to release GC'ed object's hold value
+  private finalizationRegistry = new FinalizationRegistry((innerKey: any) => {
+    this.innerValueMap.delete(innerKey)
+  })
 
   constructor()
   constructor(entries?: readonly (readonly [K, V])[] | null) {
@@ -26,12 +35,13 @@ export class WeakerMap<K, V> implements Map<K, V> {
    */
   private getInnerKey(key: K) {
     if (isObject(key)) {
-      if (!this.innerKeys.has(key)) {
+      if (!this.innerKeyMap.has(key)) {
         const refedValue = createWrapperRef(key)
-        this.innerKeys.set(key, refedValue)
+        this.innerKeyMap.set(key, refedValue)
         this.reverseInnerKeys.set(refedValue, key)
+        this.finalizationRegistry.register(key, refedValue)
       }
-      return this.innerKeys.get(key)!
+      return this.innerKeyMap.get(key)!
     } else {
       return key
     }
@@ -39,17 +49,17 @@ export class WeakerMap<K, V> implements Map<K, V> {
 
   set(key: K, value: V): this {
     const innerKey = this.getInnerKey(key)
-    this.innerMap.set(innerKey, createWrapperRefIfNeeded(value))
+    this.innerValueMap.set(innerKey, createWrapperRefIfNeeded(value))
     return this
   }
 
   get(key: K): V | undefined {
     const innerKey = this.getInnerKey(key)
-    return derefWrapperRefIfNeeded(this.innerMap.get(innerKey))
+    return derefWrapperRefIfNeeded(this.innerValueMap.get(innerKey))
   }
 
   forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void {
-    for (const [innerKey, refVlue] of this.innerMap.entries()) {
+    for (const [innerKey, refVlue] of this.innerValueMap.entries()) {
       const trueKey = derefWrapperRefIfNeeded(innerKey)
       const trueValue = derefWrapperRefIfNeeded(refVlue)
       if (trueKey != null) {
@@ -60,7 +70,7 @@ export class WeakerMap<K, V> implements Map<K, V> {
 
   get size() {
     let count = 0
-    for (const innerKey of this.innerMap.keys()) {
+    for (const innerKey of this.innerValueMap.keys()) {
       const trueKey = derefWrapperRefIfNeeded(innerKey)
       if (trueKey != null) {
         count++
@@ -72,17 +82,17 @@ export class WeakerMap<K, V> implements Map<K, V> {
   delete(key: K): boolean {
     const innerKey = this.getInnerKey(key)
     if (isObject(key)) {
-      const ref = this.innerKeys.get(key)
+      const ref = this.innerKeyMap.get(key)
       if (ref) {
         this.reverseInnerKeys.delete(ref)
       }
-      this.innerKeys.delete(key)
+      this.innerKeyMap.delete(key)
     }
-    return this.innerMap.delete(innerKey)
+    return this.innerValueMap.delete(innerKey)
   }
 
   clear(): void {
-    return this.innerMap.clear()
+    return this.innerValueMap.clear()
   }
 
   has(key: K): boolean {
@@ -102,7 +112,7 @@ export class WeakerMap<K, V> implements Map<K, V> {
   }
 
   *entries(): IterableIterator<[K, V]> {
-    for (const [innerKey, innerValue] of this.innerMap.entries()) {
+    for (const [innerKey, innerValue] of this.innerValueMap.entries()) {
       if (isObject(innerKey)) {
         const trueKey = this.reverseInnerKeys.get(innerKey)
         if (!trueKey) continue
