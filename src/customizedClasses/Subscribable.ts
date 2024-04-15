@@ -32,7 +32,13 @@ export interface Subscribable<T> {
     },
   ) => { isWorking: () => boolean; unsubscribe(): void }
   /** set inner value */
-  set(dispatcher: SubscribableSetValueDispatcher<T>): void
+  set(
+    dispatcher: SubscribableSetValueDispatcher<T>,
+    setOptions?: {
+      /** even input same value, will invoke all subscribe callbacks */
+      force?: boolean
+    },
+  ): void
   /** return new subscribable base on this subscribable */
   pipe: <R>(fn: (value: T) => R) => Subscribable<R>
   /** unsubscribe if it subscribe from others */
@@ -62,18 +68,25 @@ export function createSubscribable<T>(defaultValue?: T | (() => T), options?: {}
 
   let innerValue = shrinkFn(defaultValue) as T | undefined
 
-  function changeValue(dispatcher: SubscribableSetValueDispatcher<T | undefined>) {
+  function changeValue(
+    dispatcher: SubscribableSetValueDispatcher<T | undefined>,
+    setOptions?: {
+      /** even input same value, will invoke all subscribe callbacks */
+      force?: boolean
+    },
+  ) {
+    const shouldInvokeValue = (newValue, oldValue) => oldValue !== newValue || setOptions?.force
     const newValue = isFunction(dispatcher) ? dispatcher(innerValue) : dispatcher
     if (isPromise(newValue)) {
       newValue.then((newValue) => {
-        if (innerValue !== newValue) {
+        if (shouldInvokeValue(newValue, innerValue)) {
           const oldValue = innerValue
           innerValue = newValue // update holded data
           invokeSubscribedCallbacks(newValue, oldValue)
         }
       })
     } else {
-      if (innerValue !== newValue) {
+      if (shouldInvokeValue(newValue, innerValue)) {
         const oldValue = innerValue
         innerValue = newValue // update holded data
         invokeSubscribedCallbacks(newValue, oldValue)
