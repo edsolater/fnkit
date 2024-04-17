@@ -203,7 +203,7 @@ export function mapCollectionEntries<C extends Items, U, K = GetCollectionKey<C>
     ? // @ts-ignore
       collection.map((i, idx, source) => mapCallback(i, idx, source)?.value) // use build-in array methods if possiable
     : entryToCollection(
-        toEntries(collection, (v, k) => mapCallback(v, k, collection)),
+        toEntries(collection, (v, k) => mapCallback(v, k as any, collection)),
         getType(collection),
       )
 }
@@ -228,7 +228,10 @@ export function flatMapCollectionEntries<C extends Items, U, K = GetCollectionKe
           return isArray(result) ? shakeUndefinedItem(result.map((i) => i?.value)) : result?.value
         }),
       )
-    : entryToCollection(toFlatEntries(collection, (v, k) => mapCallback(v, k, collection)) as any, getType(collection))
+    : entryToCollection(
+        toFlatEntries(collection, (v, k) => mapCallback(v, k as any, collection)) as any,
+        getType(collection),
+      )
 }
 
 export function toIterableValue<C extends Collection>(collection: C): IterableIterator<GetCollectionValue<C>> {
