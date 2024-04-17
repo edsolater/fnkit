@@ -1,4 +1,4 @@
-import { entryToCollection, toEntries, toEntry } from "./entries"
+import { toEntries, toEntry } from "./entries"
 
 test("fnkit:entries", () => {
   const entry1 = toEntry("hello", 2)
@@ -12,11 +12,4 @@ test("fnkit:entries", () => {
 
   // toEntries()
   expect([...toEntries({ a: 1, b: 2 })]).toEqual([toEntry(1, "a"), toEntry(2, "b")])
-
-  expect(entryToCollection(toEntries({ a: 1, b: 2 }), "Map")).toEqual(
-    new Map([
-      ["a", 1],
-      ["b", 2],
-    ]),
-  )
 })

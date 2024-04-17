@@ -1,4 +1,4 @@
-import { map, shakeNil } from ".."
+import { getEntryKey, getEntryValue, map, shakeNil } from ".."
 import { isArray, isMap } from "../dataType"
 import { AnyArr, AnyObj, SKeyof, Valueof } from "../typings"
 import { toEntries } from "./entries"
@@ -25,8 +25,8 @@ export function groupBy(collection, predicate) {
     isArray(collection)
       ? jsArrayGroupBy(collection, predicate)
       : isMap(collection)
-        ? jsMapGroupBy(collection, predicate)
-        : jsObjectGroupBy(collection, predicate),
+      ? jsMapGroupBy(collection, predicate)
+      : jsObjectGroupBy(collection, predicate),
   )
 }
 
@@ -46,7 +46,9 @@ function jsObjectGroupBy<O extends AnyObj, GroupName extends string | number | u
   predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => GroupName,
 ): Record<NonNullable<GroupName>, Partial<O> | undefined> {
   const entries = [...toEntries(obj)]
-  const groupedEntries = jsArrayGroupBy(entries, ({ key: k, value: v }) => predicate(v, k as SKeyof<O>, obj))
+  const groupedEntries = jsArrayGroupBy(entries, (entry) =>
+    predicate(getEntryValue(entry), getEntryKey(entry) as SKeyof<O>, obj),
+  )
   //@ts-expect-error inner core , no need to worry
   return map(groupedEntries, (entries) => (entries ? Object.fromEntries(shakeNil(entries)) : undefined))
 }
@@ -56,7 +58,9 @@ function jsMapGroupBy<K, V, GroupName extends string | number | undefined>(
   predicate: (value: V, key: K, map: Map<K, V>) => GroupName,
 ): Record<NonNullable<GroupName>, Map<K, V> | undefined> {
   const entries = [...toEntries(collection)]
-  const groupedEntries = jsArrayGroupBy(entries, ({ key: k, value: v }) => predicate(v, k, collection))
+  const groupedEntries = jsArrayGroupBy(entries, (entry) =>
+    predicate(getEntryValue(entry), getEntryKey(entry), collection),
+  )
   //@ts-expect-error inner core , no need to worry
   return map(groupedEntries, (entries) => (entries ? new Map(shakeNil(entries)) : undefined))
 }

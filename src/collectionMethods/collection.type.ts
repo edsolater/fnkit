@@ -1,6 +1,14 @@
-export type Entry<Value = any, Key = any> = { key: Key; value: Value }
-export type GetEntryValue<E extends Entry> = E["value"]
-export type GetEntryKey<E extends Entry> = E["key"]
+export type Entry<Value = any, Key = any> = { key: Key; value: Value } | [Key, Value]
+export type GetEntryValue<E extends Entry> = E extends [infer K, infer V]
+  ? V
+  : E extends { key: infer K; value: infer V }
+  ? V
+  : never
+export type GetEntryKey<E extends Entry> = E extends [infer K, infer V]
+  ? K
+  : E extends { key: infer K; value: infer V }
+  ? K
+  : never
 export type ItemEntry<Item = any> = Entry<Item, number>
 
 export type GetCollectionKey<T extends Collection> = T extends Array<any>
@@ -21,7 +29,7 @@ export type GetCollectionValue<T extends Collection> = T extends Array<infer V>
   ? V
   : T extends Map<any, infer V>
   ? V
-  : T extends Iterable<infer V> 
+  : T extends Iterable<infer V>
   ? V
   : T extends Record<keyof any, infer V>
   ? V
