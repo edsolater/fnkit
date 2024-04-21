@@ -1,42 +1,41 @@
 import { createCurrentTimestamp } from "./date/parseDate"
+import type { AnyFn } from "./typings"
 
 /**
  *
  * default {@link throttle}'s delay is 400ms
  * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
  */
-export function throttle<F extends (...args: any[]) => void>(
-  fn: F,
-  options?: {
-    delay?: number
-  },
-): F {
-  const middleParams = [] as Parameters<F>[]
-  let currentTimoutId: any | null = null
-  let prevDurationTimestamp: number | null = null
-  let remainDelayTime = options?.delay ?? 400
+export function throttle(fn: AnyFn, options?: { rAF?: boolean; /** option for setTimeout */ delay?: number }) {
+  if (options?.rAF) {
+    let requestAnimationFrameId: number | undefined = undefined
+    return function throttled(...args: any[]) {
+      if (requestAnimationFrameId) cancelAnimationFrame(requestAnimationFrameId)
+      requestAnimationFrameId = requestAnimationFrame(() => {
+        requestAnimationFrameId = undefined
+        fn(...args)
+      })
+    }
+  } else {
+    let timoutId: any | undefined = undefined
+    return function throttled(...args: any[]) {
+      if (timoutId) clearTimeout(timoutId)
+      timoutId = setTimeout(() => {
+        timoutId = undefined
+        fn(...args)
+      }, options?.delay ?? 100)
+    }
+  }
+}
 
-  const invokeFn = () => {
-    fn(...middleParams[middleParams.length - 1])
-    middleParams.length = 0 // clear middleParams
-    currentTimoutId = null // clear Timeout Id
-    remainDelayTime = options?.delay ?? 400 // reset remain time
-  }
-  // @ts-expect-error force
-  return (...args: Parameters<F>) => {
-    middleParams.push(args)
-    const currentTimestamp = createCurrentTimestamp()
-    if (currentTimoutId) {
-      clearTimeout(currentTimoutId)
-      remainDelayTime -= prevDurationTimestamp ? currentTimestamp - prevDurationTimestamp : 0
-    }
-    if (remainDelayTime <= 0) {
-      invokeFn()
-    } else {
-      currentTimoutId = setTimeout(invokeFn, remainDelayTime)
-    }
-    prevDurationTimestamp = currentTimestamp
-  }
+/** need DOM */
+function cancelAnimationFrame(requestAnimationFrameId: number) {
+  globalThis.cancelAnimationFrame?.(requestAnimationFrameId)
+}
+
+/** need DOM */
+function requestAnimationFrame(fn: AnyFn) {
+  return globalThis.requestAnimationFrame?.(fn)
 }
 
 /**
