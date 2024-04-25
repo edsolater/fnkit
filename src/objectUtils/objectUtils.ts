@@ -1,7 +1,7 @@
-import { flap, unifyItem } from "./collectionMethods"
-import { isObjectLike, isFunction, isObject } from "./dataType"
-import { AnyObj } from "./typings/constants"
-import { SKeyof, Valueof } from "./typings/tools"
+import { flap, unifyItem } from "../collectionMethods"
+import { isObjectLike, isFunction, isObject } from "../dataType"
+import { AnyObj } from "../typings/constants"
+import { SKeyof, Valueof } from "../typings/tools"
 
 /** 给配置对象添加默认值 */
 export function addDefault<T extends object, W extends Partial<T>>(initConfig: T, defaultConfig: W): T & W {
@@ -140,3 +140,4 @@ export function cloneObject<T extends AnyObj>(original: T): T {
     },
   ) as T
 }
+

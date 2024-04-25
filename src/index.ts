@@ -28,7 +28,7 @@ export * from "./oldMethodsArray"
 export * from "./oldMethodsFunctionFactory"
 export * from "./oldMethodsMagic"
 export * from "./oldMethodsMath"
-export * from "./oldMethodsObject"
+export * from "./objectUtils"
 export * from "./oldMethodsString"
 export * from "./pickProperty" // FP style utils to get property easily
 export * from "./pipe"

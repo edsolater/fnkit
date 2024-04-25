@@ -1,5 +1,5 @@
 import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject, isString } from "../dataType"
-import { cloneObject } from "../oldMethodsObject"
+import { cloneObject } from "../objectUtils/objectUtils"
 import { shrinkFn } from "../wrapper"
 import { Collection } from "./collection.type"
 import { pick } from "./pick"
