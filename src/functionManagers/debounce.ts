@@ -1,4 +1,4 @@
-import { createCurrentTimestamp } from "../"
+import { createCurrentTimestamp } from ".."
 
 const defaultDebouneDelay = 400
 const defaultThrottleDelay = 400

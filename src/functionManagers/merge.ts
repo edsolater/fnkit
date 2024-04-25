@@ -1,4 +1,4 @@
-import { every } from "../"
+import { every } from ".."
 import { isArray, isFunction, isObject } from "../dataType"
 import { mergeObjectsWithConfigs } from "../mergeObjects"
 import { AnyArr, AnyFn, AnyObj } from "../typings/constants"
