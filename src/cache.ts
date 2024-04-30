@@ -6,10 +6,23 @@ type CachedFunction<F extends AnyFunction> = F
 /**
  * make function cacheable
  */
-export function cache<F extends AnyFunction>(originalFn: F): CachedFunction<F> {
+export function cache<F extends AnyFunction>(
+  originalFn: F,
+  options?: {
+    getCacheValue?: (args: Parameters<F>) => ReturnType<F> | undefined
+    onResult?: (args: Parameters<F>, result: ReturnType<F>) => void
+  },
+): CachedFunction<F> {
   const cache = createShallowMap<Parameters<F>, ReturnType<F>>()
   //@ts-expect-error
   return (...args: Parameters<F>) => {
+    if (options?.getCacheValue) {
+      const cacheValue = options.getCacheValue(args)
+      if (cacheValue) {
+        cache.set(args, cacheValue)
+        return cacheValue
+      }
+    }
     if (cache.has(args)) return cache.get(args)
     else {
       //@ts-expect-error
