@@ -1,3 +1,5 @@
+import { isFunction } from "./dataType"
+
 export function createTimeoutMap<K, V>({ maxAgeMs }: { maxAgeMs: number }) {
   const innerMap = new Map<K, V>()
   const timeoutMap = new Map<K, number | NodeJS.Timeout>()
@@ -24,7 +26,8 @@ export function createTimeoutMap<K, V>({ maxAgeMs }: { maxAgeMs: number }) {
           return target.set(key, value)
         }
       } else {
-        return Reflect.get(target, key)
+        const result = target[key]
+        return isFunction(result) ? result.bind(target) : result
       }
     },
   })
