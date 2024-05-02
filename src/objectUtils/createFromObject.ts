@@ -1,10 +1,10 @@
-import { isArray, isObject, isObjectLike } from "../dataType"
-import { getByPath, setByPath, travelObject } from "./travelObject"
+import { isArray } from "../dataType"
+import { setByPath, travelObject } from "./travelObject"
 
 /**
  * only walk through string enumtable object key (not symbol)
  */
-export function rewriteObject(
+export function createFromObject(
   obj: object,
   onTravelValue: (info: {
     key: keyof any

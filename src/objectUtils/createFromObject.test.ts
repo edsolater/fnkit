@@ -1,9 +1,8 @@
-import { rewriteObject } from "./rewriteObject"
-import { getByPath, travelObject } from "./travelObject"
+import { createFromObject } from "./createFromObject"
 
 test("basic usage", () => {
   const obj = { a: "a", b: "b", c: { d: "d" } }
-  const rewrited = rewriteObject(obj, ({ keyPaths, parentPath, key, value }) => {
+  const rewrited = createFromObject(obj, ({ keyPaths, parentPath, key, value }) => {
     if (key === "a") {
       expect(value).toBe("a")
       return { key, value: "a" }
