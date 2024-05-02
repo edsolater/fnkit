@@ -1,23 +1,23 @@
-import { getByPath, travelWholeObject } from "./travelWholeObject"
+import { getByPath, travelObject } from "./travelObject"
 
 test("basic usage", () => {
   const obj = { a: "a", b: "b", c: { d: "d" } }
-  travelWholeObject(obj, ({ keyPaths, parentPath, currentKey, value }) => {
-    if (currentKey === "a") {
+  travelObject(obj, ({ keyPaths, parentPath, key, value }) => {
+    if (key === "a") {
       expect(value).toBe("a")
     }
-    if (currentKey === "b") {
+    if (key === "b") {
       expect(value).toBe("b")
     }
 
-    if (currentKey === "d") {
+    if (key === "d") {
       expect(value).toBe("d")
       expect(keyPaths).toEqual(["c", "d"])
     }
 
     if (keyPaths.length === 2) {
       const targetObj = getByPath(obj, parentPath)
-      targetObj[currentKey] = "hello world"
+      targetObj[key] = "hello world"
     }
   })
   expect(obj.c.d).toBe("hello world")

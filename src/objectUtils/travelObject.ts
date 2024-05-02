@@ -1,12 +1,13 @@
 import { isObject, isObjectLike } from "../dataType"
 
 /**
+ * won't create a new object
  * only walk through string enumtable object key (not symbol)
  */
-export function travelWholeObject(
+export function travelObject(
   obj: object,
   onTravelValue: (info: {
-    currentKey: keyof any
+    key: keyof any
     /* path include self */
     keyPaths: (keyof any)[]
     /* path execpt self */
@@ -18,23 +19,23 @@ export function travelWholeObject(
     needDeepWalk(needTo: boolean): void
   }) => void,
 ) {
-  function walk(obj: object, keyPaths: (keyof any)[] = []) {
-    Object.keys(obj).forEach((key) => {
-      const value = Reflect.get(obj, key)
-      const isObjectValue = isObject(value) // by default, only object can deep walk
-      let needDeepWalk = isObjectValue
+  function walk(obj: object, parentKeyPaths: (keyof any)[] = []) {
+    Object.entries(obj).forEach(([key, value]) => {
+      const canDeepWalk = isObject(value) // by default, only object|array can deep walk
+      let needDeepWalk = canDeepWalk
+      const keyPaths = parentKeyPaths.concat(key)
       onTravelValue({
-        keyPaths: keyPaths.concat(key),
-        parentPath: keyPaths,
+        key,
+        keyPaths,
+        parentPath: parentKeyPaths,
         value,
-        currentKey: key,
-        canDeepWalk: isObjectValue,
+        canDeepWalk,
         needDeepWalk(needTo: boolean) {
           needDeepWalk = needTo
         },
       })
       if (needDeepWalk) {
-        walk(value, keyPaths.concat(key)) // go deep
+        walk(value, keyPaths) // go deep
       }
     })
   }
