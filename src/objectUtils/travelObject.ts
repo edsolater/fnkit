@@ -1,5 +1,4 @@
-import { isArray, isObject, isObjectLike, isObjectLiteral } from "../dataType"
-
+import { isArray, isObjectLike, isObjectLiteral } from "../dataType"
 /**
  * won't create a new object
  * only walk through string enumtable object key (not symbol)
@@ -84,6 +83,7 @@ export function setByPath({
   if (path.length === 0) return false
   if (path.length === 1) {
     const key = path[0]
+    //TODO: this can use immer.produce to handle Reflect change
     return Reflect.set(obj, key, value)
   } else {
     try {
@@ -117,6 +117,7 @@ function recursiveSet({
     const key = path[0]
     const prevValue = Reflect.get(obj, key)
     const mergedValue = mergeRule(prevValue, value)
+    //TODO: this can use immer.produce to handle Reflect change
     Reflect.set(obj, key, mergedValue)
     return obj
   }
