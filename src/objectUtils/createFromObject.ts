@@ -4,7 +4,7 @@ import { setByPath, travelObject } from "./travelObject"
 /**
  * only walk through string enumtable object key (not symbol)
  */
-export function createFromObject(
+export function createObjectFrom(
   obj: object,
   onTravelValue: (info: {
     key: keyof any
@@ -18,12 +18,14 @@ export function createFromObject(
     /** only useful when canDeepWalk is true */
     needDeepWalk(needGoDeep: boolean): void
   }) => any,
-) {
-  const object = isArray(obj) ? [...obj] : { ...obj }
+): any {
+  const object = isArray(obj) ? [] : {}
   travelObject(obj, ({ keyPaths, parentPath, key, value, canDeepWalk, needDeepWalk }) => {
     const newValue = onTravelValue({ keyPaths, parentPath, key, value, canDeepWalk, needDeepWalk })
     if (newValue !== undefined && newValue !== value) {
-      setByPath(object, keyPaths, newValue)
+      setByPath({ obj: object, path: keyPaths, value: newValue })
+    } else {
+      setByPath({ obj: object, path: keyPaths, value: value })
     }
   })
   return object

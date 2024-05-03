@@ -1,4 +1,4 @@
-import { isObject, isObjectLike } from "../dataType"
+import { isArray, isObject, isObjectLike, isObjectLiteral } from "../dataType"
 
 /**
  * won't create a new object
@@ -21,7 +21,7 @@ export function travelObject(
 ) {
   function walk(obj: object, parentKeyPaths: (keyof any)[] = []) {
     Object.entries(obj).forEach(([key, value]) => {
-      const canDeepWalk = isObject(value) // by default, only object|array can deep walk
+      const canDeepWalk = isObjectLiteral(value) || isArray(value) // by default, only objectLiteral|array can deep walk
       let needDeepWalk = canDeepWalk
       const keyPaths = parentKeyPaths.concat(key)
       onTravelValue({
@@ -59,6 +59,7 @@ export function getByPath(obj: object, path: (keyof any)[]): any {
 }
 
 /**
+ *
  * if  path is not reachable, this will create a new literal object. see example for detail
  * @param obj
  * @param path
@@ -69,19 +70,24 @@ export function getByPath(obj: object, path: (keyof any)[]): any {
  * setByPath(obj,['a','b','c'],2) // obj.a.b.c === 2
  * setByPath(obj,['a','newKey','d'],2) // obj --> {a: {b: {c: 1}, newKey: {d: 2}}}
  */
-export function setByPath(
-  obj: object,
-  path: (keyof any)[],
-  value: any,
-  mergeRule: (prev: any, input: any) => any = () => value,
-): boolean {
+export function setByPath({
+  obj,
+  path,
+  value,
+  mergeRule = () => value,
+}: {
+  obj: object
+  path: (keyof any)[]
+  value: any
+  mergeRule?: (prev: any, input: any) => any
+}): boolean {
   if (path.length === 0) return false
   if (path.length === 1) {
     const key = path[0]
     return Reflect.set(obj, key, value)
   } else {
     try {
-      recursiveSet(obj, path, value, mergeRule)
+      recursiveSet({ obj, path, value, mergeRule })
       return true
     } catch {
       return false
@@ -89,24 +95,36 @@ export function setByPath(
   }
 }
 
-/** even not reachable will be ok
- *  used in {@link setByPath}
+/**
+ *
+ * even not reachable will be ok
+ * used in {@link setByPath}
  */
-function recursiveSet(obj: object, path: (keyof any)[], value: any, mergeRule: (prev: any, input: any) => any): object {
+function recursiveSet({
+  obj,
+  path,
+  value,
+  mergeRule,
+}: {
+  obj: object
+  path: (keyof any)[]
+  value: any
+  mergeRule: (prev: any, input: any) => any
+}): object {
   if (!isObjectLike(obj)) return obj
   if (path.length === 0) return obj
   if (path.length === 1) {
-    const pathKey = path[0]
-    const prevValue = Reflect.get(obj, pathKey)
+    const key = path[0]
+    const prevValue = Reflect.get(obj, key)
     const mergedValue = mergeRule(prevValue, value)
-    Reflect.set(obj, pathKey, mergedValue)
+    Reflect.set(obj, key, mergedValue)
     return obj
   }
   const [currentKey, ...restPath] = path
   if (currentKey in obj) {
-    return recursiveSet(Reflect.get(obj, currentKey), restPath, value, mergeRule)
+    return recursiveSet({ obj: Reflect.get(obj, currentKey), path: restPath, value, mergeRule })
   } else {
-    Reflect.set(obj, currentKey, recursiveSet({}, restPath, value, mergeRule))
+    Reflect.set(obj, currentKey, recursiveSet({ obj: {}, path: restPath, value, mergeRule }))
     return obj
   }
 }
