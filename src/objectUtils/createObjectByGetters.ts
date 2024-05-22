@@ -1,5 +1,5 @@
-import { isFunction } from "./dataType"
-import { AnyFn } from "./typings"
+import { isFunction } from "../dataType"
+import { AnyFn } from "../typings"
 
 /**
  *

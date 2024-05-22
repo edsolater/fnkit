@@ -1,4 +1,4 @@
-import { isArray } from "../dataType"
+import { isArray, isIterable } from "../dataType"
 import { AnyObj } from "../typings"
 
 /**
@@ -12,9 +12,19 @@ import { AnyObj } from "../typings"
  */
 export function concat<T, D>(arr1: T[] | undefined, arr2: D[] | undefined): (T | D)[]
 export function concat<T extends AnyObj | undefined, D extends AnyObj | undefined>(obj1: T, obj2: D): T & D
+export function concat<T, U>(ii1: IterableIterator<T>, ii2: IterableIterator<U>): IterableIterator<T | U>
 export function concat(collection, collection2) {
   if (isArray(collection) || (collection == null && isArray(collection2))) {
     return (collection ?? []).concat(collection2 ?? [])
+  } else if (isIterable(collection) && isIterable(collection2)) {
+    return (function* () {
+      for (const item of collection) {
+        yield item
+      }
+      for (const item of collection2) {
+        yield item
+      }
+    })()
   } else {
     return { ...collection, ...collection2 }
   }
