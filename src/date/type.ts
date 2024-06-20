@@ -1,7 +1,8 @@
 import { Numberish } from "../numberish/types"
 
-export type TimeStamp = string | number | Date
-export type TimeStampLiteral = Exclude<TimeStamp, Date>
+export type TimeStampVerbose = TimeStamp | TimeStampString | Date
+export type TimeStamp = number
+export type TimeStampString = string
 
 export type ParsedDurationInfo = Record<
   "days" | "hours" | "minutes" | "seconds" | "milliseconds" | "full" | "exact",

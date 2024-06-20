@@ -1,7 +1,7 @@
 import { clamp, map } from ".."
 import { getType } from "../dataType"
 import { Numberish } from "../numberish/types"
-import { DateParam, DateInfoAtom, TimeStamp } from "./type"
+import { DateParam, DateInfoAtom, TimeStampVerbose } from "./type"
 
 export const createDate: {
   (): Date
@@ -63,9 +63,9 @@ export const getISO = (value?: DateParam) => createDate(value).toISOString()
 export const createCurrentDate = () => createDate()
 export const createCurrentTimestamp = () => getTime()
 
-export const isCurrentDateBefore = (timestamp: TimeStamp): boolean => isDateBefore(undefined, timestamp)
-export const isCurrentDateAfter = (timestamp: TimeStamp): boolean => isDateAfter(undefined, timestamp)
-export const isSameDate = (tested: TimeStamp, matched?: TimeStamp | undefined) => getTime(tested) === getTime(matched)
+export const isCurrentDateBefore = (timestamp: TimeStampVerbose): boolean => isDateBefore(undefined, timestamp)
+export const isCurrentDateAfter = (timestamp: TimeStampVerbose): boolean => isDateAfter(undefined, timestamp)
+export const isSameDate = (tested: TimeStampVerbose, matched?: TimeStampVerbose | undefined) => getTime(tested) === getTime(matched)
 
 export const isDateBefore = (tested: string | number | Date | undefined, matched?: string | number | Date): boolean =>
   getTime(tested) < getTime(matched)

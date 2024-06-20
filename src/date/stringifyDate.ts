@@ -1,12 +1,12 @@
 import { getISO, createDate, getYear } from "./parseDate"
-import { TimeStamp } from "./type"
+import { TimeStampVerbose } from "./type"
 
 /**
  * @example
  * toUTC() // => '2021-09-09 10:25 UTC'
  * toUTC('Thu,  Number(09) Sep 2021 10:26:33 GMT') // => '2021-09-09 10:25 UTC'
  */
-export function toUTC(timestamp?: TimeStamp) {
+export function toUTC(timestamp?: TimeStampVerbose) {
   const utcString = getISO(timestamp) // '2021-09-09T10:32:32.498Z'
   const matchInfo = utcString.match(/^(?<date>[\d-]+)T(?<hour>\d+):(?<minutes>\d+):(?<seconds>\d+)/)
   const { date, hour, minutes } = matchInfo?.groups ?? {}
