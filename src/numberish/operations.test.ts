@@ -1,5 +1,5 @@
 import { toStringNumber } from "./numberishAtom"
-import { add, applyDecimal, minus, multiply, pow } from "./operations"
+import { add, applyDecimal, minus, mul, multiply, pow } from "./operations"
 
 test("numberish: toStringNumber", () => {
   expect(toStringNumber(3.22)).toBe("3.22")
@@ -25,6 +25,7 @@ test("numberish: operator add", () => {
 
 test("operator:mul", () => {
   expect(toStringNumber(multiply(add(90, 10), "112.4988"))).toBe("11249.88")
+  expect(toStringNumber(multiply(0.1, 3))).toBe("0.3")
 })
 
 test("pow: (2 ^ 3 = 8)", () => {

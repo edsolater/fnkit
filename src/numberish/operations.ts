@@ -3,7 +3,7 @@ import { NumberishOption, toBigint, toNumber } from "./changeFormats"
 import { TenBigint } from "./constant"
 import { toFraction, toStringNumber } from "./numberishAtom"
 import { buildFromAnatomyNumberInfo, parseAnatomyNumberInfo } from "./parseAnatomyNumberInfo"
-import { isBigIntable, isInt, isNumberSafeInteger, isOne, isZero } from "./selfIs"
+import { isBigIntable, isInt, isNegative, isNumberSafeInteger, isOne, isZero } from "./selfIs"
 import { trimZero } from "./trimZero"
 import { BasicNumberish, Fraction, Numberish } from "./types"
 
@@ -274,7 +274,7 @@ export function excutivePow(a: Numberish, b: Numberish): Fraction {
  */
 export function applyDecimal(n: Numberish, decimal: number): Numberish {
   if (decimal === 0) return n
-
+  if (!isInt(n)) throw new Error("applyDecimal only support int decimal")
   if (isBigIntable(n)) {
     const nString = isString(n) ? n : String(BigInt(n))
     const nCount = nString.length
@@ -288,4 +288,17 @@ export function applyDecimal(n: Numberish, decimal: number): Numberish {
   }
   const anatomy = parseAnatomyNumberInfo(n)
   return buildFromAnatomyNumberInfo({ ...anatomy, e: (anatomy.e ?? 0) + decimal })
+}
+
+/**
+ * @example
+ * -1 => 1
+ * 1 => 1
+ */
+export function abs(n: Numberish): Numberish {
+  if (isNegative(n)) {
+    if (isString(n)) return n.slice(1)
+    return minus(n, -1)
+  }
+  return n
 }

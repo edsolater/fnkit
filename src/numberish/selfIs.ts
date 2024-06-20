@@ -1,8 +1,8 @@
 import { isBigInt, isNaN, isNumber, isString } from "../dataType"
 import { ZeroBigint } from "./constant"
 import { toFraction } from "./numberishAtom"
-import { mod } from "./operations"
-import { impureNumberish } from "./parseNumberish"
+import { applyDecimal, mod } from "./operations"
+import { enpureNumberish } from "./parseNumberish"
 import { Numberish, type StringNumber } from "./types"
 
 export function isMeaningfulNumber<T extends Numberish | undefined>(n: T): n is NonNullable<T> {
@@ -32,7 +32,7 @@ export function isBigIntable(v: any): v is bigint | string | number {
 
 export function isInt<T extends Numberish | undefined>(v: T): v is NonNullable<T> {
   if (v == null) return false
-  const pure = impureNumberish(v)
+  const pure = enpureNumberish(v)
   if (isBigInt(pure)) return true
   if (isNumber(pure)) return Number.isInteger(pure)
   if (isStringableNumber(pure)) return Number.isInteger(Number(pure))
@@ -45,7 +45,7 @@ export function isInt<T extends Numberish | undefined>(v: T): v is NonNullable<T
 
 export function isZero<T extends Numberish | undefined>(v: T): v is NonNullable<T> {
   if (v == null) return false
-  const pure = impureNumberish(v)
+  const pure = enpureNumberish(v)
   if (pure === 0) return true
   if (pure === 0n) return true
   if (pure === "0") return true
@@ -60,13 +60,13 @@ export function notZero<T extends Numberish | undefined>(a: T): a is NonNullable
 
 export function isOne<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
   if (a == null) return false
-  const pure = impureNumberish(a)
+  const pure = enpureNumberish(a)
   if (pure === 1) return true
   if (pure === 1n) return true
   if (pure === "1") return true
   if (isString(pure)) return pure.trim() === "1"
-  const { numerator, denominator } = toFraction(pure)
-  return numerator === denominator
+  const { numerator, denominator, decimal } = toFraction(pure)
+  return decimal ? numerator * BigInt(10 ** decimal) === denominator : numerator === denominator
 }
 
 export function notOne<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
@@ -75,7 +75,7 @@ export function notOne<T extends Numberish | undefined>(a: T): a is NonNullable<
 
 export function isNegative<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
   if (a == null) return false
-  const pure = impureNumberish(a)
+  const pure = enpureNumberish(a)
   if (isNumber(pure)) return pure < 0
   if (isBigInt(pure)) return pure < 0n
   if (isString(pure) && isStringableNumber(pure)) return pure.trim() != "" && pure.trim().startsWith("-")
@@ -85,7 +85,7 @@ export function isNegative<T extends Numberish | undefined>(a: T): a is NonNulla
 
 export function isPositive<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
   if (a == null) return false
-  const pure = impureNumberish(a)
+  const pure = enpureNumberish(a)
   if (isNumber(pure)) return pure > 0
   if (isBigInt(pure)) return pure > 0n
   if (isString(pure) && isStringableNumber(pure))
@@ -96,7 +96,7 @@ export function isPositive<T extends Numberish | undefined>(a: T): a is NonNulla
 
 export function isGreaterThanOne<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
   if (a == null) return false
-  const pure = impureNumberish(a)
+  const pure = enpureNumberish(a)
   if (isNumber(pure)) return pure > 1
   if (isBigInt(pure)) return pure > 1n
   if (isString(pure) && isStringableNumber(pure)) return pure.trim() != "" && pure.trim() !== "0" && pure.trim() !== "1"
@@ -106,7 +106,7 @@ export function isGreaterThanOne<T extends Numberish | undefined>(a: T): a is No
 
 export function isLessThanOne<T extends Numberish | undefined>(a: T): a is NonNullable<T> {
   if (a == null) return false
-  const pure = impureNumberish(a)
+  const pure = enpureNumberish(a)
   if (isNumber(pure)) return pure < 1
   if (isBigInt(pure)) return pure < 1n
   if (isString(pure) && isStringableNumber(pure)) return pure.trim() != "" && pure.trim() !== "0" && pure.trim() !== "1"
