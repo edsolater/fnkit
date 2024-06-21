@@ -21,7 +21,7 @@ const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() :
  * for JS's GC rule, WeakerSet will usually be cleared  in next frame(depends on GC)
  * @todo test it!!!
  */
-export class WeakerSet<T> implements Set<T> {
+export class WeakerSet<T> {
   private inner: Set<T | WeakRef<T & object>> = new Set()
   private cbCenter = {
     onAddNewItem: [] as ((item: T) => void)[],
@@ -50,7 +50,7 @@ export class WeakerSet<T> implements Set<T> {
     }
   }
 
-  forEach(callback: (value: T, key: T, set: Set<T>) => void, thisArg?: any): void {
+  forEach(callback: (value: T, key: T, set: WeakerSet<T>) => void, thisArg?: any): void {
     this.inner.forEach((v) => {
       if (!v) return
       const realValue = derefWrapperRefIfNeeded(v)

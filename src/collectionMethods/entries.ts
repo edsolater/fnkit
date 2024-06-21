@@ -13,7 +13,7 @@ import {
   isObject,
   isSet,
   isUndefined,
-  type Collection
+  type Collection,
 } from "../"
 
 /**
@@ -40,10 +40,12 @@ export function toEntry<E, K>(value: E, key?: K): E extends Entry ? E : Entry<E,
  * @returns a list of Entry
  * @requires {@link isArray `isArray()`} {@link isMap `isMap()`} {@link isObject `isObject()`} {@link isSet `isSet()`}
  */
-export function toEntries<Key = any, Value = any>(target: Collection<Value, Key>): Iterable<Entry<Value, Key>> {
+export function toEntries<C extends Collection>(
+  target: C,
+): Iterable<Entry<GetCollectionValue<C>, GetCollectionKey<C>>> {
   const jsEntries: Iterable<[any, any]> =
     isArray(target) || isSet(target) || isMap(target) ? target.entries() : Object.entries(target ?? {})
-  return Array.from(jsEntries) as Entry<Value, Key>[]
+  return Array.from(jsEntries) as Entry<any, any>[]
 }
 // /**
 //  * split collection into pieces

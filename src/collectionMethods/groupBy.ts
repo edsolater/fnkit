@@ -1,4 +1,4 @@
-import { getEntryKey, getEntryValue, map, shakeNil } from ".."
+import { getEntryKey, getEntryValue, map, shakeNil, type GetCollectionKey, type GetCollectionValue } from ".."
 import { isArray, isMap } from "../dataType"
 import { AnyArr, AnyObj, SKeyof, Valueof } from "../typings"
 import { toEntries } from "./entries"
@@ -43,7 +43,7 @@ function jsArrayGroupBy<T extends AnyArr, GroupName extends string | number | un
 
 function jsObjectGroupBy<O extends AnyObj, GroupName extends string | number | undefined>(
   obj: O,
-  predicate: (value: Valueof<O>, key: SKeyof<O>, obj: O) => GroupName,
+  predicate: (value: GetCollectionValue<O>, key: GetCollectionKey<O>, obj: O) => GroupName,
 ): Record<NonNullable<GroupName>, Partial<O> | undefined> {
   const entries = [...toEntries(obj)]
   const groupedEntries = jsArrayGroupBy(entries, (entry) =>

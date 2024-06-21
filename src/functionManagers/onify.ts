@@ -35,12 +35,13 @@ export function onify<T extends Record<string, any>>(obj: T): WithOnMethods<T> {
   const originObject = { ...obj }
 
   const props = shakeNil(
-    map(obj, (v, k) =>
+    map(obj, (v, k: any) =>
       isFunction(v)
         ? undefined
         : {
             set(newValue) {
               const oldValue = originObject[k]
+              // @ts-expect-error why?
               originObject[k] = newValue
               callbackBucket[k]?.forEach((callback) => callback(newValue, oldValue))
             },
