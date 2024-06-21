@@ -274,7 +274,6 @@ export function excutivePow(a: Numberish, b: Numberish): Fraction {
  */
 export function applyDecimal(n: Numberish, decimal: number): Numberish {
   if (decimal === 0) return n
-  if (!isInt(n)) throw new Error("applyDecimal only support int decimal")
   if (isBigIntable(n)) {
     const nString = isString(n) ? n : String(BigInt(n))
     const nCount = nString.length
