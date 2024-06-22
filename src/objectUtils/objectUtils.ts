@@ -3,9 +3,21 @@ import { isObjectLike, isFunction, isObject } from "../dataType"
 import { AnyObj } from "../typings/constants"
 import { SKeyof, Valueof } from "../typings/tools"
 
-/** 给配置对象添加默认值 */
-export function addDefault<T extends object, W extends Partial<T>>(initConfig: T, defaultConfig: W): T & W {
-  return { ...defaultConfig, ...initConfig }
+/**
+ *
+ * @returns defaultObject with initObject
+ * @example
+ * addDefault({a: 1}, {b: 2}) //=> {a: 1, b: 2}
+ * addDefault({a: 1}, {a: 2}) //=> {a: 1}
+ */
+export function addDefaultProperties<T extends object, W extends object>(initObject: T, defaultObject: W): T & W {
+  const newObject = { ...initObject } as T & W
+  for (const key in defaultObject) {
+    if (!(key in newObject)) {
+      newObject[key as string] = defaultObject[key]
+    }
+  }
+  return newObject
 }
 
 /**
@@ -115,7 +127,7 @@ export function containKey<T extends string | number | symbol>(
   obj: unknown,
   ...keys: T[]
 ): obj is { [K in T]: unknown } {
-  return isObject(obj) && flap(keys).every((key: string | number | symbol) => key in obj) 
+  return isObject(obj) && flap(keys).every((key: string | number | symbol) => key in obj)
 }
 /**
  *  shallow clone like {...obj}, but don't access it's getter
@@ -140,4 +152,3 @@ export function cloneObject<T extends AnyObj>(original: T): T {
     },
   ) as T
 }
-
