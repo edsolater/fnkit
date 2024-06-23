@@ -50,17 +50,27 @@ export interface Subscribable<T> {
 type SubscribeFnKey = string
 type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) => MayPromise<T>)
 
+type SubscribableOptions<T> = {
+  /** it triggered before `onSet`, give chance to change the input value */
+  beforeValueSet?: (inputRawValue: T, currentInnerValue: T) => T
+  /** same as `.subscribe() */
+  onSet?: (value: T, prevValue: T) => void
+}
+
 /**
  * Subscribable is a object that has subscribe method.
  * it can be the data atom of App's store graph
  * @param defaultValue value or a function that returns value, which means it only be called when needed
  */
-export function createSubscribable<T>(defaultValue: T | (() => T), options?: {}): Subscribable<T>
+export function createSubscribable<T>(defaultValue: T | (() => T), options?: SubscribableOptions<T>): Subscribable<T>
 export function createSubscribable<T>(
   defaultValue?: T | undefined | (() => T | undefined),
-  options?: {},
+  options?: SubscribableOptions<T | undefined>,
 ): Subscribable<T | undefined>
-export function createSubscribable<T>(defaultValue?: T | (() => T), options?: {}): Subscribable<T | undefined> {
+export function createSubscribable<T>(
+  defaultValue?: T | (() => T),
+  options?: SubscribableOptions<T | undefined>,
+): Subscribable<T | undefined> {
   const subscribeFnsKeylessStore = new Set<SubscribeFn<T>>()
   const subscribeFnsKeyedStore = new Map<SubscribeFnKey, SubscribeFn<T>>()
   const cleanFnsStore = new WeakMap<SubscribeFn<T>, AnyFn>()
@@ -68,29 +78,31 @@ export function createSubscribable<T>(defaultValue?: T | (() => T), options?: {}
 
   let innerValue = shrinkFn(defaultValue) as T | undefined
 
-  function changeValue(
+  function setValue(
     dispatcher: SubscribableSetValueDispatcher<T | undefined>,
     setOptions?: {
       /** even input same value, will invoke all subscribe callbacks */
       force?: boolean
     },
   ) {
+    function coreOfSetValue(newInputValue: T | undefined) {
+      const value = options?.beforeValueSet ? options.beforeValueSet(newInputValue, innerValue) : newInputValue
+      if (shouldInvokeValue(newInputValue, innerValue)) {
+        const oldValue = innerValue
+        innerValue = value // update holded data
+        options?.onSet?.(value, oldValue)
+        invokeSubscribedCallbacks(value, oldValue)
+      }
+    }
+
     const shouldInvokeValue = (newValue, oldValue) => oldValue !== newValue || setOptions?.force
-    const newValue = isFunction(dispatcher) ? dispatcher(innerValue) : dispatcher
-    if (isPromise(newValue)) {
-      newValue.then((newValue) => {
-        if (shouldInvokeValue(newValue, innerValue)) {
-          const oldValue = innerValue
-          innerValue = newValue // update holded data
-          invokeSubscribedCallbacks(newValue, oldValue)
-        }
+    const newInputValue = isFunction(dispatcher) ? dispatcher(innerValue) : dispatcher
+    if (isPromise(newInputValue)) {
+      newInputValue.then((v) => {
+        coreOfSetValue(v)
       })
     } else {
-      if (shouldInvokeValue(newValue, innerValue)) {
-        const oldValue = innerValue
-        innerValue = newValue // update holded data
-        invokeSubscribedCallbacks(newValue, oldValue)
-      }
+      coreOfSetValue(newInputValue)
     }
   }
 
@@ -177,7 +189,7 @@ export function createSubscribable<T>(defaultValue?: T | (() => T), options?: {}
     [subscribableTag]: true,
     id: genSubscribableId(),
     subscribe,
-    set: changeValue,
+    set: setValue,
     pipe,
     destroy,
     onDestory,
