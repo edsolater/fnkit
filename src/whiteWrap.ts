@@ -1,5 +1,6 @@
 import { isFunction, isArray, isObject } from "./dataType"
-import { DeMayArray, DeMayFn, DeMayObj, MayArray, MayFn, MayObj, MayObjKey } from "./typings/tools"
+import { DeMayFn, DeMayObj, MayFn, MayObj, MayObjKey } from "./typings/tools"
+import { DeMayArray, MayArray } from "./mayArray"
 
 /**
  * @example

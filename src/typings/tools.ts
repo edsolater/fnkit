@@ -1,9 +1,7 @@
 import { Items } from "../collectionMethods"
+import { MayArray, DeMayArray } from "../mayArray"
 import { AnyFn, Falsy, Primitive } from "./constants"
 
-export type MayArray<T> = T | Array<T>
-/** flap */
-export type DeMayArray<T> = T extends any[] ? T[number] : T
 export type DeArray<T> = T extends Array<infer U> ? U : T
 
 export type MayFn<T, Params extends any[] = any[]> = T | ((...params: Params) => T)

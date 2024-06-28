@@ -1,4 +1,4 @@
-import { MayArray, MayFn, MayParameter, DeMayArray, DeMayFn, AnyFn, isFunction, flap } from ".."
+import { AnyFn, DeMayArray, DeMayFn, MayArray, MayFn, MayParameter, arrify, isFunction } from ".."
 
 /**
  * @example
@@ -8,8 +8,8 @@ export const flatWithFn = <T extends MayArray<MayFn<any>>>(
   wrapValue: T,
   params?: MayParameter<DeMayArray<T>>,
 ): DeMayFn<DeMayArray<T>>[] =>
-  //@ts-expect-error type force
-  flap(wrapValue).map((mayFn) => shrinkToValue(mayFn, params))
+  // @ts-expect-error
+  arrify(wrapValue).map((mayFn) => shrinkToValue(mayFn, params))
 
 /**
  * get value from input, if input is a function. it will ve invoked

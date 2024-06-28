@@ -1,5 +1,4 @@
-import { flap } from "."
-import { AnyObj, isMap, MayArray } from ".."
+import { AnyObj, arrify, isMap, MayArray } from ".."
 
 /**
  * like typescript Omit
@@ -17,7 +16,7 @@ export function omit<T extends AnyObj | Map<any, any>, U extends keyof T>(
 }
 function omitMap<T extends Map<any, any>>(map: T, keys: MayArray<any>): T {
   const newMap = new Map(map)
-  flap(keys).forEach((k) => {
+  arrify(keys).forEach((k) => {
     newMap.delete(k)
   })
   return newMap as T
@@ -27,7 +26,7 @@ function omitObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
   function getOwnKeys() {
     if (!ownKeys) {
       ownKeys = new Set<U>()
-      const inputKeys = new Set(flap(keys))
+      const inputKeys = new Set(arrify(keys))
       for (const key of Reflect.ownKeys(obj)) {
         if (!inputKeys.has(key as any)) {
           ownKeys.add(key as U)

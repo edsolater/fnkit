@@ -1,4 +1,6 @@
-import { AnyObj, flap, isMap, MayArray } from ".."
+import { isMap } from "../dataType"
+import { type MayArray, arrify } from "../mayArray"
+import type { AnyObj } from "../typings"
 
 /**
  * like typescript Pick
@@ -6,7 +8,6 @@ import { AnyObj, flap, isMap, MayArray } from ".."
  * @example
  * console.log(pick({ a: 1, b: true }, ['a'])) //=> { a: 1 }
  */
-
 export function pick<T extends AnyObj, U extends keyof T>(collection: T, propNameList: MayArray<U>): Pick<T, U>
 export function pick<T extends Map<any, any>, U extends keyof T>(collection: T, propNameList: MayArray<U>): T
 export function pick<T extends AnyObj | Map<any, any>, U extends keyof T>(
@@ -17,7 +18,7 @@ export function pick<T extends AnyObj | Map<any, any>, U extends keyof T>(
 }
 function pickMap<T extends Map<any, any>>(map: T, keys: MayArray<any>): T {
   const newMap = new Map(map)
-  for (const key of flap(keys)) {
+  for (const key of arrify(keys)) {
     newMap.delete(key)
   }
   return newMap as T
@@ -28,7 +29,7 @@ function pickObject<T extends AnyObj, U extends keyof T>(obj: T, keys: MayArray<
     if (!ownKeys) {
       const originalKeys = new Set(Reflect.ownKeys(obj))
       ownKeys = new Set<U>()
-      for (const k of flap(keys)) {
+      for (const k of arrify(keys)) {
         if (originalKeys.has(k as any)) {
           ownKeys.add(k as U)
         }

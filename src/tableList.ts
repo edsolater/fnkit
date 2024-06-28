@@ -1,5 +1,5 @@
 import { isPrimitive, isArray, isObjectLike, isSymbol, isValuablePrimitive } from "./dataType"
-import { MayArray } from "./typings/tools"
+import { MayArray } from "./mayArray"
 
 type SortOptions<T extends object> = MayArray<{
   key: keyof T

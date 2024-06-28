@@ -1,6 +1,6 @@
 import { isArray, isObject, isObjectLike, isString } from "./dataType"
 import { AnyObj } from "./typings/constants"
-import { MayArray } from "./typings/tools"
+import { MayArray } from "./mayArray"
 import { toPrimitiveValue } from "./toPrimitiveValue"
 
 /**

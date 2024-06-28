@@ -1,7 +1,8 @@
 import { isMemberOf } from "../compare"
 import { isArray, isSet } from "../dataType"
-import { AnyObj, MayArray, ShakeNever, Valueof } from "../typings"
-import { filterEntry, filterKey, filter } from "./filter"
+import type { MayArray } from "../mayArray"
+import { AnyObj, ShakeNever, Valueof } from "../typings"
+import { filter, filterEntry, filterKey } from "./filter"
 
 type Drop<T, K> = ShakeNever<{
   [P in keyof T]: T[P] extends K ? never : T[P]
@@ -32,8 +33,8 @@ export function drop(collection, vs): any {
   return isArray(collection)
     ? dropItems(collection, values)
     : isSet(collection)
-      ? dropSetItems(collection, values)
-      : filter(collection, (v) => !isMemberOf(values, v))
+    ? dropSetItems(collection, values)
+    : filter(collection, (v) => !isMemberOf(values, v))
 }
 
 export function dropEntry<O extends AnyObj>(collection: O, ...values: Valueof<O>[]) {

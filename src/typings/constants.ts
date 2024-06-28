@@ -6,7 +6,7 @@ export type Int<Min = number, Max = number> = number
 export type Float<Min = number, Max = number> = number
 export type AnyFn = (...args: any[]) => any
 export type AnyObj = Record<keyof any, any>
-export type AnyArr = any[]
+export type AnyArr = any[] 
 export type AnyMap = Map<any, any>
 export type AnySet = Set<any>
 export type NotFunctionValue = Exclude<any, AnyFn>

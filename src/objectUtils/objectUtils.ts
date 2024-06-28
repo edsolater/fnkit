@@ -10,7 +10,7 @@ import { SKeyof, Valueof } from "../typings/tools"
  * addDefault({a: 1}, {b: 2}) //=> {a: 1, b: 2}
  * addDefault({a: 1}, {a: 2}) //=> {a: 1}
  */
-export function addDefaultProperties<T extends object, W extends object>(initObject: T, defaultObject: W): T & W {
+export function addDefaultProperties<T extends object, W extends Partial<T>>(initObject: T, defaultObject: W): T & W {
   const newObject = { ...initObject } as T & W
   for (const key in defaultObject) {
     if (!(key in newObject)) {
@@ -127,7 +127,7 @@ export function containKey<T extends string | number | symbol>(
   obj: unknown,
   ...keys: T[]
 ): obj is { [K in T]: unknown } {
-  return isObject(obj) && flap(keys).every((key: string | number | symbol) => key in obj)
+  return isObject(obj) && keys.every((key: string | number | symbol) => key in obj)
 }
 /**
  *  shallow clone like {...obj}, but don't access it's getter

@@ -50,22 +50,22 @@ export function switchCase<T, R>(
 ): R | undefined
 
 // Record
-export function switchCase<T extends keyof any | undefined, R>(
+export function switchCase<T, R>(
   key: T,
   /** only invoked if none matched */
-  rules: Partial<Record<NonNullable<T>, R | ((key: NonNullable<T>) => R)>>,
+  rules: Partial<Record<NonNullable<T> & keyof any, R | ((key: NonNullable<T>) => R)>>,
   getDefaultValue: R | ((key: T) => R),
 ): R
-export function switchCase<T extends keyof any | undefined, R>(
+export function switchCase<T, R>(
   key: T,
   /** only invoked if none matched */
-  rules: Record<NonNullable<T>, R | ((key: NonNullable<T>) => R)>,
+  rules: Record<NonNullable<T> & keyof any, R | ((key: NonNullable<T>) => R)>,
   getDefaultValue?: R | ((key: T) => R),
 ): R
-export function switchCase<T extends keyof any | undefined, R>(
+export function switchCase<T, R>(
   key: T,
   /** only invoked if none matched */
-  rules: Partial<Record<NonNullable<T>, R | ((key: NonNullable<T>) => R)>>,
+  rules: Partial<Record<NonNullable<T> & keyof any, R | ((key: NonNullable<T>) => R)>>,
   getDefaultValue?: (key: T) => R,
 ): R | undefined
 export function switchCase<T, R>(
@@ -77,7 +77,7 @@ export function switchCase<T, R>(
   /** only invoked if none matched */
   getDefaultValue?: R | ((key: T) => R),
 ): R | undefined {
-  if (key === undefined) return getDefaultValue ? shrinkFn(getDefaultValue, [undefined as T]) : undefined
+  if (key === undefined) return shrinkFn(getDefaultValue, [key])
   const switchRules = isArray(rules) ? rules : isMap(rules) ? rules.entries() : Object.entries(rules)
   for (const [matchCase, returnValue] of switchRules) {
     if (isFunction(matchCase) ? matchCase(key) : key === matchCase) return shrinkFn(returnValue, [key]) as R
