@@ -10,60 +10,74 @@ import { shrinkFn } from "./wrapper"
 // Array
 export function switchCase<T, R>(
   key: T,
-  rules: [matchCase: T | ((key: T) => boolean), returnValue: R | ((key: T) => R)][] /** only invoked if none matched */,
+  rules: [
+    matchCase: NonNullable<T> | ((key: NonNullable<T>) => boolean),
+    returnValue: R | ((key: NonNullable<T>) => R),
+  ][] /** only invoked if none matched */,
   getDefaultValue: R | ((key: T) => R),
 ): R
 export function switchCase<T, R>(
   key: T,
-  rules: [matchCase: T | ((key: T) => boolean), returnValue: R | ((key: T) => R)][] /** only invoked if none matched */,
+  rules: [
+    matchCase: NonNullable<T> | ((key: NonNullable<T>) => boolean),
+    returnValue: R | ((key: NonNullable<T>) => R),
+  ][] /** only invoked if none matched */,
   getDefaultValue?: R | ((key: T) => R),
 ): R | undefined
 
 // Map
 export function switchCase<T, R>(
   key: T,
-  rules: Partial<Map<T | ((key: T) => boolean), R | ((key: T) => R)>> /** only invoked if none matched */,
+  rules: Partial<
+    Map<NonNullable<T> | ((key: NonNullable<T>) => boolean), R | ((key: NonNullable<T>) => R)>
+  > /** only invoked if none matched */,
   getDefaultValue: R | ((key: T) => R),
 ): R
 export function switchCase<T, R>(
   key: T,
-  rules: Map<T | ((key: T) => boolean), R | ((key: T) => R)> /** only invoked if none matched */,
+  rules: Map<
+    NonNullable<T> | ((key: NonNullable<T>) => boolean),
+    R | ((key: NonNullable<T>) => R)
+  > /** only invoked if none matched */,
   getDefaultValue?: R | ((key: T) => R),
 ): R
 export function switchCase<T, R>(
   key: T,
-  rules: Partial<Map<T | ((key: T) => boolean), R | ((key: T) => R)>> /** only invoked if none matched */,
+  rules: Partial<
+    Map<NonNullable<T> | ((key: NonNullable<T>) => boolean), R | ((key: NonNullable<T>) => R)>
+  > /** only invoked if none matched */,
   getDefaultValue?: R | ((key: T) => R),
 ): R | undefined
 
 // Record
-export function switchCase<T extends keyof any, R>(
+export function switchCase<T extends keyof any | undefined, R>(
   key: T,
   /** only invoked if none matched */
-  rules: Partial<Record<T, R | ((key: T) => R)>>,
+  rules: Partial<Record<NonNullable<T>, R | ((key: NonNullable<T>) => R)>>,
   getDefaultValue: R | ((key: T) => R),
 ): R
-export function switchCase<T extends keyof any, R>(
+export function switchCase<T extends keyof any | undefined, R>(
   key: T,
   /** only invoked if none matched */
-  rules: Record<T, R | ((key: T) => R)>,
+  rules: Record<NonNullable<T>, R | ((key: NonNullable<T>) => R)>,
   getDefaultValue?: R | ((key: T) => R),
 ): R
-export function switchCase<T extends keyof any, R>(
+export function switchCase<T extends keyof any | undefined, R>(
   key: T,
   /** only invoked if none matched */
-  rules: Partial<Record<T, R | ((key: T) => R)>>,
+  rules: Partial<Record<NonNullable<T>, R | ((key: NonNullable<T>) => R)>>,
   getDefaultValue?: (key: T) => R,
 ): R | undefined
 export function switchCase<T, R>(
   key: T,
   rules:
-    | [matchCase: T | ((key: T) => boolean), returnValue: R | ((key: T) => R)][]
-    | Partial<Map<T, R>>
-    | Partial<Record<T & keyof any, R>>,
+    | [matchCase: NonNullable<T> | ((key: NonNullable<T>) => boolean), returnValue: R | ((key: NonNullable<T>) => R)][]
+    | Partial<Map<NonNullable<T>, R>>
+    | Partial<Record<NonNullable<T> & keyof any, R>>,
   /** only invoked if none matched */
   getDefaultValue?: R | ((key: T) => R),
 ): R | undefined {
+  if (key === undefined) return getDefaultValue ? shrinkFn(getDefaultValue, [undefined as T]) : undefined
   const switchRules = isArray(rules) ? rules : isMap(rules) ? rules.entries() : Object.entries(rules)
   for (const [matchCase, returnValue] of switchRules) {
     if (isFunction(matchCase) ? matchCase(key) : key === matchCase) return shrinkFn(returnValue, [key]) as R
@@ -75,30 +89,30 @@ export function switchCase<T, R>(
  * only for key-based object, so, this can have better type inference.
  * But actually is's the same as {@link switchCase}
  */
-export function switchKey<T extends keyof any, R>(
+export function switchKey<T extends keyof any | undefined, R>(
   key: T,
   /** only invoked if none matched */
-  rules: Partial<Record<T, R | ((key: T) => R)>>,
+  rules: Partial<Record<NonNullable<T>, R | ((key: NonNullable<T>) => R)>>,
   getDefaultValue: R | ((key: T) => R),
 ): R
-export function switchKey<T extends keyof any, R>(
+export function switchKey<T extends keyof any | undefined, R>(
   key: T,
   /** only invoked if none matched */
-  rules: Record<T, R | ((key: T) => R)>,
+  rules: Record<NonNullable<T>, R | ((key: NonNullable<T>) => R)>,
   getDefaultValue?: R | ((key: T) => R),
 ): R
-export function switchKey<T extends keyof any, R>(
+export function switchKey<T extends keyof any | undefined, R>(
   key: T,
   /** only invoked if none matched */
-  rules: Partial<Record<T, R | ((key: T) => R)>>,
+  rules: Partial<Record<NonNullable<T>, R | ((key: NonNullable<T>) => R)>>,
   getDefaultValue?: (key: T) => R,
 ): R | undefined
 export function switchKey<T, R>(
   key: T,
   rules:
-    | [matchCase: T | ((key: T) => boolean), returnValue: R | ((key: T) => R)][]
-    | Partial<Map<T, R>>
-    | Partial<Record<T & keyof any, R>>,
+    | [matchCase: NonNullable<T> | ((key: NonNullable<T>) => boolean), returnValue: R | ((key: NonNullable<T>) => R)][]
+    | Partial<Map<NonNullable<T>, R>>
+    | Partial<Record<NonNullable<T> & keyof any, R>>,
   /** only invoked if none matched */
   getDefaultValue?: R | ((key: T) => R),
 ): R | undefined {
