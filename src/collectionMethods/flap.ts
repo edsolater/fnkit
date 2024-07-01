@@ -4,7 +4,7 @@ import { type DeMayArray } from "../mayArray"
 /**
  * only array can flat
  * @example
- * flat([3, [4]]) //=> [3, 4]
+ * flap([3, [4]]) //=> [3, 4]
  * @version 0.0.1
  */
 export function flap<A>(wrapValue: A): DeMayArray<DeMayArray<A>>[]
@@ -23,6 +23,6 @@ export function flap<A, D extends number = 0>(wrapValue: A, deth?: D): any {
 
 /**
  * @example
- * flatInfinity([3, [4, [5]]]) //=> [3, 4, 5]
+ * flapDeep([3, [4, [5]]]) //=> [3, 4, 5]
  */
 export const flapDeep = <T extends any>(wrapValue: T) => flap(wrapValue, Infinity) as DeMayDeepArray<T>[]
