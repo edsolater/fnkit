@@ -17,6 +17,10 @@ export interface Subscribable<T> {
   [subscribableTag]: boolean
 
   (): T
+
+  /** will have if name is typed by user, or will be "(anonymous)" */
+  name: string
+
   subscribe: (
     cb: SubscribeFn<NonNullable<T>>,
     options?: {
@@ -51,6 +55,8 @@ type SubscribeFnKey = string
 type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) => MayPromise<T>)
 
 type SubscribableOptions<T> = {
+  /** will be {@link Subscribable}'s name */
+  name?: string
   /** it triggered before `onSet`, give chance to change the input value */
   beforeValueSet?: (inputRawValue: T, currentInnerValue: T) => T
   /** same as `.subscribe() */
@@ -194,6 +200,11 @@ export function createSubscribable<T>(
     destroy,
     onDestory,
     [Symbol.dispose]: destroy,
+  })
+
+  Object.defineProperty(subscribable, "name", {
+    get: () => options?.name ?? "(anonymous)",
+    enumerable: true,
   })
 
   return subscribable
