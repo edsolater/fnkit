@@ -21,7 +21,7 @@ export function abortableAsyncTask<T>(
   }
   const taskResultSubscribable = createSubscribable<T>()
   const utils = { resolve: innerResolve, aborted: () => isTaskAborted }
-  invoke(task, utils)
+  invoke(task, [utils])
   return {
     abort: () => {
       isTaskAborted = true
