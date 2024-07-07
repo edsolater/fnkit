@@ -1,5 +1,5 @@
 import { isArray } from "./dataType"
-import type { AnyArr } from "./typings"
+import type { AnyArr, MayDeepArray } from "./typings"
 
 export type MayArray<T> = T | Array<T>
 /** flap */
@@ -28,8 +28,17 @@ export function mayMap<T, R>(may: T[] | T | undefined, cb: (v: T, idx: number) =
 /**
  * if it not an array, wrap it
  */
-export function arrify<T>(v: MayArray<T>): [T] 
-export function arrify<T>(v: T): T extends AnyArr ? T : [T] 
+export function arrify<T>(v: MayArray<T>): [T]
+export function arrify<T>(v: T): T extends AnyArr ? T : [T]
 export function arrify<T>(v: T): T extends AnyArr ? T : [T] {
   return (isArray(v) ? v : [v]) as T extends AnyArr ? T : [T]
+}
+
+/**
+ * if it not an array, wrap it
+ */
+export function deepArrify<T>(v: MayDeepArray<T>): [T]
+export function deepArrify<T>(v: T): T extends AnyArr ? T : [T]
+export function deepArrify<T>(v: T): T extends AnyArr ? T : [T] {
+  return (isArray(v) ? v.flat(Infinity) : [v]) as T extends AnyArr ? T : [T]
 }
