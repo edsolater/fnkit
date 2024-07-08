@@ -3,8 +3,8 @@ export * from "./asyncPipeDo"
 export * from "./bindParams" // FP style get function faster
 export * from "./cache"
 export * from "./cacheFunction"
-export * from "./callStack" // for debug, should only use it in development mode
 export * from "./callbackManager"
+export * from "./callStack" // for debug, should only use it in development mode
 export * from "./changeCase"
 export * from "./changeFnReturnValue"
 export * from "./collectionMethods"
@@ -40,6 +40,7 @@ export * from "./pipeAsyncDo"
 export * from "./pipeDo"
 export * from "./promisify" // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
 export * from "./queryDiffInfo"
+export * from "./retryMaster"
 export * from "./runTasks"
 export * from "./shallowMap"
 export * from "./switchCase" // FP style switch
