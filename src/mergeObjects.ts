@@ -65,12 +65,16 @@ export function mergeObjects<T extends object | Function | undefined>(...objs: T
 export function mergeObjects<T extends object | Function | undefined>(...objs: T[]): T {
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]! ?? {}
-  let reversedObjs: typeof objs | undefined = undefined
+
+  const candidates = objs.filter((obj) => obj)
+  const haveFunctionObject = candidates.some(isFunction)
+  if (candidates.length === 0) return {} as T
+  if (candidates.length === 1) return candidates[0]! ?? {}
   let keys: (string | symbol)[] | undefined = undefined
   let keySet: Set<string | symbol> | undefined = undefined
   function getKeys() {
     if (!keys) {
-      keys = getObjKeys(...objs)
+      keys = getObjKeys(...candidates)
     }
     return keys
   }
@@ -81,10 +85,8 @@ export function mergeObjects<T extends object | Function | undefined>(...objs: T
     return keySet
   }
   function getValue(key: string | symbol) {
-    if (!reversedObjs) {
-      reversedObjs = [...objs].reverse()
-    }
-    for (const obj of reversedObjs) {
+    for (let i = candidates.length - 1; i >= 0; i--) {
+      const obj = candidates[i]
       if (obj && key in obj) {
         const v = obj[key]
         if (v !== undefined) {
@@ -93,19 +95,19 @@ export function mergeObjects<T extends object | Function | undefined>(...objs: T
       }
     }
   }
-  return new Proxy(objs.some(isFunction) ? () => {} : {}, {
+  return new Proxy(haveFunctionObject ? () => {} : {}, {
     apply(_target, thisArg, argArray) {
-      const fn = objs.findLast(isFunction)
+      const fn = candidates.findLast(isFunction)
       return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
     },
     get: (target, key) => (getKeySet().has(key) ? (key in target ? target[key] : getValue(key)) : undefined),
     has: (_target, key) => getKeySet().has(key),
     set: (_target, key, value) => Reflect.set(_target, key, value),
-    getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
+    getPrototypeOf: () => (candidates[0] ? Object.getPrototypeOf(candidates[0]) : null),
     ownKeys: getKeys,
     // for Object.keys to filter
     getOwnPropertyDescriptor: (_target, prop) => {
-      for (const obj of objs) {
+      for (const obj of candidates) {
         if (obj && prop in obj) {
           return Reflect.getOwnPropertyDescriptor(obj, prop)
         }

@@ -2,6 +2,7 @@ import { isObject } from "./dataType"
 import { mergeObjects } from "./mergeObjects"
 import type { AnyFn } from "./typings"
 
+/** it's just original function with magic `config` property , means user can invoke it as usually */
 export type ConfigableFunction<F extends AnyFn = AnyFn> = F & {
   /** inject params */
   config(): F
@@ -20,6 +21,7 @@ export type ConfigableFunction<F extends AnyFn = AnyFn> = F & {
 /**
  * creator
  * can add parameter without invoke
+ * it's just original function with magic `config` property , means user can invoke it as usually
  */
 export function createConfigableFunction<F extends AnyFn>(
   coreFn: F,
