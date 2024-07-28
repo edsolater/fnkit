@@ -30,21 +30,27 @@ export function splice<T>(arr: T[], start: number, deleteCount: number, ...items
   return newArr
 }
 
+/**
+ * Inserts items at a specific index in an array.
+ * @param arr The array to insert items into.
+ * @param at The index at which to insert the items.
+ * @param items The items to insert.
+ * @returns A new array with the items inserted at the specified index.
+ */
 export function insertAt<T>(arr: T[], at: number, ...items: T[]): T[] {
   return splice(arr, at, 0, ...items)
 }
 
 /**
- * it is like Python's build-in range
- * @param start start number
- * @param stop stop number
- * @param step (optional, default is 1) will affect output
- * @returns an array of number
+ * Creates an array of numbers from start to stop (inclusive) with the specified step.
+ * @param start The starting number.
+ * @param stop The ending number.
+ * @param step The step value (optional, default is 1).
+ * @returns An array of numbers.
  * @example
  * createRange(1, 4) //=> [1, 2, 3, 4]
  * createRange(-1, 4, 3) //=> [-1, 2]
  */
-
 export function createRange(start: number, stop: number, step = 1): number[] {
   return Array.from(
     {
@@ -54,15 +60,15 @@ export function createRange(start: number, stop: number, step = 1): number[] {
   )
 }
 
-
 /**
- * 以${groupSize}为一组，进行分割
- * @param items 原数组
- * @param groupSize 分割的块的容量
+ * Splits an array into groups of a specified size.
+ * @param items The original array.
+ * @param groupSize The size of each group.
+ * @returns An array of arrays, where each inner array represents a group of items.
  * @example
  * const splited = splitGroup(['aa', 'bb', 'cc'], 2) // [['aa','bb'], ['cc']]
  */
-export function groupArrayBySize<T>(items: readonly T[], groupSize: number) {
+export function groupArrayBySize<T>(items: readonly T[], groupSize: number): T[][] {
   const result: T[][] = []
   let group: T[] = []
   for (let i = 0; i < items.length; i++) {
@@ -77,10 +83,11 @@ export function groupArrayBySize<T>(items: readonly T[], groupSize: number) {
 }
 
 /**
- *
- * @param arr source
- * @param fromIndex delete start index
- * @param length delete length (default 1)
+ * Removes an item or a range of items from an array by specifying the start index and length.
+ * @param arr The source array.
+ * @param fromIndex The start index of the items to remove.
+ * @param length The number of items to remove (default is 1).
+ * @returns A new array with the specified items removed.
  */
 export function removeItemByLength<T extends any[]>(arr: T, fromIndex: number, length = 1): T {
   const newArray = [...arr]
@@ -89,10 +96,11 @@ export function removeItemByLength<T extends any[]>(arr: T, fromIndex: number, l
 }
 
 /**
- * @param arr source
- * @param fromIndex delete start index
- * @param endIndex delete end index (default fromIndex + 1)
- * @returns
+ * Removes an item or a range of items from an array by specifying the start and end index.
+ * @param arr The source array.
+ * @param fromIndex The start index of the items to remove.
+ * @param endIndex The end index of the items to remove (default is fromIndex + 1).
+ * @returns A new array with the specified items removed.
  */
 export function removeItemByIndex<T extends any[]>(arr: T, fromIndex: number, endIndex = fromIndex + 1): T {
   const newArray = [...arr]
@@ -100,6 +108,12 @@ export function removeItemByIndex<T extends any[]>(arr: T, fromIndex: number, en
   return newArray as T
 }
 
+/**
+ * Removes specified items from an array or a set.
+ * @param arr The source array or set.
+ * @param items The items to remove.
+ * @returns A new array or set with the specified items removed.
+ */
 export function removeItem<T>(arr: T[], ...items: T[]): T[]
 export function removeItem<T>(set: Set<T>, ...items: T[]): Set<T>
 export function removeItem(arr, ...items) {
@@ -114,7 +128,12 @@ export function removeItem(arr, ...items) {
   }
 }
 
-/** toggle will auto unified items */
+/**
+ * Toggles the presence of items in an array or a set. If an item is already present, it will be removed; otherwise, it will be added.
+ * @param arr The source array or set.
+ * @param items The items to toggle.
+ * @returns A new array or set with the toggled items.
+ */
 export function toggleSetItem<T>(arr: T[], ...items: T[]): T[]
 export function toggleSetItem<T>(set: Set<T>, ...items: T[]): Set<T>
 export function toggleSetItem(arr, ...items) {
@@ -132,11 +151,11 @@ export function toggleSetItem(arr, ...items) {
 }
 
 /**
- *
- * @param arr original array
- * @param replaceTarget old item | old item index | function
- * @param newItem new item
- * @returns new array
+ * Replaces an item or items in an array with a new item.
+ * @param arr The original array.
+ * @param replaceTarget The item or index of the item to replace, or a function that determines which items to replace.
+ * @param newItem The new item to replace with.
+ * @returns A new array with the specified item(s) replaced.
  * @example
  * console.log(replaceItem(['hello', 'world'], 'hello', 'hi')) //=> ['hi', 'world']
  * console.log(replaceItem(['hello', 'world'], 0, 'hi')) //=> ['hi', 'world']
@@ -157,7 +176,10 @@ export function replaceItem<T, U>(
 }
 
 /**
- * use `Promise.allSettled`
+ * Maps an array of items to a new array of items using an asynchronous mapping function. Uses `Promise.allSettled` to handle promises.
+ * @param arr The array to map.
+ * @param mapFn The mapping function that takes an item and its index as arguments and returns a promise.
+ * @returns A promise that resolves to an array of mapped items.
  */
 export async function asyncMapAllSettled<T, U>(
   arr: T[],
@@ -176,7 +198,10 @@ export async function asyncMapAllSettled<T, U>(
 }
 
 /**
- * use `Promise.all`
+ * Maps an array of items to a new array of items using an asynchronous mapping function. Uses `Promise.all` to handle promises.
+ * @param arr The array to map.
+ * @param mapFn The mapping function that takes an item and its index as arguments and returns a promise.
+ * @returns A promise that resolves to an array of mapped items.
  */
 export async function asyncMap<T, U>(
   arr: T[],
@@ -185,6 +210,13 @@ export async function asyncMap<T, U>(
   return Promise.all(arr.map(async (item, idx) => await mapFn(item, idx)))
 }
 
+/**
+ * Reduces an array to a single value using an asynchronous reducer function. Uses `Promise.all` to handle promises.
+ * @param arr The array to reduce.
+ * @param callbackfn The reducer function that takes the previous value, current value, current index, and the array itself as arguments and returns a promise.
+ * @param initialValue The initial value for the reducer (optional).
+ * @returns A promise that resolves to the reduced value.
+ */
 export async function asyncReduce<T>(
   arr: T[],
   callbackfn: (previousValue: Awaited<T>, currentValue: Awaited<T>, currentIndex: number, array: T[]) => MayPromise<T>,
@@ -217,7 +249,11 @@ export async function asyncReduce(
       )
 }
 
-/** type C = OmitItems<'a' | 'b' | 'c', 'a' | 'b' | 'd'> // 'c' */
+/**
+ * Returns the type of an array with specified items omitted.
+ * @example
+ * type C = OmitItems<'a' | 'b' | 'c', 'a' | 'b' | 'd'> // 'c'
+ */
 export type OmitItem<
   OriginString extends keyof any,
   OmitString extends keyof any | undefined = undefined,
@@ -232,4 +268,18 @@ export type OmitItem<
 export function omitItems<T>(arr: T[], items: T | T[]): T[] {
   const omitSet = new Set(Array.isArray(items) ? items : [items])
   return arr.filter((item) => !omitSet.has(item))
+}
+
+/**
+ * Shuffles the elements of an array.
+ * @param arr The array to shuffle.
+ * @returns A new array with the elements shuffled.
+ */
+export function shuffle<T>(arr: ReadonlyArray<T>): T[] {
+  const newArr = [...arr]
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[newArr[i], newArr[j]] = [newArr[j], newArr[i]]
+  }
+  return newArr
 }
