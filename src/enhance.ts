@@ -13,7 +13,7 @@ export type EnhancedMap<K, V = any> = Omit<Map<K, V>, "set"> & {
     value: V | ((value: V | undefined) => V),
     options?: EnhancedMapSetOptions,
   ) => ReturnType<Map<K, V>["set"]>
-  update: (key: K, value: V | ((value: V) => V), options?: EnhancedMapSetOptions) => ReturnType<Map<K, V>["set"]>
+  update: (key: K, value: V | ((value: V) => V), options?: EnhancedMapSetOptions) => boolean
 }
 
 export type EnhancedMapOptions<K, V = any> = {
@@ -44,17 +44,24 @@ export function enhanceMap<K, V = any>(originalMap: Map<K, V>, opts?: EnhancedMa
       }
 
       function update(key: K, value: V | ((value: V) => V), options?: EnhancedMapSetOptions) {
-        return newSet(
-          key,
-          (v) => {
-            if (v === undefined) {
-              throw new Error(`can't update a undefined value`)
-            } else {
-              return shrinkFn(value, [v])
-            }
-          },
-          options,
-        )
+        try {
+          // original has no record of key
+          if (!target.has(key)) return false
+          newSet(
+            key,
+            (v) => {
+              if (v === undefined) {
+                throw new Error(`can't update a undefined value`)
+              } else {
+                return shrinkFn(value, [v])
+              }
+            },
+            options,
+          )
+          return true
+        } catch (e) {
+          return false
+        }
       }
 
       if (propertyName === "set") {

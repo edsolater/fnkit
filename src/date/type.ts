@@ -1,7 +1,9 @@
 import { Numberish } from "../numberish/types"
 
 export type TimeStampVerbose = TimeStamp | TimeStampString | Date
-export type TimeStamp = number
+export type TimeStampSeconds = number // (s)
+/** @deprecated use {@link TimeStampSeconds} instead, second-base is standard, millisecond-base is just javascript language */
+export type TimeStamp = number // (ms)
 export type TimeStampString = string
 
 export type ParsedDurationInfo = Record<

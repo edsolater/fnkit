@@ -61,11 +61,14 @@ export const getISO = (value?: DateParam) => createDate(value).toISOString()
 
 // same as createDate, useful for readibility
 export const createCurrentDate = () => createDate()
+
+/** use {@link createTimeStampSeconds} instead */
 export const createCurrentTimestamp = () => getTime()
 
 export const isCurrentDateBefore = (timestamp: TimeStampVerbose): boolean => isDateBefore(undefined, timestamp)
 export const isCurrentDateAfter = (timestamp: TimeStampVerbose): boolean => isDateAfter(undefined, timestamp)
-export const isSameDate = (tested: TimeStampVerbose, matched?: TimeStampVerbose | undefined) => getTime(tested) === getTime(matched)
+export const isSameDate = (tested: TimeStampVerbose, matched?: TimeStampVerbose | undefined) =>
+  getTime(tested) === getTime(matched)
 
 export const isDateBefore = (tested: string | number | Date | undefined, matched?: string | number | Date): boolean =>
   getTime(tested) < getTime(matched)
@@ -93,12 +96,12 @@ export function offsetDateTime(
       (options?.unit === "days"
         ? offset * 24 * 60 * 60 * 1000
         : options?.unit === "hours"
-          ? offset * 60 * 60 * 1000
-          : options?.unit === "minutes"
-            ? offset * 60 * 1000
-            : options?.unit === "seconds"
-              ? offset * 1000
-              : offset)
+        ? offset * 60 * 60 * 1000
+        : options?.unit === "minutes"
+        ? offset * 60 * 1000
+        : options?.unit === "seconds"
+        ? offset * 1000
+        : offset)
     return createDate(offsetedTimestamp)
   }
 }
