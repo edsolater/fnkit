@@ -1,6 +1,7 @@
 import { isFunction } from "./dataType"
+import { setTimeoutWithSecondes } from "./date"
 
-export function createTimeoutMap<K, V>({ maxAgeMs }: { maxAgeMs: number }) {
+export function createTimeoutMap<K, V>({ maxAge }: { maxAge: number }) {
   const innerMap = new Map<K, V>()
   const timeoutMap = new Map<K, number | NodeJS.Timeout>()
 
@@ -10,10 +11,10 @@ export function createTimeoutMap<K, V>({ maxAgeMs }: { maxAgeMs: number }) {
       clearTimeout(timeoutId)
     }
 
-    const newAutoDeleteTimeoutId = setTimeout(() => {
+    const newAutoDeleteTimeoutId = setTimeoutWithSecondes(() => {
       innerMap.delete(key)
       timeoutMap.delete(key)
-    }, maxAgeMs)
+    }, maxAge)
 
     timeoutMap.set(key, newAutoDeleteTimeoutId)
   }

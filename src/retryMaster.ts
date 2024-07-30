@@ -1,3 +1,4 @@
+import { setTimeoutWithSecondes } from "./date"
 import type { Int } from "./typings"
 import { shrinkFn } from "./wrapper"
 
@@ -53,7 +54,7 @@ export function autoRetry<F extends (payloads: RetriableTaskFnPayloads) => any>(
 
     const nextDelay = shrinkFn(options.retryFrequency, [retryTimes])
     task({ retryCount: retryTimes, flagActionHasSuccess })
-    setTimeout(() => {
+    setTimeoutWithSecondes(() => {
       tryAgain()
     }, nextDelay)
   }

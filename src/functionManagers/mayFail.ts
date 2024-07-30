@@ -1,6 +1,6 @@
-import { MayFn, shrinkToValue, wrapePromise } from ".."
+import { MayFn, setTimeoutWithSecondes, shrinkToValue, wrapePromise } from ".."
 
-const defaultExpireTime = 200 //(ms)
+const defaultExpireTime = 0.2 //(s)
 const expireMessage = "task is too long"
 
 export type FailReason = { type: "expire"; details: unknown } | { type: "error"; details: unknown }
@@ -84,7 +84,7 @@ export type FailReason = { type: "expire"; details: unknown } | { type: "error";
 export default function mayFail<T>(
   taskFn: MayFn<Promise<T> | T | PromiseLike<T>>,
   options: {
-    /** @default 200ms */
+    /** @default .2s */
     expireAfter?: number
     /**
      * both expire or error will return this
@@ -98,7 +98,7 @@ export default function mayFail<T>(
   } = {},
 ): Promise<T> {
   return new Promise((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
+    const timeoutId = setTimeoutWithSecondes(() => {
       options.onExpire?.()
       options.fallbackValue != null
         ? resolve(options.fallbackValue)

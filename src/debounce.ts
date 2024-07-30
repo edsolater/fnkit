@@ -1,12 +1,13 @@
-import { createCurrentTimestamp } from "./date/parseDate"
+import { setTimeoutWithSecondes } from "./date"
+import { createTimeStamp } from "./date/parseDate"
 import type { AnyFn } from "./typings"
 
 /**
  *
  * default {@link throttle}'s delay is 400ms
- * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
+ * @requires {@link createTimeStamp `createCurrentTimestamp()`}
  */
-export function throttle(fn: AnyFn, options?: { rAF?: boolean; /** option for setTimeout */ delay?: number }) {
+export function throttle(fn: AnyFn, options?: { rAF?: boolean; /** option for setTimeoutWithSecondes */ delay?: number }) {
   if (options?.rAF) {
     let requestAnimationFrameId: number | undefined = undefined
     return function throttled(...args: any[]) {
@@ -20,10 +21,10 @@ export function throttle(fn: AnyFn, options?: { rAF?: boolean; /** option for se
     let timoutId: any | undefined = undefined
     return function throttled(...args: any[]) {
       if (timoutId) clearTimeout(timoutId)
-      timoutId = setTimeout(() => {
+      timoutId = setTimeoutWithSecondes(() => {
         timoutId = undefined
         fn(...args)
-      }, options?.delay ?? 100)
+      }, options?.delay ?? .4)
     }
   }
 }
@@ -40,7 +41,7 @@ function requestAnimationFrame(fn: AnyFn) {
 
 /**
  *
- * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
+ * @requires {@link createTimeStamp `createCurrentTimestamp()`}
  */
 export function debounce<F extends (...args: any[]) => void>(
   fn: F,
@@ -54,10 +55,10 @@ export function debounce<F extends (...args: any[]) => void>(
       if (timeoutId) {
         clearTimeout(timeoutId)
       }
-      timeoutId = setTimeout(() => {
+      timeoutId = setTimeoutWithSecondes(() => {
         const returnedValue = fn(...args) as ReturnType<F>
         resolve(returnedValue)
-      }, options?.delay ?? 400)
+      }, options?.delay ?? .4)
     })
 }
 

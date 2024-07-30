@@ -1,11 +1,11 @@
-import { createCurrentTimestamp } from ".."
+import { createTimeStamp, setTimeoutWithSecondes } from ".."
 
 const defaultDebouneDelay = 400
 const defaultThrottleDelay = 400
 
 /**
  *
- * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
+ * @requires {@link createTimeStamp `createCurrentTimestamp()`}
  */
 export function debounce<F extends (...args: any[]) => void>(
   fn: F,
@@ -17,7 +17,7 @@ export function debounce<F extends (...args: any[]) => void>(
   const { debounceDelay = defaultDebouneDelay } = options ?? {}
   //@ts-ignore
   return (...args) => {
-    const currentTimestamp = createCurrentTimestamp()
+    const currentTimestamp = createTimeStamp()
     if (currentTimestamp - lastInvokedTimestamp > debounceDelay) {
       lastInvokedTimestamp = currentTimestamp
       return fn(...args)
@@ -27,7 +27,7 @@ export function debounce<F extends (...args: any[]) => void>(
 
 /**
  *
- * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
+ * @requires {@link createTimeStamp `createCurrentTimestamp()`}
  */
 export function throttle<F extends (...args: any[]) => void>(
   fn: F,
@@ -50,7 +50,7 @@ export function throttle<F extends (...args: any[]) => void>(
   return (...args: Parameters<F>) => {
     middleParams.push(args)
 
-    const currentTimestamp = createCurrentTimestamp()
+    const currentTimestamp = createTimeStamp()
 
     if (currentTimoutId) {
       clearTimeout(currentTimoutId)
@@ -60,7 +60,7 @@ export function throttle<F extends (...args: any[]) => void>(
     if (remainDelayTime <= 0) {
       invokeFn()
     } else {
-      currentTimoutId = setTimeout(invokeFn, remainDelayTime)
+      currentTimoutId = setTimeoutWithSecondes(invokeFn, remainDelayTime)
     }
 
     prevDurationTimestamp = currentTimestamp

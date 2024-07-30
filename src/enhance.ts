@@ -1,4 +1,5 @@
 import { isFunction } from "./dataType"
+import { setTimeoutWithSecondes } from "./date"
 import { shrinkFn } from "./wrapper"
 
 type EnhancedMapSetOptions = {
@@ -36,9 +37,9 @@ export function enhanceMap<K, V = any>(originalMap: Map<K, V>, opts?: EnhancedMa
           opts.onSet(shrinkedValue, key, target)
         }
         if (options?.freshTime) {
-          setTimeout(() => {
+          setTimeoutWithSecondes(() => {
             target.delete(key)
-          }, options.freshTime * 1000)
+          }, options.freshTime)
         }
         return originalMapResult
       }

@@ -1,5 +1,5 @@
 import { clamp, map } from ".."
-import { getType } from "../dataType"
+import { getType, isNumber } from "../dataType"
 import { Numberish } from "../numberish/types"
 import { DateParam, DateInfoAtom, TimeStampVerbose } from "./type"
 
@@ -35,6 +35,8 @@ export const createDate: {
         milliseconds = getMilliseconds(nowDate),
       } = map(value as DateInfoAtom, Number)
       return new Date(year, month - 1, calendarDate, hours, minutes, seconds, milliseconds)
+    } else if (isNumber(value)) {
+      return new Date(value * 1000)
     }
     return value ? new Date(value) : new Date()
   } else {
@@ -56,14 +58,17 @@ export function setDate(oldDate: DateParam, options?: DateInfoAtom) {
   })
 }
 
-export const getTime = (value?: DateParam) => createDate(value).getTime()
+/** use seconds not getMilliseconds */
+export const getTime = (value?: DateParam) => createDate(value).getTime() / 1000
+// just a readable alias
+export const getNow = () => getTime()
 export const getISO = (value?: DateParam) => createDate(value).toISOString()
 
 // same as createDate, useful for readibility
 export const createCurrentDate = () => createDate()
 
-/** use {@link createTimeStampSeconds} instead */
-export const createCurrentTimestamp = () => getTime()
+/** use seconds not getMilliseconds */
+export const createTimeStamp = () => getTime()
 
 export const isCurrentDateBefore = (timestamp: TimeStampVerbose): boolean => isDateBefore(undefined, timestamp)
 export const isCurrentDateAfter = (timestamp: TimeStampVerbose): boolean => isDateAfter(undefined, timestamp)
@@ -91,18 +96,18 @@ export function offsetDateTime(
     return createDate(yearNumber, monthNumber, calendarDate, hours, minutes, seconds, milliseconds)
   } else {
     const timestamp = getTime(baseDate)
-    const offsetedTimestamp =
+    const offsetedTimestampSeconds =
       timestamp +
       (options?.unit === "days"
-        ? offset * 24 * 60 * 60 * 1000
+        ? offset * 24 * 60 * 60
         : options?.unit === "hours"
-        ? offset * 60 * 60 * 1000
+        ? offset * 60 * 60
         : options?.unit === "minutes"
-        ? offset * 60 * 1000
-        : options?.unit === "seconds"
-        ? offset * 1000
+        ? offset * 60
+        : options?.unit === "milliseconds"
+        ? offset / 1000
         : offset)
-    return createDate(offsetedTimestamp)
+    return createDate(offsetedTimestampSeconds)
   }
 }
 
@@ -165,7 +170,7 @@ export const getMilliseconds = (date?: DateParam) => createDate(date).getMillise
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getTimestamp = (date?: DateParam) => createDate(date).getTime()
+export const getTimestamp = (date?: DateParam) => getTime(date)
 
 /**
  * @param date specified date or today

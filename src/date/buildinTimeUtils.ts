@@ -6,15 +6,15 @@ export type TimeSigal = number /* s */ | `${number}${"ms" | "s" | "m" | "h" | "d
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setIntervalWithSecondes(fn: () => any, interval: TimeSigal) {
-  return setInterval(fn, parseTimeSignal(interval))
+export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeSigal | undefined) {
+  return setInterval(fn, interval ? parseTimeSignal(interval) : undefined)
 }
 
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setTimeoutWithSecondes(fn: () => any, delay: TimeSigal) {
-  return setTimeout(fn, parseTimeSignal(delay))
+export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeSigal | undefined) {
+  return setTimeout(fn, delay ? parseTimeSignal(delay) : undefined)
 }
 
 /** to milliseconds */
