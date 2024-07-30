@@ -1,8 +1,11 @@
 import { Numberish } from "../numberish/types"
 
+
+/** @deprecated use {@link TimeSStampVerbose} instead, second-base is standard, millisecond-base is just javascript language */
 export type TimeStampVerbose = TimeStamp | TimeStampString | Date
-export type TimeStampSeconds = number // (s)
-/** @deprecated use {@link TimeStampSeconds} instead, second-base is standard, millisecond-base is just javascript language */
+export type TimeSStampVerbose = TimeSStamp | TimeStampString | Date
+export type TimeSStamp = number // (s)
+/** @deprecated use {@link TimeSStamp} instead, second-base is standard, millisecond-base is just javascript language */
 export type TimeStamp = number // (ms)
 export type TimeStampString = string
 
