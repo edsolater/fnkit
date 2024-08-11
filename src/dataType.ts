@@ -1,4 +1,4 @@
-import { AnyArr, AnyFn, Primitive } from "./typings/constants"
+import { AnyArr, AnyFn, Primitive, type AnyObj } from "./typings/constants"
 
 /**
  * @requires {@link getObjType `getObjType()`}
@@ -37,16 +37,16 @@ export function getType(
   return isNull(v)
     ? "null"
     : isArray(v)
-      ? "Array"
-      : isFunction(v)
-        ? "function"
-        : isSet(v)
-          ? "Set"
-          : isMap(v)
-            ? "Map"
-            : typeof v === "object"
-              ? getObjType(v) ?? "unknown"
-              : typeof v
+    ? "Array"
+    : isFunction(v)
+    ? "function"
+    : isSet(v)
+    ? "Set"
+    : isMap(v)
+    ? "Map"
+    : typeof v === "object"
+    ? getObjType(v) ?? "unknown"
+    : typeof v
 }
 
 export const getObjType = (obj: unknown): "Array" | "Object" | "Set" | "Map" | "WeakSet" | "WeakMap" | "Date" => {
@@ -176,10 +176,6 @@ export function isEmptyArray(v: unknown): boolean {
   return isArray(v) && v.length === 0
 }
 
-export function isEmptyObject(v: unknown): boolean {
-  return isObjectLike(v) && Reflect.ownKeys(v).length === 0
-}
-
 export function isEmptyString(v: unknown): v is "" {
   return v === ""
 }
@@ -285,4 +281,44 @@ export function notUndefined<T>(v: T): v is T extends undefined ? never : T {
  */
 export function notEmpty(target: any[] | string): boolean {
   return !isEmptyArray(target)
+}
+
+/**
+ * Checks if the given object is a non-empty object.
+ *
+ * @example
+ * isNonEmptyObject({}) // false
+ * @param obj - The object to be checked.
+ * @returns A boolean indicating whether the object is a non-empty object.
+ */
+export function isNonEmptyObject(obj: any): obj is AnyObj {
+  // First, check if obj is of type 'object' and not null
+  if (typeof obj === "object" && obj !== null) {
+    // Use for...in to check if there is at least one enumerable property
+    for (let key in obj) {
+      return true // If an enumerable property is found, return true
+    }
+  }
+  // If no enumerable property is found, or if obj is not an object, return false
+  return false
+}
+
+/**
+ * Checks if the given object is an empty object.
+ *
+ * @example
+ * isEmptyObject({}) // true
+ * @param obj - The object to be checked.
+ * @returns A boolean indicating whether the object is an empty object.
+ */
+export function isEmptyObject(obj: any): obj is AnyObj {
+  // First, check if obj is of type 'object' and not null
+  if (typeof obj === "object" && obj !== null) {
+    // Use for...in to check if there are any enumerable properties
+    for (let key in obj) {
+      return false // If an enumerable property is found, return false
+    }
+  }
+  // If no enumerable property is found, or if obj is not an object, return true
+  return true
 }
