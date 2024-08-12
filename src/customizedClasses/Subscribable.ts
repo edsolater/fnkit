@@ -61,6 +61,10 @@ type SubscribableOptions<T> = {
   beforeValueSet?: (inputRawValue: T, currentInnerValue: T) => T
   /** same as `.subscribe() */
   onSet?: (value: T, prevValue: T) => void
+  /**
+   * same as default value (function version), but this is more clear for side-effect
+   */
+  onInit?: (utils: { set: Subscribable<T>["set"] }) => void
 }
 
 /**
@@ -83,6 +87,9 @@ export function createSubscribable<T>(
   const onDestoryCallback = new Set<AnyFn>()
 
   let innerValue = shrinkFn(defaultValue) as T | undefined
+
+  // run init action
+  options?.onInit?.({ set: setValue })
 
   function setValue(
     dispatcher: SubscribableSetValueDispatcher<T | undefined>,
