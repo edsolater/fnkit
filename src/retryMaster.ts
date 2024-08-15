@@ -7,7 +7,18 @@ type RetriableTaskFnPayloads = {
   flagActionHasSuccess(value: any): void
 }
 
-/** usually task is async  */
+/**
+ * usually task is async
+ * /** usually task is async
+ * @example
+ * autoRetry(async ({retryCount, resolve, reject}) => {
+ *  if(retryCount === 3){
+ *      resolve('success')
+ *   }, {
+ *      retryFrequency: 3,
+ *      maxRetryCount: 5
+ *   }) // will be resolved after 3 seconds
+ */
 export function autoRetry<F extends (payloads: RetriableTaskFnPayloads) => any>(
   task: F,
   options: {
