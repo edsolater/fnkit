@@ -322,3 +322,36 @@ export function isEmptyObject(obj: any): obj is AnyObj {
   // If no enumerable property is found, or if obj is not an object, return true
   return true
 }
+
+/**
+ * not very elegent yet
+ */
+export function isShallowEqual(a: any, b: any) {
+  if (isMap(a) && isMap(b)) {
+    if (a.size !== b.size) return false
+    for (const [key, value] of a) {
+      if (!b.has(key)) return false
+      if (!isShallowEqual(value, b.get(key))) return false
+    }
+    return true
+  }
+  if (isSet(a) && isSet(b)) {
+    if (a.size !== b.size) return false
+    return isShallowEqual([...a], [...b])
+  }
+  if (isArray(a) && isArray(b)) {
+    if (a.length !== b.length) return false
+    for (let i = 0; i < a.length; i++) {
+      if (!isShallowEqual(a[i], b[i])) return false
+    }
+    return true
+  }
+  if (isObjectLiteral(a) && isObjectLiteral(b)) {
+    for (const [key, value] of Object.entries(a)) {
+      if (!isShallowEqual(a[key], b[key])) return false
+    }
+    return true
+  }
+
+  return Object.is(a, b)
+}
