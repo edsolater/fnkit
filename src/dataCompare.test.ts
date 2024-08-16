@@ -1,4 +1,4 @@
-import { isShallowEqual } from "./dataType"
+import { isShallowEqual } from "./dataCompare"
 
 test("isShallowEqual", () => {
   expect(isShallowEqual({ a: ["b", "c"] }, { a: ["b", "c"] })).toBe(true)
