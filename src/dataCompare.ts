@@ -8,6 +8,8 @@ import { isArray, isMap, isObjectLiteral, isSet, isString } from "./dataType"
  * isShallowEqual(new Map([["test", new Set(["hello", "world"])]]), new Map([["test", new Set(["hello", "world"])]])) // true
  */
 export function isShallowEqual(a: any, b: any) {
+  if (a === b) return true
+
   if (isMap(a) && isMap(b)) {
     if (Object.is(a, b)) return true
     if (a.size !== b.size) return false
@@ -43,42 +45,89 @@ export function isShallowEqual(a: any, b: any) {
 
 /**
  *
- * check item is part of collector
+ * check item is part of collector\
+ * use {@link isShallowEqual} to compare
  * @example
- * isItemContained([1, 2, 3], 2) // true
- * isItemContained({ a: 1, b: 2 }, 2) // true
- * isItemContained(new Set([1, 2, 3]), 2) // true
- * isItemContained(new Map([["a", 1], ["b", 2]]), 2) // true
- * @param a collector
- * @param b check item
+ * isItemContained(2, [1, 2, 3]) // true
+ * isItemContained(2, { a: 1, b: 2 }) // true
+ * isItemContained(2, new Set([1, 2, 3])) // true
+ * isItemContained(2, new Map([["a", 1], ["b", 2]])) // true
+ * @param item check item
+ * @param collector collector
  */
-export function isItemContained(a: any, b: any): boolean {
-  if (isSet(a)) {
-    for (const value of a) {
-      if (Object.is(value, b)) return true
+export function isItemContained(item: any, collector: any): boolean {
+  if (isSet(collector)) {
+    for (const value of collector) {
+      if (isShallowEqual(value, item)) return true
     }
     return false
   }
-  if (isMap(a)) {
-    for (const value of a.values()) {
-      if (Object.is(value, b)) return true
+  if (isMap(collector)) {
+    for (const value of collector.values()) {
+      if (isShallowEqual(value, item)) return true
     }
     return false
   }
-  if (isArray(a)) {
-    for (const value of a) {
-      if (Object.is(value, b)) return true
+  if (isArray(collector)) {
+    for (const value of collector) {
+      if (isShallowEqual(value, item)) return true
     }
     return false
   }
-  if (isObjectLiteral(a)) {
-    for (const value of Object.values(a)) {
-      if (Object.is(value, b)) return true
+  if (isObjectLiteral(collector)) {
+    for (const value of Object.values(collector)) {
+      if (isShallowEqual(value, item)) return true
     }
     return false
   }
-  if (isString(a)) {
-    return a.includes(b)
+  if (isString(collector)) {
+    return collector.includes(item)
+  }
+  return false
+}
+
+/**
+ *
+ * check smallerCollector is sub of biggerCollector\
+ * use {@link isShallowEqual} to compare
+ * @example
+ * isSubCollector([2], [1, 2, 3]) // true
+ * isSubCollector({ b: 2, c: 3 }, { a: 1, b: 2, c: 3 }) // true
+ * isSubCollector({ a: 2 }, { a: 1, b: 2 }) // false
+ * isSubCollector(new Set([2]), new Set([1, 2, 3])) // true
+ * isSubCollector(new Map([["b", 2]]), new Map([["a", 1], ["b", 2]])) // true
+ * isSubCollector("hello", "hello world") // true
+ * @param smallerCollector smaller collector
+ * @param biggerCollector bigger collector
+ */
+export function isSubCollector(smallerCollector: any, biggerCollector: any): boolean {
+  if (isSet(biggerCollector) && isSet(smallerCollector)) {
+    const aArr = [...smallerCollector]
+    const bArr = [...biggerCollector]
+    return aArr.every((value) => isItemContained(value, bArr))
+  }
+  if (isMap(biggerCollector) && isMap(smallerCollector)) {
+    for (const key of smallerCollector.keys()) {
+      if (!biggerCollector.has(key)) return false
+      const bValue = biggerCollector.get(key)
+      const aValue = smallerCollector.get(key)
+      if (!isShallowEqual(bValue, aValue)) return false
+    }
+    return true
+  }
+  if (isArray(biggerCollector) && isArray(smallerCollector)) {
+    return smallerCollector.every((value) => isItemContained(value, biggerCollector))
+  }
+  if (isObjectLiteral(biggerCollector) && isObjectLiteral(smallerCollector)) {
+    for (const [key, value] of Object.entries(smallerCollector)) {
+      if (!(key in biggerCollector)) return false
+      const bValue = biggerCollector[key]
+      if (!isShallowEqual(bValue, value)) return false
+    }
+    return true
+  }
+  if (isString(biggerCollector) && isString(smallerCollector)) {
+    return biggerCollector.includes(smallerCollector)
   }
   return false
 }
