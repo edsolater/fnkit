@@ -179,7 +179,12 @@ export function isJSON(jsonString: unknown): jsonString is string {
  * @returns
  */
 export function isEmpty(v: unknown): v is "" | AnyArr | AnyObj | Set<unknown> | Map<unknown, unknown> {
-  return isEmptyString(v) || isEmptySet(v) || isEmptyMap(v) || isEmptyArray(v) || isEmptyObject(v)
+  if (isString(v)) return v === ""
+  if (isSet(v)) return v.size === 0
+  if (isMap(v)) return v.size === 0
+  if (isArray(v)) return v.length === 0
+  if (isObject(v)) return isEmtyObject(v)
+  return false
 }
 
 export function isEmptySet(v: unknown): v is Set<unknown> {

@@ -1,4 +1,4 @@
-import { addItem } from "./collectionMethods"
+import { addItemMutable } from "./collectionMethods"
 import { AnyFn } from "./typings"
 
 const invokedRecord = new Map<string, (LazyMapSettings<any, any> & { idleId: number })[]>()
@@ -29,7 +29,7 @@ export function lazyMap<T, U>(setting: LazyMapSettings<T, U>) {
   const currentKeySettings = invokedRecord.get(setting.sourceKey) ?? []
   const lastIdleId = currentKeySettings[currentKeySettings.length - 1]?.idleId
   if (lastIdleId) cancelIdleCallback(lastIdleId)
-  invokedRecord.set(setting.sourceKey, addItem(invokedRecord.get(setting.sourceKey) ?? [], { ...setting, idleId }))
+  invokedRecord.set(setting.sourceKey, addItemMutable(invokedRecord.get(setting.sourceKey) ?? [], { ...setting, idleId }))
 }
 
 function requestIdleCallback(fn: AnyFn): number {

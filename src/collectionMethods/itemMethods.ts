@@ -111,11 +111,11 @@ export function getLastItem<T>(i: Collection<T>) {
 }
 
 /** mutate, no key */
-export function addItem<T, U>(i: Array<T>, value: U): Array<T | U>
-export function addItem<T, U>(i: Set<T>, value: U): Set<T | U>
-export function addItem<T, K, U>(i: Map<K, T>, value: U): Map<K | number, T | U>
-export function addItem<T extends object, U>(i: T, value: U): T & { [key: number]: U }
-export function addItem<T>(i: Collection<T>, value: T) {
+export function addItemMutable<T, U>(i: Array<T>, value: U): Array<T | U>
+export function addItemMutable<T, U>(i: Set<T>, value: U): Set<T | U>
+export function addItemMutable<T, K, U>(i: Map<K, T>, value: U): Map<K | number, T | U>
+export function addItemMutable<T extends object, U>(i: T, value: U): T & { [key: number]: U }
+export function addItemMutable<T>(i: Collection<T>, value: T) {
   if (isUndefined(i)) return
   if (isMap(i)) {
     return i.set(i.size, value)
@@ -134,17 +134,48 @@ export function addItem<T>(i: Collection<T>, value: T) {
     return newRecord
   }
 }
+/** immutably, no key */
+export function addItem<T, U>(i: Array<T>, ...values: U[]): Array<T | U>
+export function addItem<T, U>(i: Set<T>, ...values: U[]): Set<T | U>
+export function addItem<T, K, U>(i: Map<K, T>, ...values: U[]): Map<K | number, T | U>
+export function addItem<T extends object, U>(i: T, ...values: U[]): T & { [key: number]: U }
+export function addItem<T>(i: Collection<T>, ...values: T[]) {
+  if (isUndefined(i)) return i
+  if (isMap(i)) {
+    const newMap = new Map(i)
+    for (const element of values) {
+      newMap.set(newMap.size, element)
+    }
+    return newMap
+  }
+  if (isArray(i)) {
+    return [...i, ...values]
+  }
+  if (isSet(i)) {
+    return new Set([...i, ...values])
+  }
+  if (isIterable(i)) {
+    throw new Error("Iterable does not support add")
+  } else {
+    const newRecord = cloneObject(i)
+    const n = count(i)
+    for (let i = 0; i < values.length; i++) {
+      newRecord[n + i] = values[i]
+    }
+    return newRecord
+  }
+}
 /** have key */
-export function setItem<T, U>(i: Array<T>, key: number, value: U | ((v: T | undefined) => U)): Array<T | U>
-export function setItem<T, U>(i: Set<T>, key: number, value: U | ((v: T | undefined) => U)): Set<T | U>
-export function setItem<T, K, U>(i: Map<K, T>, key: K, value: U | ((v: T | undefined) => U)): Map<K, T | U>
-export function setItem<T extends object, K extends keyof any, U>(
+export function setItemMutable<T, U>(i: Array<T>, key: number, value: U | ((v: T | undefined) => U)): Array<T | U>
+export function setItemMutable<T, U>(i: Set<T>, key: number, value: U | ((v: T | undefined) => U)): Set<T | U>
+export function setItemMutable<T, K, U>(i: Map<K, T>, key: K, value: U | ((v: T | undefined) => U)): Map<K, T | U>
+export function setItemMutable<T extends object, K extends keyof any, U>(
   i: T,
   key: K,
 
   value: U | ((v: T[K extends keyof T ? K : keyof T] | undefined) => U),
 ): T & { [key in K]: U }
-export function setItem<T>(i: Collection<T>, key: unknown, value: T | ((v: T | undefined) => T)) {
+export function setItemMutable<T>(i: Collection<T>, key: unknown, value: T | ((v: T | undefined) => T)) {
   if (isUndefined(i)) return
   if (isMap(i)) {
     const newMap = i
@@ -171,11 +202,11 @@ export function setItem<T>(i: Collection<T>, key: unknown, value: T | ((v: T | u
   }
 }
 
-export function deleteItem<T>(i: Array<T>, key: number): Array<T>
-export function deleteItem<T>(i: Set<T>, key: number): Set<T>
-export function deleteItem<T, K>(i: Map<K, T>, key: K): Map<K, T>
-export function deleteItem<T extends object, K extends keyof any>(i: T, key: K): T
-export function deleteItem<T>(i: Collection<T>, key: any) {
+export function deleteItemMutable<T>(i: Array<T>, key: number): Array<T>
+export function deleteItemMutable<T>(i: Set<T>, key: number): Set<T>
+export function deleteItemMutable<T, K>(i: Map<K, T>, key: K): Map<K, T>
+export function deleteItemMutable<T extends object, K extends keyof any>(i: T, key: K): T
+export function deleteItemMutable<T>(i: Collection<T>, key: any) {
   if (isUndefined(i)) return
   if (isMap(i)) {
     const newMap = i
