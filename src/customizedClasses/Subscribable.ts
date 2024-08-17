@@ -86,6 +86,7 @@ export function createSubscribable<T>(
   const cleanFnsStore = new WeakMap<SubscribeFn<T>, AnyFn>()
   const onDestoryCallback = new Set<AnyFn>()
 
+  // let innerValueUpdateTimeStamp: number // performance.now()
   let innerValue = shrinkFn(defaultValue) as T | undefined
 
   // run init action

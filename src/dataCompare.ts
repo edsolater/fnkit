@@ -48,14 +48,14 @@ export function isShallowEqual(a: any, b: any) {
  * check item is part of collector\
  * use {@link isShallowEqual} to compare
  * @example
- * isItemContained(2, [1, 2, 3]) // true
- * isItemContained(2, { a: 1, b: 2 }) // true
- * isItemContained(2, new Set([1, 2, 3])) // true
- * isItemContained(2, new Map([["a", 1], ["b", 2]])) // true
- * @param item check item
+ * isItemContainedIn([1, 2, 3], 2) // true
+ * isItemContainedIn({ a: 1, b: 2 }, 2) // true
+ * isItemContainedIn(new Set([1, 2, 3]), 2) // true
+ * isItemContainedIn(new Map([["a", 1], ["b", 2]]), 2) // true
  * @param collector collector
+ * @param item check item
  */
-export function isItemContained(item: any, collector: any): boolean {
+export function isItemContainedIn(collector: any, item: any): boolean {
   if (isSet(collector)) {
     for (const value of collector) {
       if (isShallowEqual(value, item)) return true
@@ -91,20 +91,20 @@ export function isItemContained(item: any, collector: any): boolean {
  * check smallerCollector is sub of biggerCollector\
  * use {@link isShallowEqual} to compare
  * @example
- * isSubCollector([2], [1, 2, 3]) // true
- * isSubCollector({ b: 2, c: 3 }, { a: 1, b: 2, c: 3 }) // true
- * isSubCollector({ a: 2 }, { a: 1, b: 2 }) // false
- * isSubCollector(new Set([2]), new Set([1, 2, 3])) // true
- * isSubCollector(new Map([["b", 2]]), new Map([["a", 1], ["b", 2]])) // true
- * isSubCollector("hello", "hello world") // true
- * @param smallerCollector smaller collector
+ * isSubCollectorOf([1, 2, 3], [2]) // true
+ * isSubCollectorOf({ a: 1, b: 2, c: 3 }, { b: 2, c: 3 }) // true
+ * isSubCollectorOf({ a: 1, b: 2 }, { a: 2 }) // false
+ * isSubCollectorOf(new Set([1, 2, 3]), new Set([2])) // true
+ * isSubCollectorOf(new Map([["a", [4]], ["b", [1, 2]]]), new Map([["b", [1, 2]]])) // true
+ *
  * @param biggerCollector bigger collector
+ * @param smallerCollector smaller collector
  */
-export function isSubCollector(smallerCollector: any, biggerCollector: any): boolean {
+export function isSubCollectorOf(biggerCollector: any, smallerCollector: any): boolean {
   if (isSet(biggerCollector) && isSet(smallerCollector)) {
     const aArr = [...smallerCollector]
     const bArr = [...biggerCollector]
-    return aArr.every((value) => isItemContained(value, bArr))
+    return aArr.every((value) => isItemContainedIn(bArr, value))
   }
   if (isMap(biggerCollector) && isMap(smallerCollector)) {
     for (const key of smallerCollector.keys()) {
@@ -116,7 +116,7 @@ export function isSubCollector(smallerCollector: any, biggerCollector: any): boo
     return true
   }
   if (isArray(biggerCollector) && isArray(smallerCollector)) {
-    return smallerCollector.every((value) => isItemContained(value, biggerCollector))
+    return smallerCollector.every((value) => isItemContainedIn(biggerCollector, value))
   }
   if (isObjectLiteral(biggerCollector) && isObjectLiteral(smallerCollector)) {
     for (const [key, value] of Object.entries(smallerCollector)) {
