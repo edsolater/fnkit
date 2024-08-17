@@ -168,11 +168,29 @@ export function isJSON(jsonString: unknown): jsonString is string {
   }
 }
 
-export function isEmpty(v: unknown): boolean {
-  return isEmptyString(v) || isEmptyArray(v) || isEmptyObject(v)
+/**
+ * content is empty
+ * - string: ''
+ * - array: []
+ * - object: {}
+ * - set: new Set()
+ * - map: new Map()
+ * @param v to be checked
+ * @returns
+ */
+export function isEmpty(v: unknown): v is "" | AnyArr | AnyObj | Set<unknown> | Map<unknown, unknown> {
+  return isEmptyString(v) || isEmptySet(v) || isEmptyMap(v) || isEmptyArray(v) || isEmptyObject(v)
 }
 
-export function isEmptyArray(v: unknown): boolean {
+export function isEmptySet(v: unknown): v is Set<unknown> {
+  return isSet(v) && v.size === 0
+}
+
+export function isEmptyMap(v: unknown): v is Map<unknown, unknown> {
+  return isMap(v) && v.size === 0
+}
+
+export function isEmptyArray(v: unknown): v is Array<unknown> {
   return isArray(v) && v.length === 0
 }
 
@@ -322,5 +340,3 @@ export function isEmptyObject(obj: any): obj is AnyObj {
   // If no enumerable property is found, or if obj is not an object, return true
   return true
 }
-
-
