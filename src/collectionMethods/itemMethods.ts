@@ -172,7 +172,6 @@ export function setItemMutable<T, K, U>(i: Map<K, T>, key: K, value: U | ((v: T 
 export function setItemMutable<T extends object, K extends keyof any, U>(
   i: T,
   key: K,
-
   value: U | ((v: T[K extends keyof T ? K : keyof T] | undefined) => U),
 ): T & { [key in K]: U }
 export function setItemMutable<T>(i: Collection<T>, key: unknown, value: T | ((v: T | undefined) => T)) {
@@ -196,6 +195,39 @@ export function setItemMutable<T>(i: Collection<T>, key: unknown, value: T | ((v
   } else {
     if (isString(key) || isNumber(key)) {
       const newRecord = i
+      newRecord[key] = shrinkFn(value, [i[key]])
+      return newRecord
+    }
+  }
+}
+
+export function setItem<T, U>(i: Array<T>, key: number, value: U | ((v: T | undefined) => U)): Array<T | U>
+export function setItem<T, U>(i: Set<T>, key: number, value: U | ((v: T | undefined) => U)): Set<T | U>
+export function setItem<T, K, U>(i: Map<K, T>, key: K, value: U | ((v: T | undefined) => U)): Map<K, T | U>
+export function setItem<T extends object, K extends keyof any, U>(
+  i: T,
+  key: K,
+  value: U | ((v: T[K extends keyof T ? K : keyof T] | undefined) => U),
+): T & { [key in K]: U }
+export function setItem<T>(i: Collection<T>, key: unknown, value: T | ((v: T | undefined) => T)) {
+  if (isUndefined(i)) return i
+  if (isMap(i)) {
+    const newMap = new Map(i)
+    newMap.set(key, shrinkFn(value, [i.get(key)]))
+    return newMap
+  } else if (isArray(i) && isNumber(key)) {
+    const newArray = [...i]
+    newArray[key] = shrinkFn(value, [i[key]])
+    return newArray
+  } else if (isSet(i) && isNumber(key)) {
+    const values = [...i.values()]
+    values[key] = shrinkFn(value, [values[key]])
+    return new Set(values)
+  } else if (isIterable(i)) {
+    throw new Error("Iterable does not support set")
+  } else {
+    if (isString(key) || isNumber(key)) {
+      const newRecord = cloneObject(i)
       newRecord[key] = shrinkFn(value, [i[key]])
       return newRecord
     }
