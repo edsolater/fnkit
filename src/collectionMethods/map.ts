@@ -1,6 +1,6 @@
 import { cacheFn } from "../cache"
 import { isArray, isIterable, isMap, isNumber, isSet, isString, isUndefined } from "../dataType"
-import type { Collection, Entries, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./collection.type"
+import type { Collection, Entries, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./type"
 import { toIterableEntries, toIterableValue } from "./entries"
 import { count } from "./itemMethods"
 

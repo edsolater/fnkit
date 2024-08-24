@@ -1,4 +1,4 @@
-export * from "./collection.type"
+export * from "./type"
 export * from "./concat"
 export * from "./drop"
 export * from "./every"

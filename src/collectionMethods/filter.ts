@@ -1,6 +1,6 @@
 import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj, SKeyof, Valueof } from "../typings"
-import type { Collection, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./collection.type"
+import type { Collection, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./type"
 import { toIterableEntries, toIterableValue } from "./entries"
 
 /**

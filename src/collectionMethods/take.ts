@@ -1,5 +1,5 @@
 import { isArray, isIterable, isMap, isSet, isUndefined } from "../dataType"
-import type { Collection } from "./collection.type"
+import type { Collection } from "./type"
 
 /**
  * like array.prototype.slice, but support all collection type

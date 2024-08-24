@@ -61,6 +61,7 @@ export type GetNewCollection<
   ? Record<Extract<NewKey, string | number | symbol>, NewValue>
   : never
 
+// TODO: should can iterator , because iterator can have iterator helpers. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/forEach
 export type Items<V = any> = Set<V> | V[] | IterableIterator<V> | Iterable<V> | undefined
 
 export type Entries<V = any, K = any> =

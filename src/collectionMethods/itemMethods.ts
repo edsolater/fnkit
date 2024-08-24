@@ -1,7 +1,7 @@
 import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject, isString } from "../dataType"
 import { cloneObject } from "../objectUtils/objectUtils"
 import { shrinkFn } from "../wrapper"
-import { Collection } from "./collection.type"
+import { Collection } from "./type"
 import { pick } from "./pick"
 
 /** accept all may iterable data type */
