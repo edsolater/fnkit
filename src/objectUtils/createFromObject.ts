@@ -9,7 +9,7 @@ export function createObjectFrom(
   onTravelValue: (info: {
     key: keyof any
     /* path include self */
-    keyPaths: (keyof any)[]
+    path: (keyof any)[]
     /* path execpt self */
     parentPath: (keyof any)[]
     value: any
@@ -20,12 +20,12 @@ export function createObjectFrom(
   }) => any,
 ): any {
   const object = isArray(obj) ? [] : {}
-  travelObject(obj, ({ keyPaths, parentPath, key, value, canDeepWalk, needDeepWalk }) => {
-    const newValue = onTravelValue({ keyPaths, parentPath, key, value, canDeepWalk, needDeepWalk })
+  travelObject(obj, ({ path, parentPath, key, value, canDeepWalk, needDeepWalk }) => {
+    const newValue = onTravelValue({ path, parentPath, key, value, canDeepWalk, needDeepWalk })
     if (newValue !== undefined && newValue !== value) {
-      setByPath({ obj: object, path: keyPaths, value: newValue })
+      setByPath({ obj: object, path: path, value: newValue })
     } else {
-      setByPath({ obj: object, path: keyPaths, value: value })
+      setByPath({ obj: object, path: path, value: value })
     }
   })
   return object

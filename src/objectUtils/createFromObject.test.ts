@@ -2,7 +2,7 @@ import { createObjectFrom } from "./createFromObject"
 
 test("basic usage", () => {
   const obj = { a: "a", b: "b", c: { d: "d" } }
-  const rewrited = createObjectFrom(obj, ({ keyPaths, parentPath, key, value }) => {
+  const rewrited = createObjectFrom(obj, ({ path, parentPath, key, value }) => {
     if (key === "a") {
       expect(value).toBe("a")
       return { key, value: "a" }
@@ -14,10 +14,10 @@ test("basic usage", () => {
 
     if (key === "d") {
       expect(value).toBe("d")
-      expect(keyPaths).toEqual(["c", "d"])
+      expect(path).toEqual(["c", "d"])
     }
 
-    if (keyPaths.length === 2) {
+    if (path.length === 2) {
       return "hello world"
     }
   })

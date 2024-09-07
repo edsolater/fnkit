@@ -88,6 +88,7 @@ export function switchCase<T, R>(
 /**
  * only for key-based object, so, this can have better type inference.
  * But actually is's the same as {@link switchCase}
+ * @deprecated just use {@link switchCase} instead
  */
 export function switchKey<T extends keyof any | undefined, R>(
   key: T,

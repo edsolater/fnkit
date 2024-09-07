@@ -1,4 +1,5 @@
-import { isArray, isObjectLike, isObjectLiteral } from "../dataType"
+import { isArray, isObjectLike, isObjectLiteral, isPromise } from "../dataType"
+import type { AnyObj } from "../typings"
 /**
  * won't create a new object
  * only walk through string enumtable object key (not symbol)
@@ -7,9 +8,9 @@ export function travelObject(
   obj: object,
   onTravelValue: (info: {
     key: keyof any
-    /* path include self */
-    keyPaths: (keyof any)[]
-    /* path execpt self */
+    /** path include self */
+    path: (keyof any)[]
+    /** path execpt self */
     parentPath: (keyof any)[]
     value: any
     /** when value is object or array, it's canDeepWalk */
@@ -25,7 +26,7 @@ export function travelObject(
       const keyPaths = parentKeyPaths.concat(key)
       onTravelValue({
         key,
-        keyPaths,
+        path: keyPaths,
         parentPath: parentKeyPaths,
         value,
         canDeepWalk,
@@ -136,4 +137,52 @@ export function hasByPath(obj: object, path: (keyof any)[]): boolean {
   const targetObj = getByPath(obj, path)
   if (!isObjectLike(targetObj)) return false
   return Reflect.has(targetObj, lastKey)
+}
+
+/**
+ * async version of {@link changeObjectWithRules}
+ */
+export async function asyncChangeObjectWithRules(
+  obj: AnyObj,
+  rules: [match: (data: any) => boolean, rule: (data: any) => any | Promise<any>][],
+): Promise<AnyObj> {
+  const promises: Promise<any>[] = []
+  const newObject = {}
+  travelObject(obj, ({ value, path }) => {
+    for (const [match, rule] of rules) {
+      if (match(value)) {
+        const newValue = rule(value)
+        if (isPromise(newValue)) {
+          promises.push(newValue.then((v) => setByPath({ obj: newObject, path: path, value: v })))
+        } else {
+          setByPath({ obj: newObject, path: path, value: newValue })
+        }
+      } else {
+        setByPath({ obj: newObject, path: path, value })
+      }
+    }
+  })
+  return Promise.all(promises).then(() => newObject)
+}
+
+/**
+ *
+ * sync version of {@link asyncChangeObjectWithRules}
+ */
+export function changeObjectWithRules(
+  obj: AnyObj,
+  rules: [match: (data: any) => boolean, rule: (data: any) => any][],
+): AnyObj {
+  const newObject = {}
+  travelObject(obj, ({ value, path }) => {
+    for (const [match, rule] of rules) {
+      if (match(value)) {
+        const newValue = rule(value)
+        setByPath({ obj: newObject, path: path, value: newValue })
+      } else {
+        setByPath({ obj: newObject, path: path, value })
+      }
+    }
+  })
+  return newObject
 }
