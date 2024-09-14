@@ -1,4 +1,5 @@
 import { isFunction, isObjectLike, isPromise } from "../dataType"
+import { mergeFunction } from "../mergeFunctions"
 import { AnyFn, MayPromise, type IDNumber } from "../typings"
 import { shrinkFn } from "../wrapper"
 
@@ -53,7 +54,8 @@ export interface Subscribable<T> {
 
 type SubscribeFnKey = string
 type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) => MayPromise<T>)
-
+// a shadow type
+type SubscribablePlugin<T> = Omit<SubscribableOptions<T>, "plugins">
 type SubscribableOptions<T> = {
   /** will be {@link Subscribable}'s name */
   name?: string
@@ -65,6 +67,7 @@ type SubscribableOptions<T> = {
    * same as default value (function version), but this is more clear for side-effect
    */
   onInit?: (utils: { set: Subscribable<T>["set"] }) => void
+  plugins?: SubscribablePlugin<T>[]
 }
 
 /**
@@ -79,8 +82,25 @@ export function createSubscribable<T>(
 ): Subscribable<T | undefined>
 export function createSubscribable<T>(
   defaultValue?: T | (() => T),
-  options?: SubscribableOptions<T | undefined>,
+  rawOptions?: SubscribableOptions<T | undefined>,
 ): Subscribable<T | undefined> {
+  const options = rawOptions?.plugins
+    ? ({
+        name: rawOptions.name,
+        beforeValueSet(...params) {
+          rawOptions.beforeValueSet?.(...params)
+          rawOptions.plugins?.forEach((p) => p.beforeValueSet?.(...params))
+        },
+        onInit(...params) {
+          rawOptions.onInit?.(...params)
+          rawOptions.plugins?.forEach((p) => p.onInit?.(...params))
+        },
+        onSet(...params) {
+          rawOptions.onSet?.(...params)
+          rawOptions.plugins?.forEach((p) => p.onSet?.(...params))
+        },
+      } as SubscribableOptions<T | undefined>)
+    : rawOptions
   const subscribeFnsKeylessStore = new Set<SubscribeFn<T>>()
   const subscribeFnsKeyedStore = new Map<SubscribeFnKey, SubscribeFn<T>>()
   const cleanFnsStore = new WeakMap<SubscribeFn<T>, AnyFn>()
