@@ -5,7 +5,8 @@ export default defineConfig({
   plugins: [
     dts({
       tsconfigPath: "./tsconfig.json",
-      outDir: "dist",
+      staticImport: true,
+      insertTypesEntry: true,
     }),
   ],
   build: {
