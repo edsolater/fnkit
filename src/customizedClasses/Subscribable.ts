@@ -55,7 +55,7 @@ export interface Subscribable<T> {
 type SubscribeFnKey = string
 type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) => MayPromise<T>)
 // a shadow type
-type SubscribablePlugin<T> = Omit<SubscribableOptions<T>, "plugins">
+type SubscribablePlugin<T> = (s: Subscribable<T>) => Omit<SubscribableOptions<T>, "plugins">
 type SubscribableOptions<T> = {
   /** will be {@link Subscribable}'s name */
   name?: string
@@ -89,15 +89,15 @@ export function createSubscribable<T>(
         name: rawOptions.name,
         beforeValueSet(...params) {
           rawOptions.beforeValueSet?.(...params)
-          rawOptions.plugins?.forEach((p) => p.beforeValueSet?.(...params))
+          rawOptions.plugins?.forEach((p) => p?.(subscribable).beforeValueSet?.(...params))
         },
         onInit(...params) {
           rawOptions.onInit?.(...params)
-          rawOptions.plugins?.forEach((p) => p.onInit?.(...params))
+          rawOptions.plugins?.forEach((p) => p?.(subscribable).onInit?.(...params))
         },
         onSet(...params) {
           rawOptions.onSet?.(...params)
-          rawOptions.plugins?.forEach((p) => p.onSet?.(...params))
+          rawOptions.plugins?.forEach((p) => p?.(subscribable).onSet?.(...params))
         },
       } as SubscribableOptions<T | undefined>)
     : rawOptions
