@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { createObjectFrom } from "./createFromObject"
 
 test("basic usage", () => {

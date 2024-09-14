@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { map, mapEntry } from "./map"
 
 // test("fnkit: flatMapEntries()", () => {

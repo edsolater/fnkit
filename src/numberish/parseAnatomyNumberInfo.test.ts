@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { buildFromAnatomyNumberInfo, parseAnatomyNumberInfo } from "./parseAnatomyNumberInfo"
 
 test("toFormattedNumber2", () => {

@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { isInt, isPositive, isZero } from "./selfIs"
 
 test("basic", () => {

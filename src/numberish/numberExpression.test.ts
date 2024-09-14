@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { parseRPNToFraction, toRPN } from "./numberExpression"
 import { toStringNumber } from "./numberishAtom"
 

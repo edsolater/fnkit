@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { isSymbol } from "./dataType"
 import { getObjKeys, mergeObjectsWithConfigs } from "./mergeObjects"
 

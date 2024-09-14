@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { createCachedObject } from "./cacheFunction"
 
 test("test fn function:mergeObjectsWithConfigs", () => {

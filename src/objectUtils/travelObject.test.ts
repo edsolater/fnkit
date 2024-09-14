@@ -1,4 +1,5 @@
-import { asyncChangeObjectWithRules, getByPath, travelObject } from "./travelObject"
+import { expect, test } from "vitest"
+import { asyncMutatableChangeObjectWithRules, getByPath, travelObject } from "./travelObject"
 
 test("basic usage", () => {
   const obj = { a: "a", b: "b", c: { d: "d" } }
@@ -22,14 +23,18 @@ test("basic usage", () => {
   })
   expect(obj.c.d).toBe("hello world")
 })
+
 test("asyncChangeObjectWithRules example", () => {
-  asyncChangeObjectWithRules({ default: { hello: "world" }, syc: { a: { type: "ll" } } }, [
+  const original = { propertyA: { hello: "world" }, propertyB: { a: { type: "ll" } } }
+  asyncMutatableChangeObjectWithRules(original, [
     [(v) => v === "world", () => "yes"],
     [
-      (v) => v.type === "ll",
+      (v) => v?.type === "ll",
       () => ({
         with: "hi",
       }),
     ],
-  ]).then((obj) => expect(obj).toEqual({ default: { hello: "yes" }, syc: { a: { with: "hi" } } }))
+  ]).then((obj) => {
+    return expect(obj).toEqual({ propertyA: { hello: "yes" }, propertyB: { a: { with: "hi" } } })
+  })
 })

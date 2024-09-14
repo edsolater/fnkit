@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { toFormattedNumber } from "./toFormattedNumber"
 
 test("toFormattedNumber", () => {

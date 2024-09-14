@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { isItemContainedIn, isShallowEqual, isSubCollectorOf } from "./dataCompare"
 
 test("isShallowEqual", () => {

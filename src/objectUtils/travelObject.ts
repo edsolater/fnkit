@@ -60,6 +60,7 @@ export function getByPath(obj: object, path: (keyof any)[]): any {
 
 /**
  *
+ * mutate object by path
  * if  path is not reachable, this will create a new literal object. see example for detail
  * @param obj
  * @param path
@@ -88,7 +89,7 @@ export function setByPath({
     return Reflect.set(obj, key, value)
   } else {
     try {
-      recursiveSet({ obj, path, value, mergeRule })
+      forceSet({ obj, path, value, mergeRule })
       return true
     } catch {
       return false
@@ -101,7 +102,7 @@ export function setByPath({
  * even not reachable will be ok
  * used in {@link setByPath}
  */
-function recursiveSet({
+function forceSet({
   obj,
   path,
   value,
@@ -124,9 +125,9 @@ function recursiveSet({
   }
   const [currentKey, ...restPath] = path
   if (currentKey in obj) {
-    return recursiveSet({ obj: Reflect.get(obj, currentKey), path: restPath, value, mergeRule })
+    return forceSet({ obj: Reflect.get(obj, currentKey), path: restPath, value, mergeRule })
   } else {
-    Reflect.set(obj, currentKey, recursiveSet({ obj: {}, path: restPath, value, mergeRule }))
+    Reflect.set(obj, currentKey, forceSet({ obj: {}, path: restPath, value, mergeRule }))
     return obj
   }
 }
@@ -140,26 +141,24 @@ export function hasByPath(obj: object, path: (keyof any)[]): boolean {
 }
 
 /**
- * async version of {@link changeObjectWithRules}
+ * async version of {@link mutatableChangeObjectWithRules}
  */
-export async function asyncChangeObjectWithRules(
+export async function asyncMutatableChangeObjectWithRules(
   obj: AnyObj,
-  rules: [match: (data: any) => boolean, rule: (data: any) => any | Promise<any>][],
+  rules: [match: (data: any) => boolean, replaceTo: (data: any) => any | Promise<any>][],
 ): Promise<AnyObj> {
   const promises: Promise<any>[] = []
-  const newObject = {}
-  travelObject(obj, ({ value, path }) => {
-    for (const [match, rule] of rules) {
+  const newObject = obj
+  travelObject(newObject, ({ value, path }) => {
+    for (const [match, replaceTo] of rules) {
       if (match(value)) {
-        const newValue = rule(value)
+        const newValue = replaceTo(value)
         if (isPromise(newValue)) {
           promises.push(newValue.then((v) => setByPath({ obj: newObject, path: path, value: v })))
         } else {
           setByPath({ obj: newObject, path: path, value: newValue })
         }
-      } else {
-        setByPath({ obj: newObject, path: path, value })
-      }
+      } 
     }
   })
   return Promise.all(promises).then(() => newObject)
@@ -167,9 +166,9 @@ export async function asyncChangeObjectWithRules(
 
 /**
  *
- * sync version of {@link asyncChangeObjectWithRules}
+ * sync version of {@link asyncMutatableChangeObjectWithRules}
  */
-export function changeObjectWithRules(
+export function mutatableChangeObjectWithRules(
   obj: AnyObj,
   rules: [match: (data: any) => boolean, rule: (data: any) => any][],
 ): AnyObj {

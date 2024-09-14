@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { shakeTailingZero } from "./trimZero"
 
 test("shakeTailingZero", () => {

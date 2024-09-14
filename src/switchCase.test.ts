@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { switchCase } from "./switchCase"
 
 test(`${switchCase}() basic usage`, () => {

@@ -11,12 +11,17 @@ import {
   isIterable,
   isMap,
   isObject,
+  isObjectLiteral,
   isSet,
   isUndefined,
+  map,
   type Collection,
+  type Entries,
+  type Items,
 } from "../"
 
 /**
+ * there two types of Entry, `[key, value]` and `{key, value}` (e.g. `['a', 1]` and `{key: 'a', value: 1}`)
  * @example
  * toEntry(toEntry(v, k)) === toEntry(v, k)
  */
@@ -40,12 +45,8 @@ export function toEntry<E, K>(value: E, key?: K): E extends Entry ? E : Entry<E,
  * @returns a list of Entry
  * @requires {@link isArray `isArray()`} {@link isMap `isMap()`} {@link isObject `isObject()`} {@link isSet `isSet()`}
  */
-export function toEntries<C extends Collection>(
-  target: C,
-): Iterable<Entry<GetCollectionValue<C>, GetCollectionKey<C>>> {
-  const jsEntries: Iterable<[any, any]> =
-    isArray(target) || isSet(target) || isMap(target) ? target.entries() : Object.entries(target ?? {})
-  return Array.from(jsEntries) as Entry<any, any>[]
+export function toEntries<C extends Collection>(target: C): Array<Entry<GetCollectionValue<C>, GetCollectionKey<C>>> {
+  return Array.from(toIterable(target)).map((v, k) => toEntry(v, k))
 }
 // /**
 //  * split collection into pieces
@@ -243,24 +244,26 @@ export function toIterableEntries<C extends Collection>(
   }
 }
 
-/** auto-detect whether it should use {@link toIterableValue} or {@link toIterableEntries} */
-export function toIterable<C extends Collection>(collection: C): IterableIterator<GetCollectionValue<C>>
-export function toIterable<C extends Collection>(
+/** auto-detect whether it should use {@link toIterableValue} or {@link toIterableEntries}
+ * @example
+ * toIterable([1, 2]) // [1, 2]
+ * toIterable({ a: 1, b: 2 }) // [['a', 1], ['b', 2]]
+ */
+export function toIterable<C extends Items>(items: C): IterableIterator<GetCollectionValue<C>>
+export function toIterable<C extends Entries>(
   collection: C,
-  options: { entries: true },
 ): IterableIterator<[GetCollectionKey<C>, GetCollectionValue<C>]>
 export function toIterable<C extends Collection>(
   collection: C,
-  options?: { entries?: boolean },
 ): IterableIterator<GetCollectionValue<C> | [GetCollectionKey<C>, GetCollectionValue<C>]> {
   if (isUndefined(collection)) {
     return [] as any
   } else if (isIterable(collection)) {
     return collection as any
   }
-  if (options?.entries) {
-    return toIterableEntries(collection)
-  } else {
+  if (isSet(collection) || isArray(collection)) {
     return toIterableValue(collection)
+  } else {
+    return toIterableEntries(collection)
   }
 }

@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { toStringNumber } from "./numberishAtom"
 import { add, applyDecimal, minus, mul, multiply, pow } from "./operations"
 
