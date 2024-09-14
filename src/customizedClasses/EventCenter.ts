@@ -36,7 +36,8 @@ type EventCenterCreateOptions<T extends EventConfig> = {
     isFirst: boolean
   }) => void
 }
-export type EventListenerOptions = {
+
+export type EventCenterListenerOptions = {
   /**
    * worked only if `shouldCacheAllEmitedValues` is true
    */
@@ -50,7 +51,7 @@ export type EventListenerOptions = {
 type EventCenterOn<Config extends EventConfig> = {
   [P in keyof Config as `on${Capitalize<string & P>}`]: (
     subscriptionFn: (...params: Config[P]) => void,
-    options?: EventListenerOptions,
+    options?: EventCenterListenerOptions,
   ) => Subscription
 }
 type EventCenterBase<Config extends EventConfig> = {
@@ -63,7 +64,7 @@ type EventCenterBase<Config extends EventConfig> = {
    */
   multiOn<U extends Partial<Config>>(
     subscriptionFns: U,
-    options?: EventListenerOptions,
+    options?: EventCenterListenerOptions,
   ): { [P in keyof U]: Subscription }
 
   /** core for event consumer */
@@ -72,19 +73,19 @@ type EventCenterBase<Config extends EventConfig> = {
    */
   on<EventName extends keyof Config>(
     eventName: EventName,
-  ): (subscriptionFn: (...params: Config[EventName]) => void, options?: EventListenerOptions) => Subscription
+  ): (subscriptionFn: (...params: Config[EventName]) => void, options?: EventCenterListenerOptions) => Subscription
   /**
    * subscribe
    */
   on<EventName extends keyof Config>(
     eventName: EventName,
     subscriptionFn: (...params: Config[EventName]) => void,
-    options?: EventListenerOptions,
+    options?: EventCenterListenerOptions,
   ): Subscription
 
   listenAnyEvent<EventName extends keyof Config>(
     subscriptionFn: (eventName: EventName, cllbackParams: Config[EventName]) => void,
-    options?: EventListenerOptions,
+    options?: EventCenterListenerOptions,
   ): Subscription
 
   /** clear all registed events for specified event */
@@ -154,7 +155,7 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     }
   }) as EventCenter<T>["emit"]
 
-  function singlyOn(eventName: string, fn: AnyFn, eventListenerOptions?: EventListenerOptions): Subscription {
+  function singlyOn(eventName: string, fn: AnyFn, eventListenerOptions?: EventCenterListenerOptions): Subscription {
     const callbackList = storedCallbackStore.get(eventName) ?? new Set()
     callbackList.add(fn) //NUG:  <-- add failed??
     storedCallbackStore.set(eventName, callbackList)
@@ -186,7 +187,7 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
   }
   function listenWhateverEvent<EventName extends keyof T>(
     fn: (eventName: EventName, cllbackParams: T[EventName]) => void,
-    eventListenerOptions?: EventListenerOptions,
+    eventListenerOptions?: EventCenterListenerOptions,
   ): Subscription {
     anyEventCommonCallbacks.add(fn)
 
@@ -215,14 +216,14 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
     })
   }
 
-  const createOnFactory = (eventName: string) => (fn: AnyFn, options?: EventListenerOptions) =>
+  const createOnFactory = (eventName: string) => (fn: AnyFn, options?: EventCenterListenerOptions) =>
     singlyOn(eventName, fn, options)
 
   const on = ((...args) => {
     if (args.length === 1) {
       return createOnFactory(...(args as [string]))
     } else {
-      return singlyOn(...(args as [string, AnyFn, EventListenerOptions]))
+      return singlyOn(...(args as [string, AnyFn, EventCenterListenerOptions]))
     }
   }) as EventCenter<T>["on"]
 
