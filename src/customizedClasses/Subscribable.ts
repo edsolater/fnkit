@@ -1,3 +1,4 @@
+import { pluginCoreSymbol } from "@edsolater/pivkit"
 import { isFunction, isObjectLike, isPromise } from "../dataType"
 import { mergeFunction } from "../mergeFunctions"
 import { AnyFn, MayPromise, type IDNumber } from "../typings"
@@ -10,7 +11,9 @@ function genSubscribableId() {
   return subscribableId++
 }
 
-export type SubscribeFn<T> = ((value: T, prevValue: T | undefined) => void) & { once?: boolean }
+export type SubscribeFn<T> = ((value: T, prevValue: T | undefined, detailUtils: { setCount: number }) => void) & {
+  once?: boolean
+}
 
 export interface Subscribable<T> {
   id: IDNumber
@@ -55,19 +58,31 @@ export interface Subscribable<T> {
 type SubscribeFnKey = string
 type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) => MayPromise<T>)
 // a shadow type
-type SubscribablePlugin<T> = (s: Subscribable<T>) => Omit<SubscribableOptions<T>, "plugins">
+type SubscribablePlugin<T> = (
+  inputOptions: Pick<SubscribableOptions<T>, "name">,
+) => Omit<SubscribableOptions<T>, "plugins">
+
+/**
+ *
+ * @param pluginFn for better type hinting
+ * @returns
+ */
+export function createSubscribablePlugin<T>(pluginFn: SubscribablePlugin<T>) {
+  return pluginFn
+}
+
 type SubscribableOptions<T> = {
   /** will be {@link Subscribable}'s name */
   name?: string
   /** it triggered before `onSet`, give chance to change the input value */
-  beforeValueSet?: (inputRawValue: T, currentInnerValue: T) => T
+  beforeValueSet?: (inputRawValue: T, currentInnerValue: T, utils: { self: Promise<Subscribable<T>> }) => T
   /** same as `.subscribe() */
-  onSet?: (value: T, prevValue: T) => void
+  onSet?: (value: T, prevValue: T, utils: { self: Promise<Subscribable<T>> }) => void
   /**
    * same as default value (function version), but this is more clear for side-effect
    */
-  onInit?: (utils: { set: Subscribable<T>["set"] }) => void
-  plugins?: SubscribablePlugin<T>[]
+  onInit?: (utils: { set: Subscribable<T>["set"]; self: Promise<Subscribable<T>> }) => void
+  plugins?: SubscribablePlugin<any>[]
 }
 
 /**
@@ -84,21 +99,37 @@ export function createSubscribable<T>(
   defaultValue?: T | (() => T),
   rawOptions?: SubscribableOptions<T | undefined>,
 ): Subscribable<T | undefined> {
+  const plugins = rawOptions?.plugins?.map((p) => p({ name: rawOptions.name }))
   const options = rawOptions?.plugins
     ? ({
         name: rawOptions.name,
-        beforeValueSet(...params) {
-          rawOptions.beforeValueSet?.(...params)
-          rawOptions.plugins?.forEach((p) => p?.(subscribable).beforeValueSet?.(...params))
-        },
-        onInit(...params) {
-          rawOptions.onInit?.(...params)
-          rawOptions.plugins?.forEach((p) => p?.(subscribable).onInit?.(...params))
-        },
-        onSet(...params) {
-          rawOptions.onSet?.(...params)
-          rawOptions.plugins?.forEach((p) => p?.(subscribable).onSet?.(...params))
-        },
+        beforeValueSet:
+          rawOptions.beforeValueSet || plugins?.some((p) => p.onInit)
+            ? (...params) => {
+                let result: any
+                if (plugins?.some((p) => p.beforeValueSet)) {
+                  plugins?.forEach((p) => {
+                    if (p.beforeValueSet) result = p?.beforeValueSet?.(...params)
+                  })
+                }
+                if (rawOptions.beforeValueSet) result = rawOptions.beforeValueSet?.(...params)
+                return result
+              }
+            : undefined,
+        onInit:
+          rawOptions.onInit || plugins?.some((p) => p.onInit)
+            ? (...params) => {
+                rawOptions.onInit?.(...params)
+                plugins?.forEach((p) => p?.onInit?.(...params))
+              }
+            : undefined,
+        onSet:
+          rawOptions.onSet || plugins?.some((p) => p.onSet)
+            ? (...params) => {
+                rawOptions.onSet?.(...params)
+                plugins?.forEach((p) => p?.onSet?.(...params))
+              }
+            : undefined,
       } as SubscribableOptions<T | undefined>)
     : rawOptions
   const subscribeFnsKeylessStore = new Set<SubscribeFn<T>>()
@@ -110,7 +141,7 @@ export function createSubscribable<T>(
   let innerValue = shrinkFn(defaultValue) as T | undefined
 
   // run init action
-  options?.onInit?.({ set: setValue })
+  Promise.resolve().then(() => options?.onInit?.({ set: setValue, self: Promise.resolve().then(() => subscribable) }))
 
   function setValue(
     dispatcher: SubscribableSetValueDispatcher<T | undefined>,
@@ -120,11 +151,15 @@ export function createSubscribable<T>(
     },
   ) {
     function coreOfSetValue(newInputValue: T | undefined) {
-      const value = options?.beforeValueSet ? options.beforeValueSet(newInputValue, innerValue) : newInputValue
+      const value = options?.beforeValueSet
+        ? options.beforeValueSet(newInputValue, innerValue, {
+            self: Promise.resolve().then(() => subscribable),
+          })
+        : newInputValue
       if (shouldInvokeValue(newInputValue, innerValue)) {
         const oldValue = innerValue
         innerValue = value // update holded data
-        options?.onSet?.(value, oldValue)
+        options?.onSet?.(value, oldValue, { self: Promise.resolve().then(() => subscribable) })
         invokeSubscribedCallbacks(value, oldValue)
       }
     }
@@ -165,9 +200,10 @@ export function createSubscribable<T>(
     }
   }
 
+  let setCountCounter = 0
   function invokeSubscribedCallback(cb: SubscribeFn<T>, newValue: T | undefined, prevValue: T | undefined) {
     runCleanFn(cb)
-    const cleanFn = cb(newValue as T /*  type force */, prevValue)
+    const cleanFn = cb(newValue as T /*  type force */, prevValue, { setCount: ++setCountCounter })
     if (isFunction(cleanFn)) cleanFnsStore.set(cb, cleanFn)
   }
 
