@@ -3,11 +3,26 @@ import { shrinkFn } from "./wrapper"
 
 /**
  * FP style switch, or more accurately, FP style if-else
+ *
+ * NOTE: when value is a function, it will auto-invoke (which means if you want switchCase return a function, you should pass a higher-order-function)
+ * @example
+ * const key2 = 'foo'
+ * const targetValue2 = switchCase(key, {hello: 'world', foo: () => 'faz'}); // 'faz'
+ *
  * @param key variable to be checked
  * @param rules if match, return the defined value; match rule can be function return value
  * @param getDefaultValue if none matched, return the value returned by this function. If not provided, return undefined
+ *
+ * @example
+ * const key = 'hello'
+ * const targetValue = switchCase(key, {hello: 'world', foo: () => 'faz'}); // 'world'
+ *
+ *
+ * @example // can also add a default newValue
+ * const key = 'helloooo'
+ * const targetValue3 = switchCase(key, {hello: () => 'world', foo: 'faz'}); // undefined
+ * const targetValue4 = switchCase(key, {hello: 'world'}, 'default'); // 'default'
  */
-// Array
 export function switchCase<T, R>(
   key: T,
   rules: [

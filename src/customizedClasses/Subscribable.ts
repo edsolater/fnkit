@@ -55,10 +55,10 @@ export interface Subscribable<T> {
   [Symbol.dispose](): void
 }
 
-type SubscribeFnKey = string
-type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) => MayPromise<T>)
+export type SubscribeFnKey = string
+export type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) => MayPromise<T>)
 // a shadow type
-type SubscribablePlugin<T> = (
+export type SubscribablePlugin<T> = (
   inputOptions: Pick<SubscribableOptions<T>, "name">,
 ) => Omit<SubscribableOptions<T>, "plugins">
 
@@ -71,7 +71,7 @@ export function createSubscribablePlugin<T>(pluginFn: SubscribablePlugin<T>) {
   return pluginFn
 }
 
-type SubscribableOptions<T> = {
+export type SubscribableOptions<T> = {
   /** will be {@link Subscribable}'s name */
   name?: string
   /** it triggered before `onSet`, give chance to change the input value */
