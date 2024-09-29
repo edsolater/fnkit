@@ -11,7 +11,7 @@ const derefWrapperRefIfNeeded = <T>(v: T) => (v instanceof WeakRef ? v.deref() :
  * 
  * @todo test it!!!
  */
-export class WeakerMap<K, V> implements Map<K, V> {
+export class WeakerMap<K, V>  {
   private innerKeyMap: WeakMap<K & object, WeakRef<K & object>> = new WeakMap()
   // could find by value
   private reverseInnerKeys: WeakMap<WeakRef<K & object>, K & object> = new WeakMap()

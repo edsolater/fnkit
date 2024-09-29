@@ -335,7 +335,7 @@ export function turncate<T extends Collection>(i: T, num?: [start: number, end?:
       }
       index++
     }
-    return result.values() as T
+    return result.values() as any
   } else {
     const newKeys = Object.keys(i).slice(...range)
     return pick(i, newKeys) as T
