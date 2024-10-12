@@ -3,6 +3,8 @@ import { type DeMayArray } from "../mayArray"
 
 /**
  * only array can flat
+ * 
+ * when need `3 => [3]`, use a better-performance and readable version: wrapArr
  * @example
  * flap([3, [4]]) //=> [3, 4]
  * @version 0.0.1
