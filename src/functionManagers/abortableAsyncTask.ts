@@ -1,4 +1,4 @@
-import { createSubscribable, type Subscribable } from "../customizedClasses"
+import { createSubscribable, type Subscribable } from "../subscribable";
 import { invoke } from "./invoke"
 
 export type AbortableTask<T> = {
