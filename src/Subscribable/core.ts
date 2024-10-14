@@ -56,9 +56,10 @@ export interface Subscribable<T> {
 export type SubscribeFnKey = string
 export type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) => MayPromise<T>)
 // a shadow type
-export type SubscribablePlugin<T> = (
-  inputOptions: Pick<SubscribableOptions<T>, "name">,
-) => Omit<SubscribableOptions<T>, "plugins">
+export type SubscribablePlugin<T> = (utils: {
+  params: Pick<SubscribableOptions<T>, "name">
+  self: Promise<Subscribable<T>>
+}) => Omit<SubscribableOptions<T>, "plugins">
 
 /**
  * @deprecated just use type label: `as SubscribablePlugin` to get clearer
@@ -98,7 +99,8 @@ export function createSubscribable<T>(
   defaultValue?: T | (() => T),
   rawOptions?: SubscribableOptions<T | undefined>,
 ): Subscribable<T | undefined> {
-  const plugins = rawOptions?.plugins?.map((p) => p({ name: rawOptions.name }))
+  const self = Promise.resolve().then(() => subscribable)
+  const plugins = rawOptions?.plugins?.map((p) => p({ params: rawOptions, self }))
   const options = rawOptions?.plugins
     ? ({
         name: rawOptions.name,
@@ -140,7 +142,7 @@ export function createSubscribable<T>(
   let innerValue = shrinkFn(defaultValue) as T | undefined
 
   // run init action
-  Promise.resolve().then(() => options?.onInit?.({ set: setValue, self: Promise.resolve().then(() => subscribable) }))
+  Promise.resolve().then(() => options?.onInit?.({ set: setValue, self }))
 
   function setValue(
     dispatcher: SubscribableSetValueDispatcher<T | undefined>,

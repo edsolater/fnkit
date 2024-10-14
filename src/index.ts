@@ -48,7 +48,6 @@ export * from "./queryDiffInfo"
 export * from "./retryMaster"
 export * from "./runTasks"
 export * from "./shallowMap"
-export * from "./subscribableUtils"
 export * from "./switchCase" // FP style switch
 export * from "./tableList"
 export * from "./timeoutMap"

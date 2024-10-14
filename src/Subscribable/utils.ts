@@ -1,8 +1,8 @@
-import type { Subscribable } from "./customizedClasses"
+import type { Subscribable } from "./core"
 
 /**
  * (helper function for {@link Subscribable})
- * 
+ *
  * sync two subscribable's data
  * @param s1 a subscribable to be sync with s2
  * @param s2 a subscribable to be sync with s1
