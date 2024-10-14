@@ -59,7 +59,7 @@ export type SubscribableSetValueDispatcher<T> = MayPromise<T> | ((oldValue: T) =
 export type SubscribablePlugin<T> = (utils: {
   params: Pick<SubscribableOptions<T>, "name">
   self: Promise<Subscribable<T>>
-}) => Omit<SubscribableOptions<T>, "plugins">
+}) => Partial<Omit<SubscribableOptions<T>, "plugins">> | void
 
 /**
  * @deprecated just use type label: `as SubscribablePlugin` to get clearer
@@ -99,18 +99,19 @@ export function createSubscribable<T>(
   defaultValue?: T | (() => T),
   rawOptions?: SubscribableOptions<T | undefined>,
 ): Subscribable<T | undefined> {
+  let subscribable: Subscribable<T | undefined>
   const self = Promise.resolve().then(() => subscribable)
   const plugins = rawOptions?.plugins?.map((p) => p({ params: rawOptions, self }))
   const options = rawOptions?.plugins
     ? ({
         name: rawOptions.name,
         beforeSet:
-          rawOptions.beforeSet || plugins?.some((p) => p.beforeSet)
+          rawOptions.beforeSet || plugins?.some((p) => p?.beforeSet)
             ? (...params) => {
                 let result: any
-                if (plugins?.some((p) => p.beforeSet)) {
+                if (plugins?.some((p) => p?.beforeSet)) {
                   plugins?.forEach((p) => {
-                    if (p.beforeSet) result = p?.beforeSet?.(...params)
+                    if (p?.beforeSet) result = p?.beforeSet?.(...params)
                   })
                 }
                 if (rawOptions.beforeSet) result = rawOptions.beforeSet?.(...params)
@@ -118,14 +119,14 @@ export function createSubscribable<T>(
               }
             : undefined,
         onInit:
-          rawOptions.onInit || plugins?.some((p) => p.onInit)
+          rawOptions.onInit || plugins?.some((p) => p?.onInit)
             ? (...params) => {
                 rawOptions.onInit?.(...params)
                 plugins?.forEach((p) => p?.onInit?.(...params))
               }
             : undefined,
         onSet:
-          rawOptions.onSet || plugins?.some((p) => p.onSet)
+          rawOptions.onSet || plugins?.some((p) => p?.onSet)
             ? (...params) => {
                 rawOptions.onSet?.(...params)
                 plugins?.forEach((p) => p?.onSet?.(...params))
@@ -256,7 +257,7 @@ export function createSubscribable<T>(
     onDestoryCallback.add(cb)
   }
 
-  const subscribable = Object.assign(() => innerValue, {
+  subscribable = Object.assign(() => innerValue, {
     [subscribableTag]: true,
     id: genSubscribableId(),
     subscribe,
