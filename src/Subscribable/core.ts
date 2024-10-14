@@ -61,9 +61,10 @@ export type SubscribablePlugin<T> = (
 ) => Omit<SubscribableOptions<T>, "plugins">
 
 /**
- *
+ * @deprecated just use type label: `as SubscribablePlugin` to get clearer
  * @param pluginFn for better type hinting
  * @returns
+ *
  */
 export function createSubscribablePlugin<T>(pluginFn: SubscribablePlugin<T>) {
   return pluginFn
@@ -73,7 +74,7 @@ export type SubscribableOptions<T> = {
   /** will be {@link Subscribable}'s name */
   name?: string
   /** it triggered before `onSet`, give chance to change the input value */
-  beforeValueSet?: (inputRawValue: T, currentInnerValue: T, utils: { self: Promise<Subscribable<T>> }) => T
+  beforeSet?: (newValue: T, prevValue: T, utils: { self: Promise<Subscribable<T>> }) => T
   /** same as `.subscribe() */
   onSet?: (value: T, prevValue: T, utils: { self: Promise<Subscribable<T>> }) => void
   /**
@@ -101,16 +102,16 @@ export function createSubscribable<T>(
   const options = rawOptions?.plugins
     ? ({
         name: rawOptions.name,
-        beforeValueSet:
-          rawOptions.beforeValueSet || plugins?.some((p) => p.onInit)
+        beforeSet:
+          rawOptions.beforeSet || plugins?.some((p) => p.beforeSet)
             ? (...params) => {
                 let result: any
-                if (plugins?.some((p) => p.beforeValueSet)) {
+                if (plugins?.some((p) => p.beforeSet)) {
                   plugins?.forEach((p) => {
-                    if (p.beforeValueSet) result = p?.beforeValueSet?.(...params)
+                    if (p.beforeSet) result = p?.beforeSet?.(...params)
                   })
                 }
-                if (rawOptions.beforeValueSet) result = rawOptions.beforeValueSet?.(...params)
+                if (rawOptions.beforeSet) result = rawOptions.beforeSet?.(...params)
                 return result
               }
             : undefined,
@@ -149,16 +150,16 @@ export function createSubscribable<T>(
     },
   ) {
     function coreOfSetValue(newInputValue: T | undefined) {
-      const value = options?.beforeValueSet
-        ? options.beforeValueSet(newInputValue, innerValue, {
+      const newValue = options?.beforeSet
+        ? options.beforeSet(newInputValue, innerValue, {
             self: Promise.resolve().then(() => subscribable),
           })
         : newInputValue
       if (shouldInvokeValue(newInputValue, innerValue)) {
         const oldValue = innerValue
-        innerValue = value // update holded data
-        options?.onSet?.(value, oldValue, { self: Promise.resolve().then(() => subscribable) })
-        invokeSubscribedCallbacks(value, oldValue)
+        innerValue = newValue // update holded data
+        options?.onSet?.(newValue, oldValue, { self: Promise.resolve().then(() => subscribable) })
+        invokeSubscribedCallbacks(newValue, oldValue)
       }
     }
 
@@ -275,5 +276,3 @@ export function createSubscribable<T>(
 export function isSubscribable<T>(value: any): value is Subscribable<T> {
   return isObjectLike(value) && value[subscribableTag]
 }
-
-
