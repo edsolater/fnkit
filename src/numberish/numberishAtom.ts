@@ -3,7 +3,7 @@
  * @module
  */
 
-import { NumberishOption, isArray, isBigInt, isNumber, isObject, isString } from ".."
+import { NumberishOption, assert, isArray, isBigInt, isNumber, isObject, isString } from ".."
 import { OneBigint, TenBigint } from "./constant"
 import { isMathematicalExpression, isRPNItem, parseRPNToFraction, toRPN } from "./numberExpression"
 import { BasicNumberish, Fraction, Numberish, type StringNumber } from "./types"
@@ -83,9 +83,14 @@ export function toStringNumber(from: Numberish | undefined, options?: NumberishO
   const stringNumber = (() => {
     if (isNumber(from))
       return from > Number.MAX_SAFE_INTEGER ? String(BigInt(from)) : from.toFixed(options?.decimals ?? 6)
+
     if (isBigInt(from)) return String(from)
+
     if (isString(from) && !isMathematicalExpression(from)) return from
+
+    // fraction
     const { decimal = 0, numerator, denominator = 1n } = toFraction(from)
+
     if (denominator === OneBigint) {
       if (decimal === 0) return String(numerator)
       if (decimal < 0) return padZeroR(String(numerator), -decimal)
@@ -94,13 +99,35 @@ export function toStringNumber(from: Numberish | undefined, options?: NumberishO
         ".",
         String(numerator).padStart(decimal, "0").slice(-decimal),
       ].join("")
-    } else {
-      const decimalPlace = options?.decimals ?? 6
-      const finalNumerator = numerator * TenBigint ** BigInt(decimalPlace)
-      const finalDenominator = TenBigint ** BigInt(decimal) * denominator
-      const finalN = String(finalNumerator / finalDenominator)
-      return `${finalN.slice(0, -decimalPlace) || "0"}.${finalN.slice(-decimalPlace)}`
     }
+
+    const decimalPlace = options?.decimals ?? 6
+    assert(decimalPlace >= 0, "to strinify, deciamlPlace(options.decimal) must be positive")
+
+    let finalRawNumerator: bigint
+    let finalRawDenominator: bigint
+    if (decimal >= 0) {
+      finalRawNumerator = numerator * TenBigint ** BigInt(decimalPlace)
+      finalRawDenominator = denominator * TenBigint ** BigInt(decimal)
+    } else {
+      finalRawNumerator = numerator * TenBigint ** (BigInt(decimalPlace) + BigInt(-decimal))
+      finalRawDenominator = denominator
+    }
+
+    let finalRawN = String(finalRawNumerator / finalRawDenominator)
+    const sign = finalRawN.startsWith("-") || finalRawN.startsWith("+") ? finalRawN[0] : ""
+    if (sign) {
+      finalRawN = finalRawN.slice(1)
+    }
+
+    const finalN =
+      decimalPlace === 0
+        ? finalRawN
+        : `${finalRawN.slice(0, -decimalPlace) || "0"}.${(finalRawN.length >= decimalPlace
+            ? finalRawN
+            : finalRawN.padStart(decimalPlace, "0")
+          ).slice(-decimalPlace)}`
+    return sign + finalN
   })()
   return shakeTailingZero(stringNumber)
 }

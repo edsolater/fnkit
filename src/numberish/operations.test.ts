@@ -1,6 +1,6 @@
 import { expect, test } from "vitest"
 import { toStringNumber } from "./numberishAtom"
-import { add, applyDecimal, minus, mul, multiply, pow } from "./operations"
+import { add, applyDecimal, div, divide, minus, mul, multiply, pow, reciprocal } from "./operations"
 
 test("numberish: toStringNumber", () => {
   expect(toStringNumber(3.22)).toBe("3.22")
@@ -27,6 +27,20 @@ test("numberish: operator add", () => {
 test("operator:mul", () => {
   expect(toStringNumber(multiply(add(90, 10), "112.4988"))).toBe("11249.88")
   expect(toStringNumber(multiply(0.1, 3))).toBe("0.3")
+})
+
+test("operator:excutiveReciprocal", () => {
+  expect(toStringNumber(reciprocal(1))).toBe("1")
+  expect(toStringNumber(reciprocal("1"))).toBe("1")
+  expect(toStringNumber(reciprocal("0.38"))).toBe("2.631578")
+  expect(toStringNumber(reciprocal('1.22'))).toBe('0.819672')
+  expect(toStringNumber(reciprocal('112.3'))).toBe('0.008904')
+})
+
+test("operator:divide", () => {
+  expect(toStringNumber(divide(1000, "0.38")).slice(0, 7)).toBe("2631.57")
+  expect(toStringNumber(divide('1.22', '112.3'))).toBe('0.010863')
+  expect(toStringNumber(divide('1.22', '-112.3'))).toBe('-0.010863')
 })
 
 test("pow: (2 ^ 3 = 8)", () => {
