@@ -1,7 +1,7 @@
 import { clamp, map } from ".."
 import { getType, isNumber } from "../dataType"
 import { Numberish } from "../numberish/types"
-import { DateParam, DateInfoAtom, TimeStampVerbose } from "./type"
+import { DateInfoAtom, DateParam, TimeStampVerbose } from "./type"
 
 export const createDate: {
   (): Date
@@ -67,7 +67,6 @@ export const getISO = (value?: DateParam) => createDate(value).toISOString()
 
 // same as createDate, useful for readibility
 export const createCurrentDate = () => createDate()
-
 /** use seconds not getMilliseconds */
 export const createTimeStamp = () => getTime()
 

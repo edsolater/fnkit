@@ -1,4 +1,4 @@
-import { getISO, createDate, getYear } from "./parseDate"
+import { getISO, createDate, getYear, createCurrentDate } from "./parseDate"
 import { TimeStampVerbose } from "./type"
 
 /**
@@ -114,7 +114,7 @@ export const mapToAmPmHour = (hourNumber: number): { hour: number; flag: string 
  */
 export function formatDate(
   inputDate: string | number | Date | undefined,
-  formatString: string,
+  formatString = "YYYY-MM-DD HH:mm:ss",
   options?: { /** default is 'en' */ weekNameStyle?: "en" | "zh-cn" },
 ) {
   const dateObj = createDate(inputDate)
@@ -186,3 +186,24 @@ export function extractDate(dateString: string, options?: { year?: boolean }) {
 export function extractTime(dateString: string, options?: { milliseconds?: boolean }) {
   return formatDate(dateString, options?.milliseconds ? "HH:mm:ss" : "HH:mm")
 }
+
+/**
+ *
+ * @example
+ * createCurrentTimeStampStr() //=> '2021-09-09 10:25:33'
+ */
+export const createCurrentTimeStampStr = () => formatDate(createCurrentDate(), "YYYY-MM-DD HH:mm:ss")
+
+/**
+ *
+ * @example
+ * createCurrentDateStr() //=> '2021-09-09'
+ */
+export const createCurrentDateStr = () => formatDate(createCurrentDate(), "YYYY-MM-DD")
+
+/**
+ *
+ * @example
+ * createCurrentTimeStr() //=> '10:25:33'
+ */
+export const createCurrentTimeStr = () => formatDate(createCurrentDate(), "HH:mm:ss")
