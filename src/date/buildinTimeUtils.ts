@@ -1,12 +1,18 @@
-import { isNumber } from "../dataType"
+import { isNumber, isString } from "../dataType"
 
 /** use seconds not milliseconds */
-export type TimeSigal = number /* s */ | `${number}${"ms" | "s" | "m" | "h" | "d"}`
+export type TimeSignal = number /* s */ | `${number}${"ms" | "s" | "m" | "h" | "d"}`
+
+export function isTimeSignal(time: any): time is TimeSignal {
+  if (!isNumber(time) && !isString(time)) return false
+  if (isNumber(time)) return true
+  return /^[0-9]+(ms|s|m|h|d)$/.test(time)
+}
 
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeSigal | undefined) {
+export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeSignal | undefined) {
   return globalThis.setInterval(fn, interval ? parseTimeSignal(interval) : undefined)
 }
 
@@ -19,7 +25,7 @@ export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?:
 export function setInterval(
   fn: (...args: any[]) => void,
   options?: {
-    interval: TimeSigal
+    interval: TimeSignal
     runImmediate?: boolean
   },
 ): { cancel(): void } {
@@ -35,7 +41,7 @@ export function setInterval(
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeSigal | undefined) {
+export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeSignal | undefined) {
   return globalThis.setTimeout(fn, delay ? parseTimeSignal(delay) : undefined)
 }
 
@@ -48,7 +54,7 @@ export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: Tim
 export function setTimeout(
   fn: (...args: any[]) => void,
   options?: {
-    delay: TimeSigal
+    delay: TimeSignal
     runImmediate?: boolean
   },
 ): { cancel(): void } {
@@ -62,7 +68,7 @@ export function setTimeout(
 }
 
 /** to milliseconds */
-export function parseTimeSignal(time: TimeSigal) {
+export function parseTimeSignal(time: TimeSignal) {
   if (isNumber(time)) return time * 1000
   if (time.endsWith("ms")) return parseInt(time)
   if (time.endsWith("s")) return parseInt(time) * 1000
