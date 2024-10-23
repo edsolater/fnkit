@@ -3,6 +3,7 @@ import { Numberish } from "./types"
 import { ZeroBigint } from "./constant"
 import { toFraction } from "./numberishAtom"
 import { minus } from "./operations"
+import { isNegative, isPositive, isZero } from "./selfIs"
 
 /**
  * @example
@@ -80,4 +81,13 @@ export function getMax<A extends Numberish, B extends Numberish>(a: A, b: B): A 
 
 export function getMin<A extends Numberish, B extends Numberish>(a: A, b: B): A | B {
   return lt(b, a) ? b : a
+}
+
+/** both is isPositive or both is isNegative, zero is positive and negative */
+export function isSameSign(a: Numberish, b: Numberish): boolean {
+  if (isZero(a) || isZero(b)) return true
+  if (isPositive(a) && isPositive(b)) return true
+  if (isNegative(a) && isNegative(b)) return true
+
+  return false
 }
