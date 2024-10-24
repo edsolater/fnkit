@@ -16,6 +16,8 @@ export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?:
   return globalThis.setInterval(fn, interval ? parseTimeSignal(interval) : undefined)
 }
 
+export type IntervalTaskFunction = (utils: { loopCount: number }) => void
+
 /**
  * build-in globalThis.setInterval is not human-friendly
  * @param fn function to run
@@ -23,14 +25,17 @@ export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?:
  * @returns
  */
 export function setInterval(
-  fn: (...args: any[]) => void,
+  fn: IntervalTaskFunction,
   options?: {
     interval: TimeSignal
     immediate?: boolean
   },
 ): { cancel(): void } {
-  if (options?.immediate) fn()
-  const timeId = setIntervalWithSecondes(fn, options?.interval)
+  let loopCount = 0
+  const run = () => fn({ loopCount: loopCount++ })
+
+  if (options?.immediate) run()
+  const timeId = setIntervalWithSecondes(run, options?.interval)
   return {
     cancel() {
       clearInterval(timeId)
@@ -45,6 +50,8 @@ export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: Tim
   return globalThis.setTimeout(fn, delay ? parseTimeSignal(delay) : undefined)
 }
 
+export type TimeoutTaskFunction = (utils: { loopCount: number }) => void
+
 /**
  * build-in globalThis.setTimeout is not human-friendly
  * @param fn function to run
@@ -52,14 +59,17 @@ export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: Tim
  * @returns
  */
 export function setTimeout(
-  fn: (...args: any[]) => void,
+  fn: TimeoutTaskFunction,
   options?: {
     delay: TimeSignal
     immediate?: boolean
   },
 ): { cancel(): void } {
-  if (options?.immediate) fn()
-  const timeId = setTimeoutWithSecondes(fn, options?.delay)
+  let loopCount = 0
+  const run = () => fn({ loopCount: loopCount++ })
+
+  if (options?.immediate) run()
+  const timeId = setTimeoutWithSecondes(run, options?.delay)
   return {
     cancel() {
       clearTimeout(timeId)
