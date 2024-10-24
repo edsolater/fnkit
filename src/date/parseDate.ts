@@ -3,6 +3,12 @@ import { getType, isNumber } from "../dataType"
 import { Numberish } from "../numberish/types"
 import { DateInfoAtom, DateParam, TimeStampVerbose } from "./type"
 
+/**
+ * it use seconds(UNIX timestamp)
+ * @example
+ * createDate() //=> now
+ * createDate(1633948800) //=> 2021-10-11T00:00:00.000Z
+ */
 export const createDate: {
   (): Date
   (value: DateParam): Date
@@ -46,6 +52,8 @@ export const createDate: {
   }
 }
 
+export { createDate as getDate /* well-known alias */ }
+
 export function setDate(oldDate: DateParam, options?: DateInfoAtom) {
   return createDate({
     year: options?.year ?? getYear(oldDate),
@@ -65,9 +73,12 @@ export const getTime = (value?: DateParam) => createDate(value).getTime() / 1000
  * @example
  * getUnixTime() //=> 1633948800
  */
-export const getCurrentUnixTime = () => Number(BigInt(getTime())) as Int
+export const getCurrentUnixTime = () => Number.parseInt(String(getTime())) as Int
 
-// just a readable alias
+/**
+ * just a readable alias
+ * !!use second
+ */
 export const getNow = () => getTime()
 
 export const getISO = (value?: DateParam) => createDate(value).toISOString()
