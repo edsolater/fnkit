@@ -6,7 +6,7 @@ export type TimeSignal = number /* s */ | `${number}${"ms" | "s" | "m" | "h" | "
 export function isTimeSignal(time: any): time is TimeSignal {
   if (!isNumber(time) && !isString(time)) return false
   if (isNumber(time)) return true
-  return /^[0-9]+(ms|s|m|h|d)$/.test(time)
+  return /^[0-9]+\s?(ms|s|m|h|d)$/.test(time)
 }
 
 /**
