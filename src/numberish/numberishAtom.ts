@@ -6,9 +6,9 @@
 import { NumberishOption, assert, isArray, isBigInt, isNumber, isObject, isString } from ".."
 import { OneBigint, TenBigint } from "./constant"
 import { isMathematicalExpression, isRPNItem, parseRPNToFraction, toRPN } from "./numberExpression"
-import { BasicNumberish, Fraction, Numberish, type StringNumber } from "./types"
-import { shakeTailingZero } from "./trimZero"
 import { padZeroR } from "./padZero"
+import { shakeTailingZero } from "./trimZero"
+import { BasicNumberish, Fraction, Numberish, type StringNumber } from "./types"
 
 export const stringNumberRegex = /(?<sign>-|\+?)(?<int>\d*)\.?(?<dec>\d*)/
 
@@ -22,18 +22,41 @@ export function isBasicNumberish(v: unknown): v is BasicNumberish {
   return isNumber(v) || isFraction(v)
 }
 
-function fromStringToFraction(str: string): Fraction {
-  const [intPart = "", decimalPart = ""] = str.split(".")
-  return { decimal: decimalPart.length, numerator: BigInt(String(intPart) + String(decimalPart)), denominator: 1n }
+// 3e2 => { numerator: 3n, denominator: 1n, decimal: -2 }
+// 3.2e2 => { numerator: 32n, denominator: 1n, decimal: -1 }
+export function toFractionFromString(str: string): Fraction {
+  if (isScientificNotation(str)) {
+    const { sign, int, dec, exp } = parseScientificNotionStr(str)
+    return {
+      decimal: String(dec).length - Number(exp),
+      numerator: BigInt(`${sign}${int}${dec}`),
+      denominator: 1n,
+    }
+  } else {
+    const [intPart = "", decimalPart = ""] = str.split(".")
+    return { decimal: decimalPart.length, numerator: BigInt(`${intPart}${decimalPart}`), denominator: 1n }
+  }
 }
 
 function fromBigIntToFraction(n: bigint): Fraction {
   return { numerator: n, decimal: 0, denominator: 1n }
 }
 
-const scientificNotationRegex = /^[+-]?\d+\.?\d*[eE][+-]?\d+$/
+type ScientificNotionDetail = {
+  sign: "-" | "+" | ""
+  int: string
+  dec: string
+  exp: string
+}
+const scientificNotationRegex = /^(?<sign>[+-]?)(?<int>\d+)\.?(?<dec>\d*)[eE](?<exp>[+-]?\d+)$/
 export function isScientificNotation(str: any): boolean {
   return (isString(str) || isNumber(str)) && scientificNotationRegex.test(String(str))
+}
+
+export function parseScientificNotionStr(str: string): ScientificNotionDetail {
+  const regexInfo = str.match(scientificNotationRegex)?.groups
+  // @ts-expect-error force to return
+  return regexInfo
 }
 
 /**
@@ -46,11 +69,11 @@ export function isScientificNotation(str: any): boolean {
 export function toFraction(from: Numberish): Fraction {
   if (isFraction(from)) return from
   if (isNumber(from)) {
-    try {
-      // for scientific notation number can be format like 1.34e+24
+    if (Number.isInteger(from)) {
       return fromBigIntToFraction(BigInt(from))
-    } catch {
-      return fromStringToFraction(String(from))
+    } else {
+      // for scientific notation number can be format like 1.34e+24
+      return toFractionFromString(String(from))
     }
   }
   if (isBigInt(from)) return fromBigIntToFraction(from)
@@ -58,14 +81,14 @@ export function toFraction(from: Numberish): Fraction {
   if (isString(from)) {
     if (isScientificNotation(from)) {
       const [nPart = "", ePart = ""] = String(from).split(/[eE]/)
-      const nPartNumberishAtom = fromStringToFraction(nPart)
+      const nPartNumberishAtom = toFractionFromString(nPart)
       return { ...nPartNumberishAtom, decimal: (nPartNumberishAtom.decimal ?? 0) + -Number(ePart) }
     }
     if (isMathematicalExpression(from)) return parseRPNToFraction(toRPN(from))
-    else return fromStringToFraction(from)
+    else return toFractionFromString(from)
   }
   if (isArray(from) && from.every(isRPNItem)) return parseRPNToFraction(from)
-  return fromStringToFraction(String(from))
+  return toFractionFromString(String(from))
 }
 
 /**
