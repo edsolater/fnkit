@@ -1,4 +1,4 @@
-import { clamp, map } from ".."
+import { clamp, map, type Int } from ".."
 import { getType, isNumber } from "../dataType"
 import { Numberish } from "../numberish/types"
 import { DateInfoAtom, DateParam, TimeStampVerbose } from "./type"
@@ -58,8 +58,15 @@ export function setDate(oldDate: DateParam, options?: DateInfoAtom) {
   })
 }
 
-/** use seconds not getMilliseconds */
+/** use seconds  */
 export const getTime = (value?: DateParam) => createDate(value).getTime() / 1000
+
+/**
+ * @example
+ * getUnixTime() //=> 1633948800
+ */
+export const getCurrentUnixTime = () => Number(BigInt(getTime())) as Int
+
 // just a readable alias
 export const getNow = () => getTime()
 
@@ -67,8 +74,12 @@ export const getISO = (value?: DateParam) => createDate(value).toISOString()
 
 // same as createDate, useful for readibility
 export const createCurrentDate = () => createDate()
+
 /** use seconds not getMilliseconds */
 export const createTimeStamp = () => getTime()
+
+// alias for createTimeStamp
+export const getTimeStamp = createTimeStamp
 
 export const isCurrentDateBefore = (timestamp: TimeStampVerbose): boolean => isDateBefore(undefined, timestamp)
 export const isCurrentDateAfter = (timestamp: TimeStampVerbose): boolean => isDateAfter(undefined, timestamp)
