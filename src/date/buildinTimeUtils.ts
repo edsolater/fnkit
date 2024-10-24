@@ -26,10 +26,10 @@ export function setInterval(
   fn: (...args: any[]) => void,
   options?: {
     interval: TimeSignal
-    runImmediate?: boolean
+    immediate?: boolean
   },
 ): { cancel(): void } {
-  if (options?.runImmediate) fn()
+  if (options?.immediate) fn()
   const timeId = setIntervalWithSecondes(fn, options?.interval)
   return {
     cancel() {
@@ -55,10 +55,10 @@ export function setTimeout(
   fn: (...args: any[]) => void,
   options?: {
     delay: TimeSignal
-    runImmediate?: boolean
+    immediate?: boolean
   },
 ): { cancel(): void } {
-  if (options?.runImmediate) fn()
+  if (options?.immediate) fn()
   const timeId = setTimeoutWithSecondes(fn, options?.delay)
   return {
     cancel() {
