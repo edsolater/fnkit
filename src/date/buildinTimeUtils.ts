@@ -13,11 +13,12 @@ export function isTimeSignal(time: any): time is TimeSignal {
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeSignal | undefined) {
+export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeSignal | undefined): number {
+  // @ts-ignore
   return globalThis.setInterval(fn, interval ? parseTimeTypeToMilliseconds(interval) : undefined)
 }
 
-export type IntervalTaskFunction = (utils: { loopCount: number }) => void
+export type IntervalTaskFunction = (utils: { cancel(): void; loopCount: number }) => void
 
 /**
  * build-in globalThis.setInterval is not human-friendly
@@ -30,28 +31,40 @@ export function setInterval(
   options?: {
     interval: TimeSignal
     immediate?: boolean
+    /** if set this, don't auto-run  */
+    haveManuallyController?: boolean
   },
-): { cancel(): void } {
+): { cancel(): void; run(): void } {
   let loopCount = 0
-  const run = () => fn({ loopCount: loopCount++ })
+  let timeId = 0
 
-  if (options?.immediate) run()
-  const timeId = setIntervalWithSecondes(run, options?.interval)
-  return {
-    cancel() {
-      clearInterval(timeId)
-    },
+  const runCore = () => fn({ loopCount: loopCount++, cancel })
+
+  function cancel() {
+    clearInterval(timeId)
   }
+
+  function run() {
+    if (options?.immediate) runCore()
+    timeId = setIntervalWithSecondes(runCore, options?.interval)
+  }
+
+  if (!options?.haveManuallyController) {
+    run()
+  }
+
+  return { cancel, run }
 }
 
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeSignal | undefined) {
+export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeSignal | undefined): number {
+  // @ts-ignore
   return globalThis.setTimeout(fn, delay ? parseTimeTypeToMilliseconds(delay) : undefined)
 }
 
-export type TimeoutTaskFunction = (utils: { loopCount: number }) => void
+export type TimeoutTaskFunction = (utils: { loopCount: number; cancel(): void }) => void
 
 /**
  * build-in globalThis.setTimeout is not human-friendly
@@ -64,18 +77,28 @@ export function setTimeout(
   options?: {
     delay: TimeSignal
     immediate?: boolean
+    /** if set this, don't auto-run  */
+    haveManuallyController?: boolean
   },
-): { cancel(): void } {
+): { cancel(): void; run(): void } {
   let loopCount = 0
-  const run = () => fn({ loopCount: loopCount++ })
+  let timeId = 0
+  // core
+  const runCore = () => fn({ loopCount: loopCount++, cancel })
 
-  if (options?.immediate) run()
-  const timeId = setTimeoutWithSecondes(run, options?.delay)
-  return {
-    cancel() {
-      clearTimeout(timeId)
-    },
+  function run() {
+    if (options?.immediate) runCore()
+    timeId = setTimeoutWithSecondes(runCore, options?.delay)
   }
+
+  function cancel() {
+    clearTimeout(timeId)
+  }
+
+  if (!options?.haveManuallyController) {
+    run()
+  }
+  return { cancel, run }
 }
 
 /** to milliseconds */
