@@ -1,4 +1,5 @@
 import { isNumber, isString } from "../dataType"
+import { asyncInvoke } from "../functionManagers"
 
 /** use seconds not milliseconds */
 export type TimeSignal = number /* s */ | `${number}${"ms" | "s" | "m" | "h" | "d"}`
@@ -18,11 +19,11 @@ export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?:
   return globalThis.setInterval(fn, interval ? parseTimeTypeToMilliseconds(interval) : undefined)
 }
 
-export type IntervalTaskFunction = (utils: { cancel(): void; loopCount: number }) => void
+export type IntervalTaskFunction = (utils: { cancel: () => void; loopCount: number }) => void
 
 /**
  * build-in globalThis.setInterval is not human-friendly
- * @param fn function to run
+ * @param fn function to run (run in future, event immediately, it will run in  micro task)
  * @param options
  * @returns
  */
@@ -38,7 +39,7 @@ export function setInterval(
   let loopCount = 0
   let timeId = 0
 
-  const runCore = () => fn({ loopCount: loopCount++, cancel })
+  const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel }))
 
   function cancel() {
     clearInterval(timeId)
@@ -64,11 +65,11 @@ export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: Tim
   return globalThis.setTimeout(fn, delay ? parseTimeTypeToMilliseconds(delay) : undefined)
 }
 
-export type TimeoutTaskFunction = (utils: { loopCount: number; cancel(): void }) => void
+export type TimeoutTaskFunction = (utils: { loopCount: number; cancel: () => void }) => void
 
 /**
  * build-in globalThis.setTimeout is not human-friendly
- * @param fn function to run
+ * @param fn function to run (run in future, event immediately, it will run in  micro task)
  * @param options
  * @returns
  */
@@ -84,7 +85,7 @@ export function setTimeout(
   let loopCount = 0
   let timeId = 0
   // core
-  const runCore = () => fn({ loopCount: loopCount++, cancel })
+  const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel }))
 
   function run() {
     if (options?.immediate) runCore()
