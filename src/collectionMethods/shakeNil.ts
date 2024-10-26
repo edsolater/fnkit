@@ -1,5 +1,5 @@
 import { isExist, isTruthy } from "../dataType"
-import { NeverKeys, NonFalsy } from "../typings"
+import { NeverKeys, NonFalsy, type Primitive } from "../typings"
 import { filter } from "./filter"
 
 type ShakeNeverValue<O> = Omit<O, NeverKeys<O>>
@@ -26,8 +26,22 @@ export function shakeFalsy(target) {
   return filter(target, isTruthy)
 }
 
-export function unifyItem<T>(arr: T[]): T[] {
-  return [...new Set(arr)]
+export function unifyItem<T>(arr: T[], options?: { getKey?: (item: T) => Primitive }): T[] {
+  if (options?.getKey) {
+    const resultList = [] as T[]
+    const uniqueKeys = new Set()
+    for (const item of arr) {
+      const key = options.getKey(item)
+      if (uniqueKeys.has(key)) continue
+      else {
+        resultList.push(item)
+        uniqueKeys.add(key)
+      }
+    }
+    return resultList
+  } else {
+    return [...new Set(arr)]
+  }
 }
 
 export function unifyByKey<T>(objList: T[], getKey: (item: T) => string): T[] {
