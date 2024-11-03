@@ -1,29 +1,33 @@
+import { shrinkFn, type MayFn } from ".."
 import { isNumber, isString } from "../dataType"
 import { asyncInvoke } from "../functionManagers"
 
 /** use seconds not milliseconds */
-export type TimeSignal = number /* s */ | `${number}${"ms" | "s" | "m" | "h" | "d"}`
 export type TimeType = number /* s */ | `${number}${"ms" | "s" | "m" | "H" | "D" | "W" | "M" | "Y"}`
 
-export function isTimeSignal(time: any): time is TimeSignal {
+export function isTimeType(time: any): time is TimeType {
   if (!isNumber(time) && !isString(time)) return false
   if (isNumber(time)) return true
-  return /^[0-9]+\s?(ms|s|m|h|d)$/.test(time)
+  return /^[0-9]+\s?(ms|s|m|H|D|W|M|Y)$/.test(time)
 }
 
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeSignal | undefined): number {
+export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeType | undefined): number {
   // @ts-ignore
   return globalThis.setInterval(fn, interval ? parseTimeTypeToMilliseconds(interval) : undefined)
 }
 
-export type IntervalTaskFunction = (utils: { cancel: () => void; loopCount: number }) => void
+export type IntervalTaskFunction = (utils: {
+  cancel: () => void
+  loopCount: number
+  changeInterval: (newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) => void
+}) => void
 
 export type SetIntervalOptions = {
-  delay?: TimeSignal
-  interval?: TimeSignal
+  delay?: TimeType
+  interval?: TimeType
   immediate?: boolean
   /** if set this, don't auto-run  */
   haveManuallyController?: boolean
@@ -43,8 +47,13 @@ export type SetIntervalController = {
 export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptions): SetIntervalController {
   let loopCount = 0
   let timeId = 0
+  let intervalSeconds = parseTimeTypeToSeconds(options?.interval ?? 1)
 
-  const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel }))
+  function changeInterval(newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) {
+    intervalSeconds = parseTimeTypeToSeconds(shrinkFn(newInterval, [intervalSeconds]))
+  }
+
+  const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel, changeInterval }))
 
   function cancel() {
     clearInterval(timeId)
@@ -52,7 +61,7 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
 
   function run() {
     if (options?.immediate) runCore()
-    timeId = setIntervalWithSecondes(runCore, options?.interval)
+    timeId = setIntervalWithSecondes(runCore, intervalSeconds)
   }
 
   if (!options?.haveManuallyController) {
@@ -65,7 +74,7 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeSignal | undefined): number {
+export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeType | undefined): number {
   // @ts-ignore
   return globalThis.setTimeout(fn, delay ? parseTimeTypeToMilliseconds(delay) : undefined)
 }
@@ -73,7 +82,7 @@ export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: Tim
 export type TimeoutTaskFunction = (utils: { loopCount: number; cancel: () => void }) => void
 
 export type SetTimeoutOptions = {
-  delay?: TimeSignal
+  delay?: TimeType
   /** if set this, fn will run immediately, (two times total) */
   immediate?: boolean
   /** if set this, don't auto-run  */
@@ -113,7 +122,7 @@ export function setTimeout(fn: TimeoutTaskFunction, options?: SetTimeoutOptions)
 }
 
 /** to milliseconds */
-export function parseTimeTypeToMilliseconds(time: TimeSignal) {
+export function parseTimeTypeToMilliseconds(time: TimeType) {
   if (isNumber(time)) return time * 1000
   if (time.endsWith("ms")) return parseInt(time)
   if (time.endsWith("s")) return parseInt(time) * 1000
