@@ -76,7 +76,8 @@ export type TimeoutTaskFunction = (utils: { loopCount: number; cancel: () => voi
 export function setTimeout(
   fn: TimeoutTaskFunction,
   options?: {
-    delay: TimeSignal
+    delay?: TimeSignal
+    /** if set this, fn will run immediately, (two times total) */
     immediate?: boolean
     /** if set this, don't auto-run  */
     haveManuallyController?: boolean
