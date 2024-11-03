@@ -51,24 +51,26 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
 
   function changeInterval(newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) {
     intervalSeconds = parseTimeTypeToSeconds(shrinkFn(newInterval, [intervalSeconds]))
+    stopLoop()
+    run()
   }
 
-  const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel, changeInterval }))
+  const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel: stopLoop, changeInterval }))
 
-  function cancel() {
+  function stopLoop() {
     clearInterval(timeId)
   }
 
-  function run() {
-    if (options?.immediate) runCore()
+  function run(immediate = false) {
+    if (immediate) runCore()
     timeId = setIntervalWithSecondes(runCore, intervalSeconds)
   }
 
   if (!options?.haveManuallyController) {
-    run()
+    run(options?.immediate)
   }
 
-  return { cancel, run }
+  return { cancel: stopLoop, run }
 }
 
 /**
