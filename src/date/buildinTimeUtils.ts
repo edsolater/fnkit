@@ -21,21 +21,26 @@ export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?:
 
 export type IntervalTaskFunction = (utils: { cancel: () => void; loopCount: number }) => void
 
+export type SetIntervalOptions = {
+  delay?: TimeSignal
+  interval?: TimeSignal
+  immediate?: boolean
+  /** if set this, don't auto-run  */
+  haveManuallyController?: boolean
+}
+
+export type SetIntervalController = {
+  cancel(): void
+  run(): void
+}
+
 /**
  * build-in globalThis.setInterval is not human-friendly
  * @param fn function to run (run in future, event immediately, it will run in  micro task)
  * @param options
  * @returns
  */
-export function setInterval(
-  fn: IntervalTaskFunction,
-  options?: {
-    interval: TimeSignal
-    immediate?: boolean
-    /** if set this, don't auto-run  */
-    haveManuallyController?: boolean
-  },
-): { cancel(): void; run(): void } {
+export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptions): SetIntervalController {
   let loopCount = 0
   let timeId = 0
 
@@ -67,22 +72,26 @@ export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: Tim
 
 export type TimeoutTaskFunction = (utils: { loopCount: number; cancel: () => void }) => void
 
+export type SetTimeoutOptions = {
+  delay?: TimeSignal
+  /** if set this, fn will run immediately, (two times total) */
+  immediate?: boolean
+  /** if set this, don't auto-run  */
+  haveManuallyController?: boolean
+}
+
+export type SetTimeoutController = {
+  cancel(): void
+  run(): void
+}
+
 /**
  * build-in globalThis.setTimeout is not human-friendly
  * @param fn function to run (run in future, event immediately, it will run in  micro task)
  * @param options
  * @returns
  */
-export function setTimeout(
-  fn: TimeoutTaskFunction,
-  options?: {
-    delay?: TimeSignal
-    /** if set this, fn will run immediately, (two times total) */
-    immediate?: boolean
-    /** if set this, don't auto-run  */
-    haveManuallyController?: boolean
-  },
-): { cancel(): void; run(): void } {
+export function setTimeout(fn: TimeoutTaskFunction, options?: SetTimeoutOptions): SetTimeoutController {
   let loopCount = 0
   let timeId = 0
   // core
