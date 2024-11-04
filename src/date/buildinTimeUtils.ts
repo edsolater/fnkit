@@ -3,12 +3,38 @@ import { isNumber, isString } from "../dataType"
 import { asyncInvoke } from "../functionManagers"
 
 /** use seconds not milliseconds */
-export type TimeType = number /* s */ | `${number}${"ms" | "s" | "m" | "H" | "D" | "W" | "M" | "Y"}`
+export type TimeType = number /* s */ | `${number}${"ms" | "s" | "m" | "h" | "H" | "d" | "D" | "W" | "M" | "Y"}`
 
 export function isTimeType(time: any): time is TimeType {
   if (!isNumber(time) && !isString(time)) return false
   if (isNumber(time)) return true
-  return /^[0-9]+\s?(ms|s|m|H|D|W|M|Y)$/.test(time)
+  return /^[0-9]+\s?(ms|s|m|h|H|d|D|W|M|Y)$/.test(time)
+}
+
+/** to milliseconds */
+export function parseTimeTypeToMilliseconds(time: TimeType) {
+  if (isNumber(time)) return time * 1000
+  if (time.endsWith("ms")) return parseInt(time)
+  if (time.endsWith("s")) return parseInt(time) * 1000
+  if (time.endsWith("m")) return parseInt(time) * 1000 * 60
+  if (time.endsWith("h") || time.endsWith("H")) return parseInt(time) * 1000 * 60 * 60
+  if (time.endsWith("d") || time.endsWith("D")) return parseInt(time) * 1000 * 60 * 60 * 24
+  if (time.endsWith("W")) return parseInt(time) * 1000 * 60 * 60 * 24 * 7
+  if (time.endsWith("M")) return parseInt(time) * 1000 * 60 * 60 * 24 * 30
+  if (time.endsWith("Y")) return parseInt(time) * 1000 * 60 * 60 * 24 * 365
+  throw new Error("Invalid time type")
+}
+export function parseTimeTypeToSeconds(time: TimeType) {
+  if (isNumber(time)) return time
+  if (time.endsWith("ms")) return parseInt(time) / 1000
+  if (time.endsWith("s")) return parseInt(time)
+  if (time.endsWith("m")) return parseInt(time) * 60
+  if (time.endsWith("h") || time.endsWith("H")) return parseInt(time) * 60 * 60
+  if (time.endsWith("d") || time.endsWith("D")) return parseInt(time) * 60 * 60 * 24
+  if (time.endsWith("W")) return parseInt(time) * 60 * 60 * 24 * 7
+  if (time.endsWith("M")) return parseInt(time) * 60 * 60 * 24 * 30
+  if (time.endsWith("Y")) return parseInt(time) * 60 * 60 * 24 * 365
+  throw new Error("Invalid time type")
 }
 
 /**
@@ -121,27 +147,4 @@ export function setTimeout(fn: TimeoutTaskFunction, options?: SetTimeoutOptions)
     run()
   }
   return { cancel, run }
-}
-
-/** to milliseconds */
-export function parseTimeTypeToMilliseconds(time: TimeType) {
-  if (isNumber(time)) return time * 1000
-  if (time.endsWith("ms")) return parseInt(time)
-  if (time.endsWith("s")) return parseInt(time) * 1000
-  if (time.endsWith("m")) return parseInt(time) * 1000 * 60
-  if (time.endsWith("h")) return parseInt(time) * 1000 * 60 * 60
-  if (time.endsWith("d")) return parseInt(time) * 1000 * 60 * 60 * 24
-  throw new Error("Invalid time signal")
-}
-export function parseTimeTypeToSeconds(time: TimeType) {
-  if (isNumber(time)) return time
-  if (time.endsWith("ms")) return parseInt(time) / 1000
-  if (time.endsWith("s")) return parseInt(time)
-  if (time.endsWith("m")) return parseInt(time) * 60
-  if (time.endsWith("H")) return parseInt(time) * 60 * 60
-  if (time.endsWith("D")) return parseInt(time) * 60 * 60 * 24
-  if (time.endsWith("W")) return parseInt(time) * 60 * 60 * 24 * 7
-  if (time.endsWith("M")) return parseInt(time) * 60 * 60 * 24 * 30
-  if (time.endsWith("Y")) return parseInt(time) * 60 * 60 * 24 * 365
-  throw new Error("Invalid time signal")
 }
