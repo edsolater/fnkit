@@ -52,6 +52,7 @@ export type IntervalTaskFunction = (utils: {
 }) => void
 
 export type SetIntervalOptions = {
+  /** if you want run immediately after delay. both set `delay` and `immediate` */
   delay?: TimeType
   interval?: TimeType
   immediate?: boolean
@@ -72,7 +73,8 @@ export type SetIntervalController = {
  */
 export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptions): SetIntervalController {
   let loopCount = 0
-  let timeId = 0
+  let intervalTimeId = 0
+  let timeoutId = 0
   let intervalSeconds = parseTimeTypeToSeconds(options?.interval ?? 1)
 
   function changeInterval(newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) {
@@ -81,15 +83,24 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
     run()
   }
 
-  const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel: stopLoop, changeInterval }))
-
   function stopLoop() {
-    clearInterval(timeId)
+    clearTimeout(timeoutId)
+    clearInterval(intervalTimeId)
   }
 
   function run(immediate = false) {
-    if (immediate) runCore()
-    timeId = setIntervalWithSecondes(runCore, intervalSeconds)
+    const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel: stopLoop, changeInterval }))
+    const runWithInterval = () => {
+      if (immediate) runCore()
+      intervalTimeId = setIntervalWithSecondes(runCore, intervalSeconds)
+    }
+    if (options?.delay) {
+      timeoutId = setTimeoutWithSecondes(() => {
+        runWithInterval()
+      }, options.delay)
+    } else {
+      runWithInterval()
+    }
   }
 
   if (!options?.haveManuallyController) {
