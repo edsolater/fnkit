@@ -80,7 +80,7 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
   function changeInterval(newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) {
     intervalSeconds = parseTimeTypeToSeconds(shrinkFn(newInterval, [intervalSeconds]))
     stopLoop()
-    run()
+    runLoop({ canWithImmediate: false })
   }
 
   function stopLoop() {
@@ -88,26 +88,29 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
     clearInterval(intervalTimeId)
   }
 
-  function run(immediate = false) {
-    const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel: stopLoop, changeInterval }))
-    const runWithInterval = () => {
-      if (immediate) runCore()
+  function runLoop(innerOptions: { canWithImmediate: boolean } = { canWithImmediate: true }) {
+    function runCore() {
+      asyncInvoke(() => fn({ loopCount: loopCount++, cancel: stopLoop, changeInterval }))
+    }
+    function innerRun() {
+      if (innerOptions.canWithImmediate && options?.immediate) runCore()
       intervalTimeId = setIntervalWithSecondes(runCore, intervalSeconds)
     }
+
     if (options?.delay) {
       timeoutId = setTimeoutWithSecondes(() => {
-        runWithInterval()
+        innerRun()
       }, options.delay)
     } else {
-      runWithInterval()
+      innerRun()
     }
   }
 
   if (!options?.haveManuallyController) {
-    run(options?.immediate)
+    runLoop()
   }
 
-  return { cancel: stopLoop, run }
+  return { cancel: stopLoop, run: runLoop }
 }
 
 /**
