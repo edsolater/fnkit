@@ -6,12 +6,12 @@ import { Numberish } from "../numberish/types"
 type Unliteral<T> = T extends string
   ? string
   : T extends number
-    ? number
-    : T extends boolean
-      ? boolean
-      : T extends bigint
-        ? bigint
-        : T
+  ? number
+  : T extends boolean
+  ? boolean
+  : T extends bigint
+  ? bigint
+  : T
 
 function toFistItemType<T>(result: Numberish, orginArr: readonly T[]): Unliteral<T> {
   const type = getType(orginArr[0])
@@ -19,22 +19,22 @@ function toFistItemType<T>(result: Numberish, orginArr: readonly T[]): Unliteral
   return type === "bigint"
     ? toBigint(result)
     : type === "number"
-      ? toNumber(result)
-      : type === "string"
-        ? toStringNumber(result)
-        : result
+    ? toNumber(result)
+    : type === "string"
+    ? toStringNumber(result)
+    : result
 }
-export function sum<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
+export function sum<T extends Numberish>(...arr: readonly T[]): Unliteral<T> {
   const sumValue = reduce(arr, (acc, n) => addS(acc, n), "0")
   return toFistItemType(sumValue, arr)
 }
 
-export function average<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
-  const averageValue = divide(sum(arr), arr.length)
+export function average<T extends Numberish>(...arr: readonly T[]): Unliteral<T> {
+  const averageValue = divide(sum(...arr), arr.length)
   return toFistItemType(averageValue, arr)
 }
 
-export function max<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
+export function max<T extends Numberish>(...arr: readonly T[]): Unliteral<T> {
   let maxValue = arr[0]
   for (let i = 1; i < arr.length; i++) {
     const curr = arr[i]
@@ -45,7 +45,7 @@ export function max<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
   return toFistItemType(maxValue, arr)
 }
 
-export function min<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
+export function min<T extends Numberish>(...arr: readonly T[]): Unliteral<T> {
   let minValue = arr[0]
   for (let i = 1; i < arr.length; i++) {
     const curr = arr[i]
