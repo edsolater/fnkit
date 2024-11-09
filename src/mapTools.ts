@@ -28,6 +28,10 @@ export function sortMapByKey<T extends Map<any, any>>(
   return new Map([...map.entries()].sort((a, b) => compareFn(a[0], b[0])))
 }
 
+export function sliceMap<T extends Map<any, any>>(map: T, start: number, end: number) {
+  return new Map([...map.entries()].slice(start, end))
+}
+
 /** basic util function
  *
  * @param cacheMap provide a cache map
