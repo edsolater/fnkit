@@ -1,3 +1,5 @@
+import { isNullish } from "./dataType"
+
 export type GetMapKey<T extends Map<any, any>> = T extends Map<infer K, any> ? K : never
 export type GetMapValue<T extends Map<any, any>> = T extends Map<any, infer V> ? V : never
 
@@ -28,8 +30,25 @@ export function sortMapByKey<T extends Map<any, any>>(
   return new Map([...map.entries()].sort((a, b) => compareFn(a[0], b[0])))
 }
 
-export function sliceMap<T extends Map<any, any>>(map: T, start: number, end: number) {
+export function sliceMap<T extends Map<any, any>>(map: T, start: number, end?: number) {
   return new Map([...map.entries()].slice(start, end))
+}
+export function sliceMapKey<T extends Map<any, any>>(map: T, start: GetMapKey<T>, end?: GetMapKey<T>) {
+  let startIndex = 0
+  let endIndex :number | undefined = end ? 0: undefined
+  const contentArray = [...map.entries()]
+  for (let i = 0; i < contentArray.length; i++) {
+    const key = contentArray[i][0]
+    if (key === start) {
+      startIndex = i
+      if (isNullish(end)) break
+    }
+    if (key === end) {
+      endIndex = i
+      break
+    }
+  }
+  return sliceMap(map, startIndex, endIndex)
 }
 
 /** basic util function
