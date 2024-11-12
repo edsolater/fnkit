@@ -284,9 +284,10 @@ export function applyDecimal(n: Numberish, decimal: number): Numberish {
     } else {
       return `${nString.slice(0, -decimal)}.${nString.slice(-decimal)}`
     }
+  } else {
+    const anatomy = parseAnatomyNumberInfo(n)
+    return buildFromAnatomyNumberInfo({ ...anatomy, e: (anatomy.e ?? 0) + decimal })
   }
-  const anatomy = parseAnatomyNumberInfo(n)
-  return buildFromAnatomyNumberInfo({ ...anatomy, e: (anatomy.e ?? 0) + decimal })
 }
 
 /**
@@ -301,4 +302,3 @@ export function abs(n: Numberish): Numberish {
   }
   return n
 }
-
