@@ -1,5 +1,5 @@
-import { isArray, isFunction, isNumber, isSet } from "./dataType"
-import { MayPromise } from "./typings/tools"
+import { isArray, isFunction, isNumber, isSet } from "../dataType"
+import { MayPromise } from "../typings/tools"
 
 /**
  * (纯函数)
@@ -282,4 +282,20 @@ export function shuffle<T>(arr: ReadonlyArray<T>): T[] {
     ;[newArr[i], newArr[j]] = [newArr[j], newArr[i]]
   }
   return newArr
+}
+
+/**
+ * Array's sort is confused, so I create this function to sort array by key
+ * @param arr original array
+ * @param withKey a function to get the key to sort by
+ * @param order (optional) 'asc' or 'desc'
+ * @returns sorted array
+ * @example
+ * sortArray([{a:1},{a:2}], (item)=>item.a) // [{a:2},{a:1}]
+ * sortArray([{a:1},{a:2}], (item)=>item.a, 'asc') // [{a:1},{a:2}]
+ */
+export function sortArray<T>(arr: T[], withKey: (item: T) => number | string, order: "asc" | "desc" = "desc") {
+  return arr.toSorted(
+    (a, b) => (order === "asc" ? 1 : -1) * Number(withKey(a)) - (order === "asc" ? 1 : -1) * Number(withKey(b)),
+  )
 }

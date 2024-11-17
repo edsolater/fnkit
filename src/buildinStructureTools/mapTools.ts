@@ -1,4 +1,4 @@
-import { isNullish } from "./dataType"
+import { isNullish } from "../dataType"
 
 export type GetMapKey<T extends Map<any, any>> = T extends Map<infer K, any> ? K : never
 export type GetMapValue<T extends Map<any, any>> = T extends Map<any, infer V> ? V : never
@@ -35,7 +35,7 @@ export function sliceMap<T extends Map<any, any>>(map: T, start: number, end?: n
 }
 export function sliceMapKey<T extends Map<any, any>>(map: T, start: GetMapKey<T>, end?: GetMapKey<T>) {
   let startIndex = 0
-  let endIndex :number | undefined = end ? 0: undefined
+  let endIndex: number | undefined = end ? 0 : undefined
   const contentArray = [...map.entries()]
   for (let i = 0; i < contentArray.length; i++) {
     const key = contentArray[i][0]

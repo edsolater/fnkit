@@ -1,4 +1,4 @@
-import { insertAt } from "../oldMethodsArray"
+import { insertAt } from "../buildinStructureTools/arrayTools"
 
 type Point = {
   x: number
