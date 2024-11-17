@@ -64,6 +64,7 @@ export type SetIntervalOptions = {
 export type SetIntervalController = {
   cancel(): void
   run(): void
+  forceRunNextLoop(): void
 }
 
 /**
@@ -73,7 +74,7 @@ export type SetIntervalController = {
  * @returns
  */
 export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptions): SetIntervalController {
-  let loopCount = 0
+  let loopIndex = 0
   let intervalTimeId = 0
   let timeoutId = 0
   let intervalSeconds = parseTimeTypeToSeconds(options?.interval ?? 1)
@@ -89,16 +90,16 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
     clearInterval(intervalTimeId)
   }
 
-  function runLoop(innerOptions: { canWithImmediate: boolean } = { canWithImmediate: true }) {
+  function runLoop(innerOptions: { canWithImmediate: boolean; forceImmediate?: boolean } = { canWithImmediate: true }) {
     function runCore() {
-      asyncInvoke(() => fn({ loopIndex: loopCount++, cancel: stopLoop, changeInterval }))
+      asyncInvoke(() => fn({ loopIndex: loopIndex++, cancel: stopLoop, changeInterval }))
     }
     function innerRun() {
-      if (innerOptions.canWithImmediate && options?.immediate) runCore()
+      if ((innerOptions.canWithImmediate && options?.immediate) || innerOptions.forceImmediate) runCore()
       intervalTimeId = setIntervalWithSecondes(runCore, intervalSeconds)
     }
 
-    if (options?.delay) {
+    if (!innerOptions.forceImmediate && options?.delay) {
       timeoutId = setTimeoutWithSecondes(() => {
         innerRun()
       }, options.delay)
@@ -106,12 +107,16 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
       innerRun()
     }
   }
+  function forceNext() {
+    stopLoop()
+    runLoop({ canWithImmediate: true, forceImmediate: true })
+  }
 
   if (!options?.haveManuallyController) {
     runLoop()
   }
 
-  return { cancel: stopLoop, run: runLoop }
+  return { cancel: stopLoop, run: runLoop, forceRunNextLoop: forceNext }
 }
 
 /**
