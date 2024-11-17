@@ -47,7 +47,8 @@ export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?:
 
 export type IntervalTaskFunction = (utils: {
   cancel: () => void
-  loopCount: number
+  /** start from 0 */
+  loopIndex: number
   changeInterval: (newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) => void
 }) => void
 
@@ -90,7 +91,7 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
 
   function runLoop(innerOptions: { canWithImmediate: boolean } = { canWithImmediate: true }) {
     function runCore() {
-      asyncInvoke(() => fn({ loopCount: loopCount++, cancel: stopLoop, changeInterval }))
+      asyncInvoke(() => fn({ loopIndex: loopCount++, cancel: stopLoop, changeInterval }))
     }
     function innerRun() {
       if (innerOptions.canWithImmediate && options?.immediate) runCore()
