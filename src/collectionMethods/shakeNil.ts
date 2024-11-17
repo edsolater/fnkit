@@ -44,7 +44,7 @@ export function unifyItem<T>(arr: T[], options?: { getKey?: (item: T) => Primiti
   }
 }
 
-export function unifyByKey<T>(objList: T[], getKey: (item: T) => string): T[] {
+export function unifyByKey<T>(objList: T[], getKey: (item: T) => unknown): T[] {
   const mapKey = objList.map(getKey)
   const unifyMap = unifyItem(mapKey)
   return shakeNil(unifyMap.map((key) => objList.find((item) => getKey(item) === key)))
