@@ -148,9 +148,11 @@ export type SetTimeoutController = {
  * @param options
  * @returns
  */
-export function setTimeout(fn: TimeoutTaskFunction, options?: SetTimeoutOptions): SetTimeoutController {
+export function setTimeout(fn: TimeoutTaskFunction, flexibleOptions?: SetTimeoutOptions | TimeType): SetTimeoutController {
   let loopCount = 0
   let timeId = 0
+
+  const options: SetTimeoutOptions = isTimeType(flexibleOptions) ? { delay: flexibleOptions } : flexibleOptions ?? {}
   // core
   const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel }))
 
