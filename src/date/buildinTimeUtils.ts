@@ -14,26 +14,26 @@ export function isTimeType(time: any): time is TimeType {
 /** to milliseconds */
 export function parseTimeTypeToMilliseconds(time: TimeType) {
   if (isNumber(time)) return time * 1000
-  if (time.endsWith("ms")) return parseInt(time)
-  if (time.endsWith("s")) return parseInt(time) * 1000
-  if (time.endsWith("m")) return parseInt(time) * 1000 * 60
-  if (time.endsWith("h") || time.endsWith("H")) return parseInt(time) * 1000 * 60 * 60
-  if (time.endsWith("d") || time.endsWith("D")) return parseInt(time) * 1000 * 60 * 60 * 24
-  if (time.endsWith("W")) return parseInt(time) * 1000 * 60 * 60 * 24 * 7
-  if (time.endsWith("M")) return parseInt(time) * 1000 * 60 * 60 * 24 * 30
-  if (time.endsWith("Y")) return parseInt(time) * 1000 * 60 * 60 * 24 * 365
+  if (time.endsWith("ms")) return Number.parseFloat(time)
+  if (time.endsWith("s")) return Number.parseFloat(time) * 1000
+  if (time.endsWith("m")) return Number.parseFloat(time) * 1000 * 60
+  if (time.endsWith("h") || time.endsWith("H")) return Number.parseFloat(time) * 1000 * 60 * 60
+  if (time.endsWith("d") || time.endsWith("D")) return Number.parseFloat(time) * 1000 * 60 * 60 * 24
+  if (time.endsWith("W")) return Number.parseFloat(time) * 1000 * 60 * 60 * 24 * 7
+  if (time.endsWith("M")) return Number.parseFloat(time) * 1000 * 60 * 60 * 24 * 30
+  if (time.endsWith("Y")) return Number.parseFloat(time) * 1000 * 60 * 60 * 24 * 365
   throw new Error("Invalid time type")
 }
 export function parseTimeTypeToSeconds(time: TimeType) {
   if (isNumber(time)) return time
-  if (time.endsWith("ms")) return parseInt(time) / 1000
-  if (time.endsWith("s")) return parseInt(time)
-  if (time.endsWith("m")) return parseInt(time) * 60
-  if (time.endsWith("h") || time.endsWith("H")) return parseInt(time) * 60 * 60
-  if (time.endsWith("d") || time.endsWith("D")) return parseInt(time) * 60 * 60 * 24
-  if (time.endsWith("W")) return parseInt(time) * 60 * 60 * 24 * 7
-  if (time.endsWith("M")) return parseInt(time) * 60 * 60 * 24 * 30
-  if (time.endsWith("Y")) return parseInt(time) * 60 * 60 * 24 * 365
+  if (time.endsWith("ms")) return Number.parseFloat(time) / 1000
+  if (time.endsWith("s")) return Number.parseFloat(time)
+  if (time.endsWith("m")) return Number.parseFloat(time) * 60
+  if (time.endsWith("h") || time.endsWith("H")) return Number.parseFloat(time) * 60 * 60
+  if (time.endsWith("d") || time.endsWith("D")) return Number.parseFloat(time) * 60 * 60 * 24
+  if (time.endsWith("W")) return Number.parseFloat(time) * 60 * 60 * 24 * 7
+  if (time.endsWith("M")) return Number.parseFloat(time) * 60 * 60 * 24 * 30
+  if (time.endsWith("Y")) return Number.parseFloat(time) * 60 * 60 * 24 * 365
   throw new Error("Invalid time type")
 }
 

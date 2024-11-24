@@ -18,10 +18,10 @@ import { ParsedDurationInfo } from "./type"
  * ss   	00-59	(seconds)
  * sss  000-999	(milliseconds)
  * @example
- * formatDate(1000 * 60 * 60 * 24, 'D Days H Hours') // '1 Days 0 Hours'
- * formatDate(6500, 's Seconds sss Milliseconds') // '6 Seconds 500 Milliseconds'
- * formatDate(6500, 's.sss Seconds') // '6.500 Seconds'
- * formatDate(6500, 's.sss Seconds', {shakeMillisecondsTailingZero: true}) // '6.5 Seconds'
+ * formatDate(60 * 60 * 24, 'D Days H Hours') // '1 Days 0 Hours'
+ * formatDate(6.5, 's Seconds sss Milliseconds') // '6 Seconds 500 Milliseconds'
+ * formatDate(6.5, 's Seconds') // '6 Seconds'
+ * formatDate(6.5) // '6 Seconds 500 Milliseconds'
  */
 export function formatDuration(
   timeType: TimeType,

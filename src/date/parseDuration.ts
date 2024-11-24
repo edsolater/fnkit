@@ -21,17 +21,17 @@ export function parseDuration(timestamp: number): ParsedDurationInfo {
     seconds: 0,
     milliseconds: 0,
   }
-  values.exact = Math.max(diff, 0)
-  values.full = Math.max(Math.floor(diff), 0)
+  values.exact = Math.max(Math.floor(diff * 1000), 0) / 1000
+  values.full = Math.max(Math.floor(diff * 1000), 0) / 1000
   values.days = Math.max(Math.floor(diff / (60 * 60 * 24)), 0)
   diff -= values.days * (60 * 60 * 24)
   values.hours = Math.max(Math.floor(diff / (60 * 60)), 0)
   diff -= values.hours * (60 * 60)
   values.minutes = Math.max(Math.floor(diff / 60), 0)
   diff -= values.minutes * 60
-  values.seconds = Math.max(diff, 0)
+  values.seconds = Math.max(Math.floor(diff), 0)
   diff -= values.seconds
-  values.milliseconds = Math.max(diff * 1000, 0)
+  values.milliseconds = Math.max(Math.floor(diff * 1000), 0)
   return values
 }
 
