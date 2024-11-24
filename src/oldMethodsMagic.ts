@@ -18,6 +18,26 @@ export function assert(condition: any, arg0?: string | (() => void), arg1?: (msg
 
 export const neww = Reflect.construct
 
+/**
+ * a useful method to assert variable
+ * @param variable
+ * @param options message and when
+ */
+export function assertVariable<T>(
+  variable: T,
+  ...options: [when: (v: T) => boolean, message: string] | [message: string] | []
+) {
+  const when = options.length == 2 ? options[0] : (v: any) => Boolean(v)
+  const message = options.length == 2 ? options[1] : options.length == 1 ? options[0] : ""
+  assert(when(variable), message, () => {
+    if (message) {
+      console.log(message, variable)
+    } else {
+      console.log(variable)
+    }
+  })
+}
+
 //#region ------------------- test -------------------
 // const a = parallelSwitch('hello', [
 //   ['world', 1],
@@ -27,10 +47,10 @@ export const neww = Reflect.construct
 //#endregion
 
 /**
- * simple but useful shortcut
+ * Tries to execute a function and catches any errors that occur.
+ * @param tryFunction The function to try executing.
+ * @param catchFunction Optional function to handle errors.
  */
-export function tryCatch<T>(tryFunction: () => T): T | undefined
-export function tryCatch<T, F>(tryFunction: () => T, catchFunction: (err: unknown) => F): T | F
 export function tryCatch<T>(tryFunction: () => T, catchFunction?: (err: unknown) => T) {
   try {
     return tryFunction()
@@ -40,14 +60,9 @@ export function tryCatch<T>(tryFunction: () => T, catchFunction?: (err: unknown)
 }
 
 /**
- * 判断值是否满足接下来的一堆函数
- * （也可用一堆`&&`代替）
- * @param val 测试目标
- * @param judgers 测试函数们
- * @todo 这还应该是个复杂typeGard
- *
- * @example
- * canSatisfyAll({}, isObject) // true
+ * Checks if a value satisfies all provided functions.
+ * @param val The value to test.
+ * @param judgers The functions to test against the value.
  */
 export function canSatisfyAll<T>(val: T, ...judgers: ((val: T) => boolean)[]) {
   return judgers.every((f) => f(val))
