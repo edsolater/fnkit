@@ -1,6 +1,7 @@
 import { isObject } from "../dataType"
 import { shakeTailingZero } from "../numberish/trimZero"
-import { shrinkToValue } from "../wrapper"
+import { shrinkFn } from "../wrapper"
+import { parseTimeTypeToSeconds, type TimeType } from "./buildinTimeUtils"
 import { parseDuration } from "./parseDuration"
 import { ParsedDurationInfo } from "./type"
 
@@ -23,29 +24,41 @@ import { ParsedDurationInfo } from "./type"
  * formatDate(6500, 's.sss Seconds', {shakeMillisecondsTailingZero: true}) // '6.5 Seconds'
  */
 export function formatDuration(
-  parsedDurationInfo: ParsedDurationInfo | number /* ms */,
-  formatString: string | ((durationInfo: ParsedDurationInfo) => string),
+  timeType: TimeType,
+  rawFormatString?: string | ((durationInfo: ParsedDurationInfo) => string),
   options?: {
     shakeMillisecondsTailingZero?: boolean
   },
 ) {
+  const parsedDurationInfo = parseDuration(parseTimeTypeToSeconds(timeType))
   const durationInfo = parseDuration(isObject(parsedDurationInfo) ? parsedDurationInfo.full : parsedDurationInfo)
-  return ` ${shrinkToValue(formatString, [durationInfo])} `
-    .replace(/(\W+)[d](\W+)/gi, `$1${durationInfo.days}$2`)
-    .replace(/(\W+)[dd](\W+)/gi, `$1${String(durationInfo.days).padStart(2, "0")}$2`)
-    .replace(/(\W+)[h](\W+)/gi, `$1${durationInfo.hours}$2`)
-    .replace(/(\W+)[hh](\W+)/gi, `$1${String(durationInfo.hours).padStart(2, "0")}$2`)
-    .replace(/(\W+)[m](\W+)/gi, `$1${durationInfo.minutes}$2`)
-    .replace(/(\W+)[mm](\W+)/gi, `$1${String(durationInfo.minutes).padStart(2, "0")}$2`)
-    .replace(/(\W+)[s](\W+)/gi, `$1${durationInfo.seconds}$2`)
-    .replace(/(\W+)[ss](\W+)/gi, `$1${String(durationInfo.seconds).padStart(2, "0")}$2`)
+  const autoFormatString = (() => {
+    if (rawFormatString) return undefined
+    let s = " "
+    if (durationInfo.days) s += "D Days "
+    if (durationInfo.hours) s += "H Hours "
+    if (durationInfo.minutes) s += "M Minutes "
+    if (durationInfo.seconds) s += "S Seconds "
+    if (durationInfo.milliseconds) s += "MS Milliseconds "
+    return s
+  })()
+  const formatString = shrinkFn(rawFormatString ?? autoFormatString!, [durationInfo])
+  return formatString
+    .replace(/(?<=\s+)d(?=\s+)/gi, `${durationInfo.days}`)
+    .replace(/(?<=\s+)dd(?=\s+)/gi, `${String(durationInfo.days).padStart(2, "0")}`)
+    .replace(/(?<=\s+)h(?=\s+)/gi, `${durationInfo.hours}`)
+    .replace(/(?<=\s+)hh(?=\s+)/gi, `${String(durationInfo.hours).padStart(2, "0")}`)
+    .replace(/(?<=\s+)m(?=\s+)/gi, `${durationInfo.minutes}`)
+    .replace(/(?<=\s+)mm(?=\s+)/gi, `${String(durationInfo.minutes).padStart(2, "0")}`)
+    .replace(/(?<=\s+)s(?=\s+)/gi, `${durationInfo.seconds}`)
+    .replace(/(?<=\s+)ss(?=\s+)/gi, `${String(durationInfo.seconds).padStart(2, "0")}`)
     .replace(
-      /(\W+)[sss](\W+)/gi,
-      `$1${
+      /(?<=\s+)sss|ms(?=\s+)/gi,
+      `${
         options?.shakeMillisecondsTailingZero
           ? shakeTailingZero(String(durationInfo.milliseconds).padStart(3, "0"))
           : String(durationInfo.milliseconds).padStart(3, "0")
-      }$2`,
+      }`,
     )
     .trim()
 }
