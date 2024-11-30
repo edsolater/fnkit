@@ -50,6 +50,7 @@ export type IntervalTaskFunction = (utils: {
   /** start from 0 */
   loopIndex: number
   changeInterval: (newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) => void
+  forceRunNextLoop: () => void
 }) => void
 
 export type SetIntervalOptions = {
@@ -69,14 +70,15 @@ export type SetIntervalController = {
 
 /**
  * build-in globalThis.setInterval is not human-friendly
- * @param fn function to run (run in future, event immediately, it will run in  micro task)
+ * @param taskFn function to run (run in future, event immediately, it will run in  micro task)
  * @param options
  * @returns
  */
-export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptions): SetIntervalController {
+export function setInterval(taskFn: IntervalTaskFunction, _options?: SetIntervalOptions | TimeType): SetIntervalController {
   let loopIndex = 0
   let intervalTimeId = 0
   let timeoutId = 0
+  const options: SetIntervalOptions | undefined = isTimeType(_options) ? { interval: _options } : _options
   let intervalSeconds = parseTimeTypeToSeconds(options?.interval ?? 1)
 
   function changeInterval(newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) {
@@ -92,7 +94,7 @@ export function setInterval(fn: IntervalTaskFunction, options?: SetIntervalOptio
 
   function runLoop(innerOptions: { canWithImmediate: boolean; forceImmediate?: boolean } = { canWithImmediate: true }) {
     function runCore() {
-      asyncInvoke(() => fn({ loopIndex: loopIndex++, cancel: stopLoop, changeInterval }))
+      asyncInvoke(() => taskFn({ loopIndex: loopIndex++, cancel: stopLoop, changeInterval, forceRunNextLoop: forceNext }))
     }
     function innerRun() {
       if ((innerOptions.canWithImmediate && options?.immediate) || innerOptions.forceImmediate) runCore()
@@ -144,17 +146,20 @@ export type SetTimeoutController = {
 
 /**
  * build-in globalThis.setTimeout is not human-friendly
- * @param fn function to run (run in future, event immediately, it will run in  micro task)
+ * @param taskFn function to run (run in future, event immediately, it will run in  micro task)
  * @param options
  * @returns
  */
-export function setTimeout(fn: TimeoutTaskFunction, flexibleOptions?: SetTimeoutOptions | TimeType): SetTimeoutController {
+export function setTimeout(
+  taskFn: TimeoutTaskFunction,
+  _options?: SetTimeoutOptions | TimeType,
+): SetTimeoutController {
   let loopCount = 0
   let timeId = 0
 
-  const options: SetTimeoutOptions = isTimeType(flexibleOptions) ? { delay: flexibleOptions } : flexibleOptions ?? {}
+  const options: SetTimeoutOptions = isTimeType(_options) ? { delay: _options } : _options ?? {}
   // core
-  const runCore = () => asyncInvoke(() => fn({ loopCount: loopCount++, cancel }))
+  const runCore = () => asyncInvoke(() => taskFn({ loopCount: loopCount++, cancel }))
 
   function run() {
     if (options?.immediate) runCore()
