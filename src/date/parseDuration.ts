@@ -10,7 +10,7 @@ import { ParsedDurationInfo } from "./type"
  * parseDuration(24 * 60 * 60) // {full: 24 * 60 * 60 , day: 1, hour: 0  minutes: 0, secends: 0, milliseconds: 0 }
  */
 
-export function parseDuration(timestamp: number): ParsedDurationInfo {
+export function parseDuration(timestamp: number): ParsedDurationInfo { 
   let diff = timestamp
   const values: ParsedDurationInfo = {
     exact: 0,

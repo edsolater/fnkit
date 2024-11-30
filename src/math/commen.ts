@@ -1,4 +1,4 @@
-import { addS, divide, greaterThan, lessThan, toBigint, toNumber, toStringNumber } from ".."
+import { addS, divide, greaterThan, lessThan, multiply, toBigint, toNumber, toStringNumber } from ".."
 import { reduce } from "../collectionMethods"
 import { getType } from "../dataType"
 import { Numberish } from "../numberish/types"
@@ -24,17 +24,36 @@ function toFistItemType<T>(result: Numberish, orginArr: readonly T[]): Unliteral
     ? toStringNumber(result)
     : result
 }
-export function sum<T extends Numberish>(...arr: readonly T[]): Unliteral<T> {
+export function sum<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
   const sumValue = reduce(arr, (acc, n) => addS(acc, n), "0")
   return toFistItemType(sumValue, arr)
 }
 
-export function average<T extends Numberish>(...arr: readonly T[]): Unliteral<T> {
-  const averageValue = divide(sum(...arr), arr.length)
+export function average<T extends Numberish>(
+  arr: readonly T[],
+  options?: { method?: "Arithmetic Mean" | "Geometric Mean" | "Harmonic Mean" }, // TODO: imply it !!
+): Unliteral<T> {
+  const averageValue = divide(sum(arr), arr.length)
   return toFistItemType(averageValue, arr)
 }
 
-export function max<T extends Numberish>(...arr: readonly T[]): Unliteral<T> {
+/**
+ * Geometric Mean
+ * 几何平均
+ * @param arr
+ * @returns
+ */
+export function geometricMean<T extends number>(arr: readonly T[]): number {
+  return Math.pow(
+    reduce(arr, (acc, n) => acc * n, 1),
+    1 / arr.length,
+  )
+}
+export function harmonicMean<T extends number>(arr: readonly T[]): number {
+  return arr.length / reduce(arr, (acc, n) => acc + 1 / n, 0)
+}
+
+export function max<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
   let maxValue = arr[0]
   for (let i = 1; i < arr.length; i++) {
     const curr = arr[i]
@@ -45,7 +64,7 @@ export function max<T extends Numberish>(...arr: readonly T[]): Unliteral<T> {
   return toFistItemType(maxValue, arr)
 }
 
-export function min<T extends Numberish>(...arr: readonly T[]): Unliteral<T> {
+export function min<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
   let minValue = arr[0]
   for (let i = 1; i < arr.length; i++) {
     const curr = arr[i]
