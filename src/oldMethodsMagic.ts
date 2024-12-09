@@ -1,3 +1,4 @@
+import { shrinkFn, type MayFn } from "."
 import { isString } from "./dataType"
 
 export function assert(condition: any, callback?: () => void): asserts condition
@@ -25,11 +26,14 @@ export const neww = Reflect.construct
  */
 export function assertVariable<T>(
   variable: T,
-  ...options: [when: (v: T) => boolean, message: string] | [message: string] | []
+  ...options:
+    | [when: (v: T) => boolean, message: MayFn<string, [variable: T]>]
+    | [message: MayFn<string, [variable: T]>]
+    | []
 ) {
   const when = options.length == 2 ? options[0] : (v: any) => Boolean(v)
   const message = options.length == 2 ? options[1] : options.length == 1 ? options[0] : ""
-  assert(when(variable), message, () => {
+  assert(when(variable), shrinkFn(message, [variable]), () => {
     if (message) {
       console.log(message, variable)
     } else {
