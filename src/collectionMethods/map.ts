@@ -53,7 +53,9 @@ export function mapEntry<E extends Entries, V, K = GetCollectionKey<E>>(
 }
 
 /**
- * only change collection's value
+ * only change collection's value.
+ * 
+ * **lazy mode**(default when count >1000): return a proxy object, only calc when query the real value. user can input `{lazy:false}` to stop this
  * {@link map `map()`}: simliar to array.prototype.map()
  * @requires {@link mapEntry `mapEntry()`}
  *
