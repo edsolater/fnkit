@@ -38,6 +38,19 @@ export function average<T extends Numberish>(
 }
 
 /**
+ * make every object properties to be average
+ * 平均化所有Object的key
+ */
+export function getObjectAverage<T>(objs: T[]): T {
+  const resultObj = {} as T
+  for (const key in objs[0]) {
+    //@ts-ignore
+    resultObj[key] = average(objs.map((obj) => obj[key]))
+  }
+  return resultObj
+}
+
+/**
  * Geometric Mean
  * 几何平均
  * @param arr
