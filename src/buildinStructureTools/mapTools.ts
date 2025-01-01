@@ -1,4 +1,4 @@
-import { isNullish } from "../dataType"
+import { isFunction, isNullish } from "../dataType"
 
 export type GetMapKey<T extends Map<any, any>> = T extends Map<infer K, any> ? K : never
 export type GetMapValue<T extends Map<any, any>> = T extends Map<any, infer V> ? V : never
@@ -30,9 +30,32 @@ export function sortMapByKey<T extends Map<any, any>>(
   return new Map([...map.entries()].sort((a, b) => compareFn(a[0], b[0])))
 }
 
-export function sliceMap<T extends Map<any, any>>(map: T, start: number, end?: number) {
-  return new Map([...map.entries()].slice(start, end))
+export function sliceMap<T extends Map<any, any>>(map: T, startIndex: number, endIndex?: number): T {
+  if (systemSupportInteratorHelper()) {
+    // @ts-expect-error types is not ready yet
+    return new Map(map.entries().slice(startIndex, endIndex)) as T
+  }
+  const result = new Map() as T
+  let index = 0
+
+  for (const [key, value] of map.entries()) {
+    if (index >= startIndex && (endIndex === undefined || index < endIndex)) {
+      result.set(key, value)
+    }
+    index++
+    if (endIndex !== undefined && index >= endIndex) {
+      break
+    }
+  }
+
+  return result
 }
+
+function systemSupportInteratorHelper() {
+  // @ts-ignore
+  return isFunction([].values().slice)
+}
+
 export function sliceMapKey<T extends Map<any, any>>(map: T, start: GetMapKey<T>, end?: GetMapKey<T>) {
   let startIndex = 0
   let endIndex: number | undefined = end ? 0 : undefined

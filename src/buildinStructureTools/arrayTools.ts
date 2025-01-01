@@ -12,13 +12,7 @@ import { MayPromise } from "../typings/tools"
  * createArray(3, i => i) => [0, 1, 2]
  */
 export function createArray<T = undefined>(length: number, fill?: T | ((idx: number) => T)): T[] {
-  if (isFunction(fill)) {
-    // @ts-ignore
-    return Array.from({ length }, (i) => i).map((_, idx) => fill(idx)) // cb in Array.from may only invoke once, it may cause BUG
-  } else {
-    // @ts-ignore
-    return Array.from({ length }, () => fill)
-  }
+  return Array.from({ length }, isFunction(fill) ? (_, idx) => fill(idx) : () => fill) as T[]
 }
 
 /**
