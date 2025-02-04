@@ -32,28 +32,33 @@ export function sortMapByKey<T extends Map<any, any>>(
 
 export function sliceMap<T extends Map<any, any>>(map: T, startIndex: number, endIndex?: number): T {
   if (systemSupportInteratorHelper()) {
-    // @ts-expect-error types is not ready yet
-    return new Map(map.entries().slice(startIndex, endIndex)) as T
-  }
-  const result = new Map() as T
-  let index = 0
+    const entries = map.entries()
+    const start = startIndex >= 0 ? startIndex : map.size + startIndex
+    const end = endIndex !== undefined ? (endIndex >= 0 ? endIndex : map.size + endIndex) : map.size
+    const dropped = entries.drop(start)
+    const taken = end !== undefined ? dropped.take(end - start) : dropped
+    return new Map(taken) as T
 
-  for (const [key, value] of map.entries()) {
-    if (index >= startIndex && (endIndex === undefined || index < endIndex)) {
-      result.set(key, value)
-    }
-    index++
-    if (endIndex !== undefined && index >= endIndex) {
-      break
-    }
-  }
+  } else {
+    const result = new Map() as T
+    let index = 0
 
-  return result
+    for (const [key, value] of map.entries()) {
+      if (index >= startIndex && (endIndex === undefined || index < endIndex)) {
+        result.set(key, value)
+      }
+      index++
+      if (endIndex !== undefined && index >= endIndex) {
+        break
+      }
+    }
+
+    return result
+  }
 }
 
 function systemSupportInteratorHelper() {
-  // @ts-ignore
-  return isFunction([].values().slice)
+  return isFunction([].values().map)
 }
 
 export function sliceMapKey<T extends Map<any, any>>(map: T, start: GetMapKey<T>, end?: GetMapKey<T>) {
