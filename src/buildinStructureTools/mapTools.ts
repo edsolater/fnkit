@@ -11,7 +11,7 @@ export function mutablySortMapByKey<T extends Map<any, any>>(
   /** just like Array.prototype.sort's compareFn */
   compareFn: (aKey: GetMapKey<T>, bKey: GetMapKey<T>) => number,
 ): T {
-  const items = [...map.entries()].sort((a, b) => compareFn(a[0], b[0]))
+  const items = Array.from(map.entries()).sort((a, b) => compareFn(a[0], b[0]))
   map.clear()
   for (const item of items) {
     map.set(item[0], item[1])
@@ -38,7 +38,6 @@ export function sliceMap<T extends Map<any, any>>(map: T, startIndex: number, en
     const dropped = entries.drop(start)
     const taken = end !== undefined ? dropped.take(end - start) : dropped
     return new Map(taken) as T
-
   } else {
     const result = new Map() as T
     let index = 0
