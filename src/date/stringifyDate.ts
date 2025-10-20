@@ -191,7 +191,7 @@ export function extractTime(dateString: string, options?: { milliseconds?: boole
  *
  * @example
  * createCurrentDateTimeStr() //=> '2021-09-09 10:25:33'
- */ 
+ */
 export const createCurrentDateTimeStr = () => formatDate(createCurrentDate(), "YYYY-MM-DD HH:mm:ss")
 
 /**
@@ -206,4 +206,10 @@ export const createCurrentDateStr = () => formatDate(createCurrentDate(), "YYYY-
  * @example
  * createCurrentTimeStr() //=> '10:25:33'
  */
-export const createCurrentTimeStr = () => formatDate(createCurrentDate(), "HH:mm:ss")
+export const createCurrentTimeStr = (options?: { ms?: boolean }) => {
+  if (options?.ms) {
+    return formatDate(createCurrentDate(), "HH:mm:ss.SSS")
+  } else {
+    return formatDate(createCurrentDate(), "HH:mm:ss")
+  }
+}
