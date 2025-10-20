@@ -4,6 +4,10 @@
  *  - Err(value): 失败状态
  *
  * 所有操作保持纯函数语义，异常自动捕获为 Err。
+ * TODO: onOk/onErr/onChange 回调函数
+ * 注意： 
+ *    - Result是有状态的，适合表达业务逻辑
+ *    - 而Option是无状态的，适合组合底层Utils
  */
 export class Result<T, E = unknown> {
   private constructor(public tag: "Ok" | "Err", public value: T | E) {}
