@@ -23,10 +23,10 @@ export class Option<T> {
    */
   static Some<T>(value: T | Option<T>): Option<NonNullable<T>> {
     if (value instanceof Option) {
-      if (value.isNone()) throw new Error("Option.Some() 不能接收 None")
+      if (value.isNone()) throw new Error("Option.Some() can't accept `None`")
       return value as Option<NonNullable<T>>
     } else {
-      if (value == null) throw new Error("Option.Some() 不能接收 null 或 undefined")
+      if (value == null) throw new Error("Option.Some() can't accept `null` or `undefined`")
       return new Option(value)
     }
   }

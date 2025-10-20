@@ -1,63 +1,108 @@
-/* -----------------------------------------
- * Result：Rust 风格的函数式结果类型
- * -----------------------------------------
- * 设计目的：
- *  - 以声明式、无控制流的方式表达“成功/失败”；
- *  - 代替 if / try / catch；
- *  - 提供 map / mapErr / andThen / orElse 等函数式组合；
- *  - 为上层 Task 提供底层语义支撑。
+/**
+ * Result<T, E> —— 表示一次可能成功或失败的计算。
+ *  - Ok(value): 成功状态
+ *  - Err(value): 失败状态
  *
- * Rust 原型：
- *  enum Result<T, E> { Ok(T), Err(E) }
- * ----------------------------------------- */
-export type OkType<T> = { tag: "Ok"; value: T }
-export type ErrType<E> = { tag: "Err"; error: E }
-export type ResultType<T, E> = OkType<T> | ErrType<E>
-
+ * 所有操作保持纯函数语义，异常自动捕获为 Err。
+ */
 export class Result<T, E = unknown> {
-  private constructor(private readonly inner: ResultType<T, E>) {}
+  private constructor(public tag: "Ok" | "Err", public value: T | E) {}
 
-  static Ok<T, E = never>(value: T): Result<T, E> {
-    return new Result<T, E>({ tag: "Ok", value })
+  static Ok<T, E = never>(value: T | Result<T, E>): Result<T, E> {
+    if (value instanceof Result) {
+      if (value.isErr()) throw new Error("Result.Ok() can't accept `result::Err`")
+      return value as Result<T, E>
+    } else {
+      return new Result<T, E>("Ok", value)
+    }
   }
 
-  static Err<E, T = never>(error: E): Result<T, E> {
-    return new Result<T, E>({ tag: "Err", error })
+  static Err<E, T = never>(error: E | Result<T, E>): Result<T, E> {
+    if (error instanceof Result) {
+      if (error.isOk()) throw new Error("Result.Err() can't accept `result::Ok`")
+      return error as Result<T, E>
+    } else {
+      return new Result<T, E>("Err", error)
+    }
   }
 
-  get isOk(): boolean {
-    return this.inner.tag === "Ok"
+  isOk(): boolean {
+    return this.tag === "Ok"
   }
-  get isErr(): boolean {
-    return this.inner.tag === "Err"
-  }
-
-  unwrap(): T {
-    if (this.inner.tag === "Ok") return this.inner.value
-    throw this.inner.error
+  isErr(): boolean {
+    return this.tag === "Err"
   }
 
-  unwrapOr(defaultValue: T): T {
-    return this.inner.tag === "Ok" ? this.inner.value : defaultValue
+  /** 成功时映射值，若出错自动转为 Err */
+  map(fn: (v: T) => T | Result<T, E>): this {
+    if (this.isErr()) return this
+    try {
+      const r = fn(this.value as T)
+      if (r instanceof Result) {
+        this.tag = r.tag
+        this.value = r.value
+      } else {
+        this.value = r
+      }
+    } catch (err) {
+      this.tag = "Err"
+      this.value = err as E
+    }
+    return this
   }
 
-  map<U>(fn: (v: T) => U): Result<U, E> {
-    return this.inner.tag === "Ok" ? Result.Ok<U, E>(fn(this.inner.value)) : (this as unknown as Result<U, E>)
+  /** 失败时提供默认值或替代 Result */
+  default<U>(fn: (e: E) => U | Result<T, U>): Result<T, U> {
+    if (this.isOk()) return this as any
+    try {
+      const r = fn(this.value as E)
+      if (r instanceof Result) {
+        this.tag = r.tag
+        this.value = r.value as any
+      } else {
+        this.tag = "Ok"
+        this.value = r as any
+      }
+    } catch (err) {
+      this.tag = "Err"
+      this.value = err as E
+    }
+    return this as unknown as Result<T, U>
   }
 
-  mapErr<F>(fn: (e: E) => F): Result<T, F> {
-    return this.inner.tag === "Err" ? Result.Err<F, T>(fn(this.inner.error)) : (this as unknown as Result<T, F>)
+  /** 当成功时执行副作用，不改变状态 */
+  ifOk(effect: (v: T) => void): Result<T, E> {
+    if (this.isOk()) this.tap(({ value }) => effect(value as T))
+    return this
   }
 
-  andThen<U>(fn: (v: T) => Result<U, E>): Result<U, E> {
-    return this.inner.tag === "Ok" ? fn(this.inner.value) : (this as unknown as Result<U, E>)
+  /** 当失败时执行副作用，不改变状态 */
+  ifErr(effect: (e: E) => void): Result<T, E> {
+    if (this.isErr()) this.tap(({ value }) => effect(value as E))
+    return this
   }
 
-  orElse<F>(fn: (e: E) => Result<T, F>): Result<T, F> {
-    return this.inner.tag === "Err" ? fn(this.inner.error) : (this as unknown as Result<T, F>)
+  /** 无论成功失败，都会触发 (执行副作用) */
+  tap(effect: (state: { tag: "Ok" | "Err"; value: T | E }) => void): Result<T, E> {
+    effect({ tag: this.tag, value: this.value })
+    return this
   }
 
-  match<R>(cases: { ok: (v: T) => R; err: (e: E) => R }): R {
-    return this.inner.tag === "Ok" ? cases.ok(this.inner.value) : cases.err(this.inner.error)
+  /** 解包成功值（失败使用默认值或函数） */
+  unwrap(): T | undefined
+  unwrap(orElse: () => T): T
+  unwrap(orElse?: () => T): T | undefined {
+    if (this.isOk()) return this.value as T
+    return orElse ? orElse() : undefined
   }
 }
+
+/**
+ * 快捷方式， 等同于 {@link Result.Ok}
+ */
+export const ok = Result.Ok
+
+/**
+ * 快捷方式， 等同于 {@link Result.Err}
+ */
+export const err = Result.Err
