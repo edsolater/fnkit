@@ -9,7 +9,11 @@ import { Result } from "./Result"
 export class Task<T, E = unknown> {
   constructor(public result: Result<T, E>) {}
 
-  /** 成功任务 */
+  /** 
+   * ✅ 明确的值 => of
+   * Task.of(42)                // “一个已知结果”
+   * Result.Ok("done")
+   */
   static of<T>(value: T | Result<T, never>): Task<T> {
     return new Task(Result.Ok(value))
   }
@@ -19,7 +23,13 @@ export class Task<T, E = unknown> {
     return new Task(Result.Err(error))
   }
 
-  /** 自动捕获异常的安全执行 */
+  /**
+   * 自动捕获异常的安全执行
+   * 
+   * Task.from(() => riskyCall())  // “从一个可能抛错的函数生成任务”
+   * Array.from(document.querySelectorAll("div"))
+   * Result.from(() => maybeThrow())
+   */
   static from<T>(fn: () => T): Task<T> {
     try {
       return Task.of(fn())
@@ -28,11 +38,11 @@ export class Task<T, E = unknown> {
     }
   }
 
-  get isOk(): boolean {
+  get isSuccess(): boolean {
     return this.result.isOk
   }
 
-  get isErr(): boolean {
+  get isError(): boolean {
     return this.result.isErr
   }
 
