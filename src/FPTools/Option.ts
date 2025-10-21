@@ -8,6 +8,12 @@
  */
 export class Option<T> {
   private constructor(private readonly value: T | null | undefined) {}
+  [Symbol.toStringTag]() {
+    return this.isSome ? `Some(${this.value})` : "None"
+  }
+  [Symbol.toPrimitive]() {
+    return this.value as any
+  }
 
   /**
    * 宽容构造：接受任意值。
@@ -23,7 +29,7 @@ export class Option<T> {
    */
   static Some<T>(value: T | Option<T>): Option<NonNullable<T>> {
     if (value instanceof Option) {
-      if (value.isNone()) throw new Error("Option.Some() can't accept `None`")
+      if (value.isNone) throw new Error("Option.Some() can't accept `None`")
       return value as Option<NonNullable<T>>
     } else {
       if (value == null) throw new Error("Option.Some() can't accept `null` or `undefined`")
@@ -37,13 +43,13 @@ export class Option<T> {
   static None = new Option<never>(undefined)
 
   /** 判断是否存在值（非 null / undefined） */
-  isSome(): boolean {
+  get isSome(): boolean {
     return this.value != null
   }
 
   /** 判断是否为 None */
-  isNone(): boolean {
-    return !this.isSome()
+  get isNone(): boolean {
+    return !this.isSome
   }
 
   /**
@@ -56,7 +62,7 @@ export class Option<T> {
    * 语义：描述“若存在值，则将其映射到新值”。
    */
   map<U>(fn: (v: T) => U | Option<U>): Option<U> {
-    if (this.isNone()) return Option.None
+    if (this.isNone) return Option.None
     const result = fn(this.value!)
     return result instanceof Option ? result : Option.of(result)
   }
@@ -74,7 +80,7 @@ export class Option<T> {
   default<U>(this: Option<never | null | undefined>, fn: () => U | Option<U>): Option<U>
   default(fn: () => T | Option<T>): Option<T>
   default<U>(fn: () => U | Option<U>): Option<T | U> {
-    if (this.isSome()) return this as any
+    if (this.isSome) return this as any
     const result = fn()
     return result instanceof Option ? result : Option.of(result)
   }
@@ -96,7 +102,7 @@ export class Option<T> {
   unwrap(): T | undefined
   unwrap(orElse: () => T): T
   unwrap(orElse?: () => T): T | undefined {
-    if (this.isSome()) return this.value as T
+    if (this.isSome) return this.value as T
     return orElse ? orElse() : undefined
   }
 }
