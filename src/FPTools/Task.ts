@@ -1,91 +1,135 @@
-import { Result } from "./Result"
+import type { AnyFn } from "../typings"
+
+type TaskResult<T> = T | Promise<T>
+type Exec<T, U = any> = (pastTaskValue: U) => TaskResult<T>
+type Taskable<T, U = any> = TaskResult<T> | Task<T> | Exec<T, U>
+
+type InnerTaskState<T> = {
+  is: "pending" | "fulfilled" | "rejected" | "running"
+  value?: T
+  error?: any
+  taskRunMs?: number
+  parentTasks: Task<any>[] // 尚未执行的任务（基于此状态派生，供状态变更时通知更新）// 只有上一个任务执行完毕且成功了才可以进行下一个任务。
+  registeredCallbacks: {
+    onFulfilled?: ((value: T) => void)[]
+    onRejected?: ((error: any) => void)[]
+    onFinally?: (() => void)[]
+  }
+}
 
 /**
- * Task<T, E> —— 声明式任务
- * 
- * 只用于表达业务语义，不额外持有状态。
- * 它的行为完全依托于 Result，但提供更自然的调用方式。
+ * 异步任务封装类（兼容于 Promise，但保持惰性，且可链式衔接， 并提供一些方便的管理接口）
  */
-export class Task<T, E = unknown> {
-  constructor(public result: Result<T, E>) {}
-
-  /** 
-   * ✅ 明确的值 => of
-   * Task.of(42)                // “一个已知结果”
-   * Result.Ok("done")
-   */
-  static of<T>(value: T | Result<T, never>): Task<T> {
-    return new Task(Result.Ok(value))
+export class Task<T, U = any> {
+  taskState: InnerTaskState<T>
+  constructor(
+    private readonly execFn: Exec<T, U>,
+    inputState: InnerTaskState<T> = {
+      is: "pending",
+      parentTasks: [],
+      registeredCallbacks: { onFulfilled: [], onRejected: [], onFinally: [] },
+    },
+  ) {
+    this.taskState = inputState
   }
 
-  /** 失败任务 */
-  static fail<E>(error: E | Result<never, E>): Task<never, E> {
-    return new Task(Result.Err(error))
+  /** 仅包装一个已知值（不做任何计算） */
+  static of<T>(value: TaskResult<T>): Task<T> {
+    if (value instanceof Task) {
+      return value
+    } else {
+      return new Task(() => value)
+    }
   }
 
-  /**
-   * 自动捕获异常的安全执行
-   * 
-   * Task.from(() => riskyCall())  // “从一个可能抛错的函数生成任务”
-   * Array.from(document.querySelectorAll("div"))
-   * Result.from(() => maybeThrow())
-   */
-  static from<T>(fn: () => T): Task<T> {
+  /** 从函数/Promise/值“解释”为 Task；统一入口 */
+  static from<T, U = any>(src: Taskable<T, U>): Task<T, U> {
+    if (src instanceof Task) return src
+    if (typeof src === "function") {
+      return new Task(src as Exec<T, U>)
+    }
+    return new Task(() => src)
+  }
+
+  /** 真正启动过程，返回一个可等待的 Promise */
+  private async executeThisTask(payload: { prevValue: U }): Promise<T> {
+    const taskStartTime = globalThis.Performance?.now?.()
     try {
-      return Task.of(fn())
-    } catch (err) {
-      return Task.fail(err)
+      const result = await this.execFn(payload.prevValue)
+      this.taskState.is = "fulfilled"
+      this.taskState.value = result
+      Promise.resolve().then(() => {
+        this.taskState.registeredCallbacks.onFulfilled?.forEach((fn) => fn?.(result))
+        this.taskState.registeredCallbacks.onFinally?.forEach((fn) => fn?.())
+      })
+      const taskEndTime = globalThis.Performance?.now?.()
+      this.taskState.taskRunMs = taskEndTime - taskStartTime
+      return result
+    } catch (e) {
+      this.taskState.is = "rejected"
+      this.taskState.error = e
+      Promise.resolve().then(() => {
+        this.taskState.registeredCallbacks.onRejected?.forEach((fn) => fn?.(e))
+        this.taskState.registeredCallbacks.onFinally?.forEach((fn) => fn?.())
+      })
+      const taskEndTime = globalThis.Performance?.now?.()
+      this.taskState.taskRunMs = taskEndTime - taskStartTime
+      return Promise.reject(e)
     }
   }
 
-  get isSuccess(): boolean {
-    return this.result.isOk
+  // /** 假运行：不启动计算，仅返回一个 Promise（用于链式衔接） */
+  // fakeRun(): Promise<T> {
+  //   return new Promise<T>((resolve, reject) => {
+  //     this.taskState.registeredCallbacks.onFulfilled.push(resolve)
+  //     this.taskState.registeredCallbacks.onRejected.push(reject)
+  //     this.taskState.registeredCallbacks.onFinally.push(undefined)
+  //   })
+  // }
+  async run(): Promise<T> {
+    let taskResult: any = undefined
+    for (const parentTask of this.taskState.parentTasks.concat(this)) {
+      taskResult = await parentTask.executeThisTask({ prevValue: taskResult })
+    }
+    return taskResult
   }
 
-  get isError(): boolean {
-    return this.result.isErr
-  }
-
-  /** 执行逻辑，仅在成功时执行 */
-  map<U>(fn: (v: T) => U | Result<U, E>): Task<U, E> {
-    this.result.map(fn as any)
-    return this as unknown as Task<U, E>
-  }
-
-  /** 提供默认值或恢复逻辑 */
-  default<F>(fn: (e: E) => T | Result<T, F>): Task<T, F> {
-    this.result.default(fn as any)
-    return this as unknown as Task<T, F>
-  }
-
-  /** 成功时执行副作用 */
-  ifOk(effect: (v: T) => void): this {
-    this.result.ifOk(effect)
-    return this
-  }
-
-  /** 失败时执行副作用 */
-  ifErr(effect: (e: E) => void): this {
-    this.result.ifErr(effect)
-    return this
-  }
-
-  /** 无论成功失败都执行副作用 */
-  tap(effect: (state: { tag: "Ok" | "Err"; value: T | E }) => void): this {
-    this.result.tap(effect)
-    return this
-  }
-
-  /** 守卫：若条件不满足则转为 Err */
-  guard(predicate: (v: T) => boolean, error: E): this {
-    if (this.result.isOk && !predicate(this.result.value as T)) {
-      this.result = Result.Err(error)
+  /** 注册回调 */
+  on(time: "fulfilled", callback: (result: T) => void): Task<T>
+  on(time: "rejected", callback: (error: any) => void): Task<T>
+  on(time: "finally", callback: () => void): Task<T>
+  on(time: "fulfilled" | "rejected" | "finally", callback: AnyFn): Task<T> {
+    switch (time) {
+      case "fulfilled":
+        this.taskState.registeredCallbacks.onFulfilled ??= []
+        this.taskState.registeredCallbacks.onFulfilled.push(callback)
+        break
+      case "rejected":
+        this.taskState.registeredCallbacks.onRejected ??= []
+        this.taskState.registeredCallbacks.onRejected.push(callback)
+        break
+      case "finally":
+        this.taskState.registeredCallbacks.onFinally ??= []
+        this.taskState.registeredCallbacks.onFinally.push(callback)
+        break
     }
     return this
   }
 
-  /** 解包成功值（可选默认） */
-  unwrap(orElse?: () => T): T | undefined {
-    return this.result.unwrap(orElse!)
+  /** 链式衔接下一个 Task（flatMap/chain） */
+  chain<V>(taskable: Taskable<V, T>): Task<V, T> {
+    const newTask = Task.from<V, T>(taskable)
+    newTask.taskState.parentTasks = this.taskState.parentTasks.concat(this)
+    return newTask
   }
+}
+
+/* Guard函数 */
+export function isTask<T>(obj: any): obj is Task<T> {
+  return obj instanceof Task
+}
+
+/* 快捷函数 */
+export function task<T>(fn: Exec<T> | Task<T>): Task<T> {
+  return Task.from(fn)
 }
