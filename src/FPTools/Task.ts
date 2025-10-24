@@ -116,8 +116,8 @@ export class Task<T, U = any> {
   //     this.taskState.registeredCallbacks.onFinally.push(undefined)
   //   })
   // }
-  async run(): Promise<T> {
-    let taskResult: any = undefined
+  async run(payload?: { prevValue?: U }): Promise<T> {
+    let taskResult: any = payload?.prevValue
     for (const parentTask of this.taskState.parentTasks.concat(this)) {
       taskResult = await parentTask.runCurrentTask({ prevValue: taskResult })
     }
@@ -160,8 +160,10 @@ export class Task<T, U = any> {
 
   /** 中止任务（不可再执行） */
   abort(): void {
-    this.abortCurrentTask()
-    this.taskState.parentTasks.toReversed().forEach((task) => task.abortCurrentTask())
+    this.taskState.parentTasks
+      .concat(this)
+      .toReversed()
+      .forEach((task) => task.abortCurrentTask())
   }
 
   /** 如果任务失败， 捕获错误并返回默认值 */
@@ -177,6 +179,31 @@ export function isTask<T>(obj: any): obj is Task<T> {
 }
 
 /* 快捷函数 */
-export function task<T>(fn: Exec<T> | Task<T>): Task<T> {
+export function task<T>(fn: Taskable<T>): Task<T> {
   return Task.from(fn)
+}
+
+/** 并行处理多个task */
+export function taskGroup<T>(fn1: Taskable<T>): Task<[T]>
+export function taskGroup<T, U>(fn1: Taskable<T>, fn2: Taskable<U>): Task<[T, U]>
+export function taskGroup<T, U, V>(fn1: Taskable<T>, fn2: Taskable<U>, fn3: Taskable<V>): Task<[T, U, V]>
+export function taskGroup<T, U, V, W>(
+  fn1: Taskable<T>,
+  fn2: Taskable<U>,
+  fn3: Taskable<V>,
+  fn4: Taskable<W>,
+): Task<[T, U, V, W]>
+export function taskGroup<T, U, V, W, X>(
+  fn1: Taskable<T>,
+  fn2: Taskable<U>,
+  fn3: Taskable<V>,
+  fn4: Taskable<W>,
+  fn5: Taskable<X>,
+): Task<[T, U, V, W, X]>
+export function taskGroup(...fns: Taskable<any>[]): Task<any> {
+  const tasks = fns.map((fn) => Task.from(fn))
+  return new Task((prevValue: any) => {
+    const promises = tasks.map((task) => task.run({ prevValue }))
+    return Promise.all(promises)
+  })
 }
