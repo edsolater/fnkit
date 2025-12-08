@@ -1,11 +1,10 @@
 /**
  * it's format content, not face like
  */
-import { pipeDo } from "../pipeDo"
+import { pipe } from "../pipe"
 import { Numberish } from "./types"
 import { toStringNumber } from "./numberishAtom"
 import { toFixedDecimal } from "./utils"
-import { isNumber } from "../dataType"
 
 export type NumberishFormatOptions = {
   /**
@@ -79,13 +78,13 @@ export function toFormattedNumber(n: Numberish | undefined, options?: NumberishF
     if (!options || (options.decimals && options.decimals > 0)) return "0" + "." + "0".repeat(options?.decimals ?? 2)
   }
   return options?.shortExpression
-    ? pipeDo(
+    ? pipe(
         n,
         (s) => toStringNumber(s, { decimals: ((options?.decimals === "auto" ? 2 : options?.decimals) ?? 2) + 1 }),
         (s) => fixDecimal(s, options),
         (s) => handleShortExpression(s, options),
       )
-    : pipeDo(
+    : pipe(
         n,
         (s) => toStringNumber(s, { decimals: ((options?.decimals === "auto" ? 2 : options?.decimals) ?? 2) + 1 }),
         (s) => fixDecimal(s, options),

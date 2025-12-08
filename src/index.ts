@@ -1,5 +1,5 @@
+export * from "./asyncCompose"
 export * from "./asyncPipe"
-export * from "./asyncPipeDo"
 export * from "./bindParams" // FP style get function faster
 export * from "./cache"
 export * from "./cacheFunction"
@@ -37,10 +37,8 @@ export * from "./oldMethodsMagic"
 export * from "./oldMethodsMath"
 export * from "./oldMethodsString"
 export * from "./pickProperty" // FP style utils to get property easily
+export * from "./compose"
 export * from "./pipe"
-export * from "./pipeAsyncDo"
-export * from "./pipeDo"
-export * from "./pipeFns"
 export * from "./promiseHelpers"
 export * from "./promisify" // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
 export * from "./queryDiffInfo"
