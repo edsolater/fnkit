@@ -4,16 +4,12 @@ import { isPromise, isString } from "./dataType"
 export function assert(condition: any, callback?: () => void): asserts condition
 export function assert(condition: any, msg?: string, callback?: (msg: string) => void): asserts condition
 export function assert(condition: any, arg0?: string | (() => void), arg1?: (msg: string) => void): asserts condition {
+  const msg = typeof arg0 === "string" ? arg0 : undefined
+  const callback = typeof arg0 === "function" ? arg0 : typeof arg1 === "function" ? arg1 : undefined
   if (!condition) {
-    if (arg1) {
-      arg1(arg0 as string)
-      throw new Error(arg0 as string)
-    } else if (isString(arg0)) {
-      throw new Error(arg0 as string)
-    } else {
-      arg0?.()
-      throw new Error()
-    }
+    // @ts-ignore
+    callback?.(msg)
+    throw new Error(msg)
   }
 }
 
@@ -51,40 +47,54 @@ export function assertVariable<T>(
 //#endregion
 
 /**
- * 如果可能异步，请使用 asyncTryCatch 代替。它内部使用Promise.try实现。
  *
- * 如果未写catch或者catch返回了undefined，则会重新抛出错误。
+ * 如果未写catchFunction或者catchFunction返回了非T，则最终返回 T | undefined。相当于尝试了任务，但是尝试失败了，于是会返回undefined。
  *
  * Tries to execute a function and catches any errors that occur.
- * @param tryFunction The function to try executing.
+ * @param coreTask The function to try executing.
  * @param catchFunction Optional function to handle errors.
  */
 export function tryCatch<T>(
-  tryFunction: () => undefined | null,
-  catchFunction?: (err: unknown) => undefined | null,
+  coreTask: () => undefined | null,
+  catchFunction?: (err: Error) => undefined | null,
 ): undefined | null
-export function tryCatch<T>(tryFunction: () => Promise<T>, catchFunction?: (err: unknown) => T): Promise<T>
-export function tryCatch<T>(tryFunction: () => T, catchFunction?: (err: unknown) => T): NonNullable<T>
-export function tryCatch<T>(tryFunction: () => T, catchFunction?: (err: unknown) => T) {
-  try {
-    const result = tryFunction()
-    if (isPromise(result)) {
-      return Promise.try(() => result).catch((err) => {
-        const fallbackValue = catchFunction?.(err)
-        if (fallbackValue == null) {
-          throw err
-        }
-        return fallbackValue
-      }) as Promise<NonNullable<T>>
-    }
-    return result as NonNullable<T>
-  } catch (err) {
+export function tryCatch<T>(coreTask: () => Promise<T>, catchFunction: (err: Error) => NoInfer<T>): Promise<T>
+export function tryCatch<T>(coreTask: () => Promise<T>, catchFunction?: (err: Error) => void): Promise<T | undefined>
+export function tryCatch<T>(coreTask: () => T, catchFunction: (err: Error) => NoInfer<T>): T
+export function tryCatch<T>(coreTask: () => T, catchFunction?: (err: Error) => void): T | undefined
+export function tryCatch<T>(coreTask: () => T, catchFunction?: (err: Error) => NoInfer<T> | void) {
+  function getFallbackValueOrThrowErr(err: Error): NoInfer<T> | void {
     const fallbackValue = catchFunction?.(err)
     if (fallbackValue == null) {
       throw err
     }
     return fallbackValue
   }
+
+  try {
+    const result = coreTask()
+    if (isPromise(result)) {
+      return result.catch((err) => getFallbackValueOrThrowErr(err)) as Promise<NonNullable<T>>
+    }
+    return result as NonNullable<T>
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    const fallbackValue = getFallbackValueOrThrowErr(error)
+    return fallbackValue
+  }
+}
+
+/**
+ * 类似于assert，出错就终止程序了
+ */
+export function tryAssert<T>(tryFunction: () => T, catchFunction?: (err: Error) => void): T {
+  let errObj: Error | undefined = undefined
+  const result = tryCatch(tryFunction, (err) => {
+    errObj = err
+    catchFunction?.(errObj)
+  })
+  assert(errObj == null, errObj)
+  return result as T
 }
 
 /**
