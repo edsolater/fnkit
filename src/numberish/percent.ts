@@ -35,6 +35,7 @@ export function toPercentString(
     min?: number
   },
 ): string {
+  if (n == null) return "--"
   const nPart = (() => {
     try {
       const stringPart = toFixedDecimal(mul(n ?? 0, options?.alreadyPercented ? 1 : 100), options?.fixed ?? 2)
