@@ -1,5 +1,5 @@
-import { shrinkFn, type MayFn } from "."
-import { isString } from "./dataType"
+import { shrinkFn, type MayFn, type NilKeys } from "."
+import { isPromise, isString } from "./dataType"
 
 export function assert(condition: any, callback?: () => void): asserts condition
 export function assert(condition: any, msg?: string, callback?: (msg: string) => void): asserts condition
@@ -51,15 +51,39 @@ export function assertVariable<T>(
 //#endregion
 
 /**
+ * 如果可能异步，请使用 asyncTryCatch 代替。它内部使用Promise.try实现。
+ *
+ * 如果未写catch或者catch返回了undefined，则会重新抛出错误。
+ *
  * Tries to execute a function and catches any errors that occur.
  * @param tryFunction The function to try executing.
  * @param catchFunction Optional function to handle errors.
  */
+export function tryCatch<T>(
+  tryFunction: () => undefined | null,
+  catchFunction?: (err: unknown) => undefined | null,
+): undefined | null
+export function tryCatch<T>(tryFunction: () => Promise<T>, catchFunction?: (err: unknown) => T): Promise<T>
+export function tryCatch<T>(tryFunction: () => T, catchFunction?: (err: unknown) => T): NonNullable<T>
 export function tryCatch<T>(tryFunction: () => T, catchFunction?: (err: unknown) => T) {
   try {
-    return tryFunction()
+    const result = tryFunction()
+    if (isPromise(result)) {
+      return Promise.try(() => result).catch((err) => {
+        const fallbackValue = catchFunction?.(err)
+        if (fallbackValue == null) {
+          throw err
+        }
+        return fallbackValue
+      }) as Promise<NonNullable<T>>
+    }
+    return result as NonNullable<T>
   } catch (err) {
-    return catchFunction?.(err)
+    const fallbackValue = catchFunction?.(err)
+    if (fallbackValue == null) {
+      throw err
+    }
+    return fallbackValue
   }
 }
 
