@@ -15,14 +15,13 @@ type Unliteral<T> = T extends string
 
 function toFistItemType<T>(result: Numberish, orginArr: readonly T[]): Unliteral<T> {
   const type = getType(orginArr[0])
-  // @ts-expect-error froce type judge. don't mind auto infer error
   return type === "bigint"
-    ? toBigint(result)
+    ? toBigint(result) as Unliteral<T>
     : type === "number"
-    ? toNumber(result)
+    ? toNumber(result)as Unliteral<T>
     : type === "string"
-    ? toStringNumber(result)
-    : result
+    ? toStringNumber(result) as Unliteral<T>
+    : result as any
 }
 export function sum<T extends Numberish>(arr: readonly T[]): Unliteral<T> {
   const sumValue = reduce(arr, (acc, n) => addS(acc, n), "0")
