@@ -46,7 +46,7 @@ export function getType(
     ? "Map"
     : typeof v === "object"
     ? getObjType(v) ?? "unknown"
-    : typeof v
+    : typeof v as any
 }
 
 export const getObjType = (obj: unknown): "Array" | "Object" | "Set" | "Map" | "WeakSet" | "WeakMap" | "Date" => {

@@ -20,7 +20,7 @@ export const flatWithFn = <T extends MayArray<MayFn<any>>>(
  * @deprecated use {@link shrinkFn} instead
  */
 export default function shrinkToValue<T>(mayValue: T, params?: MayParameters<T>): MayReturn<T> {
-  return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue
+  return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue as Exclude<T, AnyFn>
 }
 /**
  * get value from input, if input is a function. it will ve invoked
@@ -32,7 +32,7 @@ export default function shrinkToValue<T>(mayValue: T, params?: MayParameters<T>)
 export function shrinkFn<T>(mayValue: undefined, params?: MayParameters<T>): undefined
 export function shrinkFn<T>(mayValue: T, params?: MayParameters<T>): MayReturn<T>
 export function shrinkFn<T>(mayValue: T, params?: MayParameters<T>): MayReturn<T> {
-  return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue
+  return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue as Exclude<T, AnyFn>
 }
 type MayParameters<T> = Parameters<Extract<T, AnyFn>>
 type MayReturn<T> = T extends AnyFn ? ReturnType<T> : T

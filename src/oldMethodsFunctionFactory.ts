@@ -108,3 +108,22 @@ export function overwriteFunctionName<F extends (...params: any[]) => any>(func:
   }
   return temp[name] as F
 }
+
+/**
+ * 主流程不变，一路插观察点
+ * 不描述返回机制，只描述“插入一个动作”
+ * 
+ * 在脑内图里是这样：
+ * x ── tap(log) ──► x
+ * 非常顺
+ * @param inputFn 只负责感知，但不会改变什么
+ * @returns “透传”的函数, 即返回值是第一个参数
+ */
+export function tap<A, Rest extends any[]>(
+  inputFn: (first: A, ...rest: Rest) => unknown,
+): (first: A, ...rest: Rest) => A {
+  return (first, ...rest) => {
+    inputFn(first, ...rest)
+    return first
+  }
+}
