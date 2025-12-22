@@ -2,8 +2,8 @@ import { isFunction } from "../dataType"
 import type { AnyFn, MayFn } from "../typings"
 
 type TaskResult<T> = T | Promise<T>
-type Exec<T, U = any> = (pastTaskValue: U) => TaskResult<T>
-type Taskable<T, U = any> = TaskResult<T> | Task<T> | Exec<T, U>
+type TaskInnerFunction<T, U = any> = (prevTaskResult: U) => TaskResult<T>
+type Taskable<T, U = any> = TaskResult<T> | Task<T> | TaskInnerFunction<T, U>
 
 type InnerTaskState<T> = {
   is: "pending" | "fulfilled" | "rejected" | "running" | "aborted" /* 冻结状态，不可再执行 */
@@ -26,7 +26,7 @@ type InnerTaskState<T> = {
 export class Task<T, U = any> {
   taskState: InnerTaskState<T>
   constructor(
-    private readonly execFn: Exec<T, U>,
+    private readonly execFn: TaskInnerFunction<T, U>,
     inputState: InnerTaskState<T> = {
       is: "pending",
       parentTasks: [],
@@ -49,13 +49,13 @@ export class Task<T, U = any> {
   static from<T, U = any>(src: Taskable<T, U>): Task<T, U> {
     if (src instanceof Task) return src
     if (typeof src === "function") {
-      return new Task(src as Exec<T, U>)
+      return new Task(src as TaskInnerFunction<T, U>)
     }
     return new Task(() => src)
   }
 
   /** 真正启动过程，返回一个可等待的 Promise */
-  private async runCurrentTask(payload: { prevValue: U }): Promise<T> {
+  private async runImmediately(payload: { prevTaskResult: U }): Promise<T> {
     // 以标注为取消的任务不可再执行
     if (this.taskState.is === "aborted") return Promise.reject(this.taskState.error)
 
@@ -65,11 +65,11 @@ export class Task<T, U = any> {
       resolve: CurrentTaskResultResolve,
       reject: CurrentTaskResultReject,
     } = Promise.withResolvers<T>()
-    const finalCore = (payload: { prevValue: U }) => {
+    const finalCore = (payload: { prevTaskValue: U }) => {
       const taskStartTime = globalThis.Performance?.now?.()
       const { promise: costTimePromise, resolve: costTimeResolve } = Promise.withResolvers<number>()
       const result = Promise.resolve()
-        .then(() => this.execFn(payload.prevValue))
+        .then(() => this.execFn(payload.prevTaskValue))
         .catch((e) => {
           if (this.taskState.fallback) {
             return this.taskState.fallback(e)
@@ -83,7 +83,7 @@ export class Task<T, U = any> {
 
       return { result, costTime: costTimePromise }
     }
-    const { result, costTime } = finalCore({ prevValue: payload.prevValue })
+    const { result, costTime } = finalCore({ prevTaskValue: payload.prevTaskResult })
     Promise.allSettled([result, costTime]).then(([resResult, resCostTime]) => {
       this.taskState.taskRunMs = resCostTime.status === "fulfilled" ? resCostTime.value : NaN
       if (resResult.status === "fulfilled") {
@@ -116,10 +116,10 @@ export class Task<T, U = any> {
   //     this.taskState.registeredCallbacks.onFinally.push(undefined)
   //   })
   // }
-  async run(payload?: { prevValue?: U }): Promise<T> {
-    let taskResult: any = payload?.prevValue
+  async run(payload?: { prevTaskResult?: U }): Promise<T> {
+    let taskResult: any = payload?.prevTaskResult
     for (const parentTask of this.taskState.parentTasks.concat(this)) {
-      taskResult = await parentTask.runCurrentTask({ prevValue: taskResult })
+      taskResult = await parentTask.runImmediately({ prevTaskResult: taskResult })
     }
     return taskResult
   }
@@ -178,10 +178,6 @@ export function isTask<T>(obj: any): obj is Task<T> {
   return obj instanceof Task
 }
 
-/* 快捷函数 */
-export function task<T>(fn: Taskable<T>): Task<T> {
-  return Task.from(fn)
-}
 
 /** 并行处理多个task */
 export function taskGroup<T>(fn1: Taskable<T>): Task<[T]>
@@ -202,8 +198,12 @@ export function taskGroup<T, U, V, W, X>(
 ): Task<[T, U, V, W, X]>
 export function taskGroup(...fns: Taskable<any>[]): Task<any> {
   const tasks = fns.map((fn) => Task.from(fn))
-  return new Task((prevValue: any) => {
-    const promises = tasks.map((task) => task.run({ prevValue }))
+  return new Task((prevTaskResult: any) => {
+    const promises = tasks.map((task) => task.run({ prevTaskResult }))
     return Promise.all(promises)
   })
+}
+
+export function createTask<T>(fn: Taskable<T>): Task<T> {
+  return Task.from(fn)
 }

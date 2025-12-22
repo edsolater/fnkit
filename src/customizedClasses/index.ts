@@ -1,4 +1,3 @@
-export * from "./AbortablePromise"
 export * from "./EventCenter"
 export * from "./Neuron"
 export * from "./Subscription"
