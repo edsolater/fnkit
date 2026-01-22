@@ -20,7 +20,7 @@ type CallbackObject<T, U> = {
 
 /**
  *
- * 声明式的for循环
+ * 超级for循环
  * TODO：需要添加测试
  *
  * 没有过程式的runtime-continue 与runtime-break
