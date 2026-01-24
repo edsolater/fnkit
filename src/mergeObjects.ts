@@ -13,33 +13,29 @@ export function mergeObjectsWithConfigs<T extends object | Function>(
   if (objs.length === 0) return {} as T
   if (objs.length === 1) return objs[0]!
 
-  let keys: (string | symbol)[] | undefined = undefined
-  let keySet: Set<string | symbol> | undefined = undefined
+  // ----- 内部属性 -----
+  let _keySet: Set<string | symbol> | undefined = undefined
 
-  function getKeys() {
-    if (!keys) {
-      keys = getObjKeys(...objs)
+  // ------ 内部方法 -----
+  function _getKeys() {
+    if (!_keySet) {
+      _keySet = getKeySet(...objs)
     }
-    return keys
-  }
-  function getKeySet() {
-    if (!keySet) {
-      keySet = new Set(getKeys())
-    }
-    return keySet
+    return _keySet
   }
 
+  // ------ 返回 Proxy -----
   return new Proxy(objs.some(isFunction) ? () => {} : {}, {
     apply(_target, thisArg, argArray) {
       const fn = objs.findLast(isFunction)
       return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
     },
     get: (target, key) =>
-      getKeySet().has(key) ? (key in target ? target[key] : getValueByConfig(objs, key, transformer)) : undefined,
+      _getKeys().has(key) ? (key in target ? target[key] : getValueByConfig(objs, key, transformer)) : undefined,
     set: (_target, key, value) => Reflect.set(_target, key, value),
-    has: (_target, key) => getKeySet().has(key),
+    has: (_target, key) => _getKeys().has(key),
     getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
-    ownKeys: getKeys,
+    ownKeys: () => Array.from(_getKeys()),
     // for Object.keys to filter
     getOwnPropertyDescriptor: (_target, prop) => {
       for (const obj of objs) {
@@ -52,8 +48,11 @@ export function mergeObjectsWithConfigs<T extends object | Function>(
 }
 
 /**
- * pure merge object with proxy
- * @param objs target objects
+ * 合并对象，但**不访问对象的属性**（使用proxy做到）
+ *
+ * 返回输入对象的检索入口
+ *
+ * @param objs 多个对象（但为读取时不会访问其属性）
  * @example
  * mergeObjects({a: 3, b: 2}, {a: 1, b: 3}) // {a: 1, b: 3}
  */
@@ -61,32 +60,25 @@ export function mergeObjects<T, W>(...objs: [T, W]): T & W
 export function mergeObjects<T, W, X>(...objs: [T, W, X]): T & W & X
 export function mergeObjects<T, W, X, Y>(...objs: [T, W, X, Y]): T & W & X & Y
 export function mergeObjects<T, W, X, Y, Z>(...objs: [T, W, X, Y, Z]): T & W & X & Y & Z
-export function mergeObjects<T extends object | Function | undefined>(...objs: T[]): T
-export function mergeObjects<T extends object | Function | undefined>(...objs: T[]): T {
+export function mergeObjects<T extends object>(...objs: T[]): T
+export function mergeObjects<T extends object>(...objs: T[]): T {
   if (objs.length === 0) return {} as T
-  if (objs.length === 1) return objs[0]! ?? {}
+  if (objs.length === 1) return objs[0]
 
-  const candidates = objs.filter((obj) => obj)
-  const haveFunctionObject = candidates.some(isFunction)
-  if (candidates.length === 0) return {} as T
-  if (candidates.length === 1) return candidates[0]! ?? {}
-  let keys: (string | symbol)[] | undefined = undefined
+  // ----- 内部属性 -----
+  const containMethods = objs.some(isFunction)// 函数也能作为对象输入
   let keySet: Set<string | symbol> | undefined = undefined
-  function getKeys() {
-    if (!keys) {
-      keys = getObjKeys(...candidates)
-    }
-    return keys
-  }
-  function getKeySet() {
+
+  // ------ 内部方法 -----
+  function _getKeys() {
     if (!keySet) {
-      keySet = new Set(getKeys())
+      keySet = getKeySet(...objs)
     }
     return keySet
   }
-  function getValue(key: string | symbol) {
-    for (let i = candidates.length - 1; i >= 0; i--) {
-      const obj = candidates[i]
+  function _getValue(key: string | symbol) {
+    for (let i = objs.length - 1; i >= 0; i--) {
+      const obj = objs[i]
       if (obj && key in obj) {
         const v = obj[key]
         if (v !== undefined) {
@@ -95,19 +87,21 @@ export function mergeObjects<T extends object | Function | undefined>(...objs: T
       }
     }
   }
-  return new Proxy(haveFunctionObject ? () => {} : {}, {
+
+  // ------ 返回 Proxy -----
+  return new Proxy(containMethods ? () => {} : {}, {
     apply(_target, thisArg, argArray) {
-      const fn = candidates.findLast(isFunction)
+      const fn = objs.findLast(isFunction)
       return fn && Reflect.apply(fn as AnyFn, thisArg, argArray)
     },
-    get: (target, key) => (getKeySet().has(key) ? (key in target ? target[key] : getValue(key)) : undefined),
-    has: (_target, key) => getKeySet().has(key),
+    get: (target, key) => (_getKeys().has(key) ? (key in target ? target[key] : _getValue(key)) : undefined),
+    has: (_target, key) => _getKeys().has(key),
     set: (_target, key, value) => Reflect.set(_target, key, value),
-    getPrototypeOf: () => (candidates[0] ? Object.getPrototypeOf(candidates[0]) : null),
-    ownKeys: getKeys,
+    getPrototypeOf: () => (objs[0] ? Object.getPrototypeOf(objs[0]) : null),
+    ownKeys: () => Array.from(_getKeys()),
     // for Object.keys to filter
     getOwnPropertyDescriptor: (_target, prop) => {
-      for (const obj of candidates) {
+      for (const obj of objs) {
         if (obj && prop in obj) {
           return Reflect.getOwnPropertyDescriptor(obj, prop)
         }
@@ -156,7 +150,7 @@ export function createEmptyObjectByOlds<
 >(...objs: [T, U, V, W]): { [key in keyof T | keyof U | keyof V | keyof W]: undefined }
 export function createEmptyObjectByOlds(...objs: (object | undefined)[]): object
 export function createEmptyObjectByOlds(...objs: (object | undefined)[]): any {
-  return objs.length > 0 ? createEmptyObject(getObjKeys(...objs)) : {}
+  return objs.length > 0 ? createEmptyObject(getKeys(...objs)) : {}
 }
 
 /**
@@ -181,21 +175,36 @@ function getValueByConfig<T extends object>(
   for (const obj of objs) {
     if (obj == null) continue
     const valueB = obj[key]
-    valueA = valueA != null && valueB !== null ? valueMatchRule({ key, valueA, valueB }) : valueB ?? valueA
+    valueA = valueA != null && valueB !== null ? valueMatchRule({ key, valueA, valueB }) : (valueB ?? valueA)
   }
   return valueA
 }
 
-export function getObjKeys<T extends object | undefined>(...objs: T[]) {
+export function getKeys<T extends object | undefined>(...objs: T[]) {
   if (objs.length <= 1) {
     const obj = objs[0]
     return obj ? Reflect.ownKeys(obj) : []
-  } else {
-    const result = new Set<string | symbol>()
-    for (const obj of objs) {
-      if (!obj) continue
-      Reflect.ownKeys(obj).forEach((k) => result.add(k))
-    }
-    return Array.from(result)
   }
+
+  const result = new Set<string | symbol>()
+  for (const obj of objs) {
+    if (!obj) continue
+    Reflect.ownKeys(obj).forEach((k) => result.add(k))
+  }
+  return Array.from(result)
 }
+
+export function getKeySet<T extends object | undefined>(...objs: T[]): Set<string | symbol> {
+  if (objs.length <= 1) {
+    const obj = objs[0]
+    return obj ? new Set(Reflect.ownKeys(obj)) : new Set()
+  }
+
+  const result = new Set<string | symbol>()
+  for (const obj of objs) {
+    if (!obj) continue
+    Reflect.ownKeys(obj).forEach((k) => result.add(k))
+  }
+  return result
+}
+

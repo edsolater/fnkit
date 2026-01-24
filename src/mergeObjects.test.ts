@@ -1,10 +1,10 @@
 import { expect, test } from "vitest"
 import { isSymbol } from "./dataType"
-import { getObjKeys, mergeObjectsWithConfigs } from "./mergeObjects"
+import { getKeys, mergeObjectsWithConfigs } from "./mergeObjects"
 
 const symbol = Symbol("s")
 test("test fn function:mergeObjectsWithConfigs", () => {
-  expect(getObjKeys({ a: 3, b: 4 }, { a: 5, b: 6, c: 7 })).toEqual(["a", "b", "c"])
+  expect(getKeys({ a: 3, b: 4 }, { a: 5, b: 6, c: 7 })).toEqual(["a", "b", "c"])
 
   expect(
     mergeObjectsWithConfigs([
