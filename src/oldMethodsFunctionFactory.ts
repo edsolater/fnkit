@@ -1,5 +1,5 @@
-import { isObjectLike } from "./dataType"
-import { AnyArr, AnyFn } from "./typings/constants"
+import { isObject, isObjectLike } from "./dataType"
+import { AnyArr, AnyFn, type AnyObj } from "./typings/constants"
 
 /**
  * attach a param to the function.return the function's copy.
@@ -112,7 +112,7 @@ export function overwriteFunctionName<F extends (...params: any[]) => any>(func:
 /**
  * 主流程不变，一路插观察点
  * 不描述返回机制，只描述“插入一个动作”
- * 
+ *
  * 在脑内图里是这样：
  * x ── tap(log) ──► x
  * 非常顺
@@ -125,5 +125,49 @@ export function tap<A, Rest extends any[]>(
   return (first, ...rest) => {
     inputFn(first, ...rest)
     return first
+  }
+}
+
+/**
+ * 取值， 失败（不管是何原因）， 返回默认值
+ * @param obj
+ * @param key
+ * @param defaultValue
+ * @returns
+ */
+function getValueByKey<D>(obj: AnyObj, key: any, defaultValue: D): D {
+  if (isObject(obj) && key in obj) {
+    return obj[key] ?? defaultValue
+  }
+  return defaultValue
+}
+
+function getValueByPath<D>(obj: AnyObj, path: string[], defaultValue: D): D {
+  let current = obj
+  for (const segment of path) {
+    if (isObject(current) && segment in current) {
+      current = current[segment]
+    } else {
+      return defaultValue
+    }
+  }
+  return current ?? defaultValue
+}
+
+export function getValue<T extends object, K extends keyof T>(obj: T | undefined, key: K, defaultValue: T[K]): T[K]
+export function getValue<T extends object, K extends keyof T, D>(
+  obj: T | undefined,
+  path: string[],
+  defaultValue: D,
+): D /* 还没想好类型怎么写 */
+export function getValue<D>(resource: any, verbosePath: any, defaultValue: D): D 
+export function getValue<D>(resource: any, verbosePath: any, defaultValue: D): D {
+  if (!isObject(resource)) return defaultValue
+
+  if (Array.isArray(verbosePath)) {
+    return getValueByPath(resource, verbosePath, defaultValue)
+  } else {
+    const key = verbosePath
+    return getValueByKey(resource, key, defaultValue)
   }
 }
