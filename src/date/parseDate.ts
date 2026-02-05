@@ -1,5 +1,5 @@
-import { clamp, map, type Int } from ".."
-import { getType, isNumber, isObject } from "../dataType"
+import { map, type Int } from ".."
+import { isNumber, isObject } from "../dataType"
 import { Numberish } from "../numberish/types"
 import { DateInfoAtom, DateParam, TimeStampVerbose } from "./type"
 
@@ -8,6 +8,9 @@ import { DateInfoAtom, DateParam, TimeStampVerbose } from "./type"
  * @example
  * createDate() //=> now
  * createDate(1633948800) //=> 2021-10-11T00:00:00.000Z
+ * createDate("2021-10-11") //=> 2021-10-11T00:00:00.000Z
+ * createDate("2021-10-11 12:34:56") //=> 2021-10-11T12:34:56.000Z
+ * createDate({ year: 2021, month: 10, day: 11, hours: 12, minutes: 34, seconds: 56 }) //=> 2021-10-11T12:34:56.000Z
  */
 export function createDate(): Date
 export function createDate(value: DateParam): Date
@@ -234,18 +237,21 @@ export function getTimestamp(date?: DateParam) {
  */
 export function parseDate(date?: DateParam) {
   const paramDate = createDate(date)
-  return {
-    fullDate: paramDate,
+  const info = {
     year: getYear(paramDate),
     month: getMonth(paramDate),
     day: getDay(paramDate),
-    dayOfWeek: getDayOfWeek(paramDate),
     hours: getHours(paramDate),
     minutes: getMinutes(paramDate),
     seconds: getSeconds(paramDate),
     milliseconds: getMilliseconds(paramDate),
+  }
+  return {
+    fullDate: paramDate,
+    dayOfWeek: getDayOfWeek(paramDate),
     timestamp: getTimestamp(paramDate),
     monthLength: getMonthLength(getYear(paramDate), getMonth(paramDate)),
+    ...info,
   }
 }
 

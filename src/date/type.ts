@@ -1,3 +1,4 @@
+import type { MayEnum } from ".."
 import { Numberish } from "../numberish/types"
 
 export type TimeStampVerbose = TimeStamp | TimeStampString | Date
@@ -19,6 +20,15 @@ export type DateInfoAtom = {
   milliseconds?: Numberish
 }
 
-export type DateParam = string | number /* s */ | Date | undefined | DateInfoAtom
+export type DateParam =
+  | MayEnum<
+      | `${number}-${number}-${number}`
+      | `${number}-${number}-${number} ${number}:${number}`
+      | `${number}-${number}-${number} ${number}:${number}:${number}`
+    >
+  | number /* s */
+  | Date
+  | undefined
+  | DateInfoAtom
 export type DateNumber = number /* s */
 export type DateString = string
