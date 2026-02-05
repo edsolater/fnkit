@@ -1,5 +1,5 @@
 import { clamp, map, type Int } from ".."
-import { getType, isNumber } from "../dataType"
+import { getType, isNumber, isObject } from "../dataType"
 import { Numberish } from "../numberish/types"
 import { DateInfoAtom, DateParam, TimeStampVerbose } from "./type"
 
@@ -9,46 +9,33 @@ import { DateInfoAtom, DateParam, TimeStampVerbose } from "./type"
  * createDate() //=> now
  * createDate(1633948800) //=> 2021-10-11T00:00:00.000Z
  */
-export const createDate: {
-  (): Date
-  (value: DateParam): Date
-  (
-    year: Numberish,
-    month: Numberish,
-
-    calendarDate: Numberish,
-    hours?: Numberish,
-    minutes?: Numberish,
-    seconds?: Numberish,
-    milliseconds?: Numberish,
-  ): Date
-} = (...params) => {
+export function createDate(): Date
+export function createDate(value: DateParam): Date
+export function createDate(...params: any[]): Date {
   if (params.length === 0) {
     return new Date()
   } else if (params.length === 1) {
     const value = params[0]
     if (value instanceof Date) {
       return new Date(value)
-    } else if (getType(value) === "Object") {
+    } else if (isObject(value)) {
       const nowDate = new Date()
       const {
         year = getYear(nowDate),
         month = getMonth(nowDate),
-        calendarDate = getCalendarDate(nowDate),
+        day = getDay(nowDate),
         hours = getHours(nowDate),
         minutes = getMinutes(nowDate),
         seconds = getSeconds(nowDate),
         milliseconds = getMilliseconds(nowDate),
       } = map(value as DateInfoAtom, Number)
-      return new Date(year, month - 1, calendarDate, hours, minutes, seconds, milliseconds)
+      return new Date(year, month - 1, day, hours, minutes, seconds, milliseconds)
     } else if (isNumber(value)) {
       return new Date(value * 1000)
     }
     return value ? new Date(value) : new Date()
   } else {
-    const [year, month, day, hours = 0, minutes = 0, seconds = 0, milliseconds = 0] = params.map((i) => Number(i))
-    const monthLength = getMonthLength(year, month)
-    return new Date(year, month - 1, clamp(0, day, monthLength), hours, minutes, seconds, milliseconds)
+    throw new Error("Invalid arguments for createDate")
   }
 }
 
@@ -58,7 +45,7 @@ export function setDate(oldDate: DateParam, options?: DateInfoAtom) {
   return createDate({
     year: options?.year ?? getYear(oldDate),
     month: options?.month ?? getMonth(oldDate),
-    calendarDate: options?.calendarDate ?? getCalendarDate(oldDate),
+    day: options?.day ?? getDay(oldDate),
     hours: options?.hours ?? getHours(oldDate),
     minutes: options?.minutes ?? getMinutes(oldDate),
     seconds: options?.seconds ?? getSeconds(oldDate),
@@ -67,38 +54,59 @@ export function setDate(oldDate: DateParam, options?: DateInfoAtom) {
 }
 
 /** use seconds  */
-export const getTime = (value?: DateParam) => createDate(value).getTime() / 1000
+export function getTime(value?: DateParam) {
+  return createDate(value).getTime() / 1000
+}
 
 /**
  * @example
  * getUnixTime() //=> 1633948800
  */
-export const getCurrentUnixTime = () => Number.parseInt(String(getTime())) as Int
+export function getCurrentUnixTime() {
+  return Number.parseInt(String(getTime())) as Int
+}
 
 /**
  * just a readable alias
  * !!use second
  */
-export const getNow = () => getTime()
+export function getNow() {
+  return getTime()
+}
 
-export const getISO = (value?: DateParam) => createDate(value).toISOString()
+export function getISO(value?: DateParam) {
+  return createDate(value).toISOString()
+}
 
 // same as createDate, useful for readibility
-export const createCurrentDate = () => createDate()
+export function createCurrentDate() {
+  return createDate()
+}
 
 /** use seconds not getMilliseconds */
-export const createTimeStamp = () => getTime()
+export function createTimeStamp() {
+  return getTime()
+}
 
 // alias for createTimeStamp
 export const getTimeStamp = createTimeStamp
 
-export const isCurrentDateBefore = (timestamp: TimeStampVerbose): boolean => isDateBefore(undefined, timestamp)
-export const isCurrentDateAfter = (timestamp: TimeStampVerbose): boolean => isDateAfter(undefined, timestamp)
-export const isSameDate = (tested: TimeStampVerbose, matched?: TimeStampVerbose | undefined) =>
-  getTime(tested) === getTime(matched)
+export function isCurrentDateBefore(timestamp: TimeStampVerbose): boolean {
+  return isDateBefore(undefined, timestamp)
+}
+export function isCurrentDateAfter(timestamp: TimeStampVerbose): boolean {
+  return isDateAfter(undefined, timestamp)
+}
+export function isSameDate(tested: TimeStampVerbose, matched?: TimeStampVerbose | undefined) {
+  return getTime(tested) === getTime(matched)
+}
 
-export const isDateBefore = (tested: DateParam, matched?: DateParam): boolean => getTime(tested) < getTime(matched)
-export const isDateAfter = (tested: DateParam, matched?: DateParam): boolean => getTime(tested) > getTime(matched)
+export function isDateBefore(tested: DateParam, matched?: DateParam): boolean {
+  return getTime(tested) < getTime(matched)
+}
+export function isDateAfter(tested: DateParam, matched?: DateParam): boolean {
+  return getTime(tested) > getTime(matched)
+}
 
 export function offsetDateTime(
   baseDate: DateParam,
@@ -113,7 +121,15 @@ export function offsetDateTime(
     const wiredTotalMonth = year * 12 + month + offset * (options?.unit === "months" ? 1 : 12)
     const yearNumber = Math.floor(wiredTotalMonth / 12)
     const monthNumber = wiredTotalMonth % 12
-    return createDate(yearNumber, monthNumber, day, hours, minutes, seconds, milliseconds)
+    return createDate({
+      year: yearNumber,
+      month: monthNumber,
+      day,
+      hours,
+      minutes,
+      seconds,
+      milliseconds,
+    })
   } else {
     const timestamp = getTime(baseDate)
     const offsetedTimestampSeconds =
@@ -121,24 +137,28 @@ export function offsetDateTime(
       (options?.unit === "days"
         ? offset * 24 * 60 * 60
         : options?.unit === "hours"
-        ? offset * 60 * 60
-        : options?.unit === "minutes"
-        ? offset * 60
-        : options?.unit === "milliseconds"
-        ? offset / 1000
-        : offset)
+          ? offset * 60 * 60
+          : options?.unit === "minutes"
+            ? offset * 60
+            : options?.unit === "milliseconds"
+              ? offset / 1000
+              : offset)
     return createDate(offsetedTimestampSeconds)
   }
 }
 
-export const cloneDate = (date: DateParam) => createDate(getTime(date))
+export function cloneDate(date: DateParam) {
+  return createDate(getTime(date))
+}
 /**
  * this month number is base on 1. (e.g. 1 => January)
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getMonth = (date?: DateParam) => createDate(date).getMonth() + 1
-export const setMonth = (date: DateParam, /* start from 1 */ monthNumber: number) => {
+export function getMonth(date?: DateParam) {
+  return createDate(date).getMonth() + 1
+}
+export function setMonth(date: DateParam, /* start from 1 */ monthNumber: number) {
   const newDate = cloneDate(date)
   newDate.setMonth(monthNumber - 1)
   return newDate
@@ -148,61 +168,77 @@ export const setMonth = (date: DateParam, /* start from 1 */ monthNumber: number
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getYear = (date?: DateParam) => createDate(date).getFullYear()
+export function getYear(date?: DateParam) {
+  return createDate(date).getFullYear()
+}
 
 /**
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getCalendarDate = (date?: DateParam) => createDate(date).getDate()
+export function getDay(date?: DateParam) {
+  return createDate(date).getDate()
+}
 
 /**
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getDayOfWeek = (date?: DateParam) => createDate(date).getDay()
+export function getDayOfWeek(date?: DateParam) {
+  return createDate(date).getDay()
+}
 
 /**
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getHours = (date?: DateParam) => createDate(date).getHours()
+export function getHours(date?: DateParam) {
+  return createDate(date).getHours()
+}
 
 /**
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getMinutes = (date?: DateParam) => createDate(date).getMinutes()
+export function getMinutes(date?: DateParam) {
+  return createDate(date).getMinutes()
+}
 
 /**
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getSeconds = (date?: DateParam) => createDate(date).getSeconds()
+export function getSeconds(date?: DateParam) {
+  return createDate(date).getSeconds()
+}
 
 /**
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getMilliseconds = (date?: DateParam) => createDate(date).getMilliseconds()
+export function getMilliseconds(date?: DateParam) {
+  return createDate(date).getMilliseconds()
+}
 
 /**
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}
  */
-export const getTimestamp = (date?: DateParam) => getTime(date)
+export function getTimestamp(date?: DateParam) {
+  return getTime(date)
+}
 
 /**
  * @param date specified date or today
- * @requires {@link getYear `getYear()`} {@link getMonth `getMonth()`} {@link getCalendarDate `getDate()`} {@link getDayOfWeek `getDay()`} {@link getHours `getHours()`} {@link getMinutes `getMinutes()`} {@link getSeconds `getSeconds()`} {@link getMilliseconds `getMilliseconds()`} {@link getTimestamp `getTimestamp()`} {@link getMonthLength `getMonthLength()`}
+ * @requires {@link getYear `getYear()`} {@link getMonth `getMonth()`} {@link getDay `getDay()`} {@link getDayOfWeek `getDayOfWeek()`} {@link getHours `getHours()`} {@link getMinutes `getMinutes()`} {@link getSeconds `getSeconds()`} {@link getMilliseconds `getMilliseconds()`} {@link getTimestamp `getTimestamp()`} {@link getMonthLength `getMonthLength()`}
  */
-export const parseDate = (date?: DateParam) => {
+export function parseDate(date?: DateParam) {
   const paramDate = createDate(date)
   return {
     fullDate: paramDate,
     year: getYear(paramDate),
     month: getMonth(paramDate),
-    day: getCalendarDate(paramDate),
+    day: getDay(paramDate),
     dayOfWeek: getDayOfWeek(paramDate),
     hours: getHours(paramDate),
     minutes: getMinutes(paramDate),

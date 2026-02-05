@@ -12,7 +12,7 @@ export type ParsedDurationInfo = Record<
 export type DateInfoAtom = {
   year?: Numberish
   month?: Numberish
-  calendarDate?: Numberish
+  day?: Numberish
   hours?: Numberish
   minutes?: Numberish
   seconds?: Numberish
