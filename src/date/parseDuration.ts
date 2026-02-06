@@ -77,7 +77,7 @@ export type TimeUnit =
   | "seconds"
   | "minutes"
   | "hours"
-  | "days"
+  | "days" // 数学简化， 1 day = 24 hours
   | "millisecond"
   | "second"
   | "minute"
@@ -95,28 +95,43 @@ export type TimeUnit =
   | "Y"
 
 export function isTimeRange(time: any): time is TimeRange {
-  if (!isNumber(time) && !isString(time)) return false
   if (isNumber(time)) return true
-  return /^[0-9]+\s?(ms|s|m|h|H|d|D|W|M|Y)$/.test(time)
+  if (!isString(time)) return false
+  const trimmed = time.trim()
+  return /^-?\d+(?:\.\d+)?\s*(milliseconds|seconds|minutes|hours|days|millisecond|second|minute|hour|day|ms|s|m|h|H|d|D|W|M|Y)$/.test(
+    trimmed,
+  )
 }
 /** to milliseconds */
 export function parseTimeRangeToMilliseconds(time: TimeRange) {
-  return parseTime(time) * 1000
+  return parseTimeRange(time) * 1000
 }
-/** @deprecated 使用命名友好的 {@link parseTime} */
+/** @deprecated 使用命名友好的 {@link parseTimeRange} */
 export function parseTimeRangeToSeconds(time: TimeRange) {
-  return parseTime(time)
+  return parseTimeRange(time)
 }
 
-export function parseTime(time: TimeRange) {
+export function parseTimeRange(time: TimeRange) {
   if (isNumber(time)) return time
-  if (time.endsWith("ms")) return Number.parseFloat(time) / 1000
-  if (time.endsWith("s")) return Number.parseFloat(time)
-  if (time.endsWith("m")) return Number.parseFloat(time) * 60
-  if (time.endsWith("h") || time.endsWith("H")) return Number.parseFloat(time) * 60 * 60
-  if (time.endsWith("d") || time.endsWith("D")) return Number.parseFloat(time) * 60 * 60 * 24
-  if (time.endsWith("W")) return Number.parseFloat(time) * 60 * 60 * 24 * 7
-  if (time.endsWith("M")) return Number.parseFloat(time) * 60 * 60 * 24 * 30
-  if (time.endsWith("Y")) return Number.parseFloat(time) * 60 * 60 * 24 * 365
+
+  const trimmed = time.trim()
+  const matched =
+    /^(-?\d+(?:\.\d+)?)\s*(milliseconds|seconds|minutes|hours|days|millisecond|second|minute|hour|day|ms|s|m|h|H|d|D|W|M|Y)$/.exec(
+      trimmed,
+    )
+  if (!matched) throw new Error("Invalid time type")
+
+  const value = Number.parseFloat(matched[1])
+  const unit = matched[2]
+
+  if (unit === "ms" || unit === "millisecond" || unit === "milliseconds") return value / 1000
+  if (unit === "s" || unit === "second" || unit === "seconds") return value
+  if (unit === "m" || unit === "minute" || unit === "minutes") return value * 60
+  if (unit === "h" || unit === "H" || unit === "hour" || unit === "hours") return value * 60 * 60
+  if (unit === "d" || unit === "D" || unit === "day" || unit === "days") return value * 60 * 60 * 24
+  if (unit === "W") return value * 60 * 60 * 24 * 7
+  if (unit === "M") return value * 60 * 60 * 24 * 30
+  if (unit === "Y") return value * 60 * 60 * 24 * 365
+
   throw new Error("Invalid time type")
 }
