@@ -2,6 +2,7 @@ import { map, type Int } from ".."
 import { isNumber, isObject } from "../dataType"
 import { Numberish } from "../numberish/types"
 import { DateInfoAtom, DateParam, TimeStampVerbose } from "./type"
+import { Temporal } from "@js-temporal/polyfill"
 
 /**
  * it use seconds(UNIX timestamp)
