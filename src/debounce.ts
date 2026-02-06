@@ -1,13 +1,16 @@
 import { setTimeoutWithSecondes } from "./timeTools"
-import { createTimeStamp } from "./timeTools/dateOperations";
+import { createCurrentTimestamp } from "./timeTools/date"
 import type { AnyFn } from "./typings"
 
 /**
  *
  * default {@link throttle}'s delay is 400ms
- * @requires {@link createTimeStamp `createCurrentTimestamp()`}
+ * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
  */
-export function throttle(fn: AnyFn, options?: { rAF?: boolean; /** option for setTimeoutWithSecondes */ delay?: number }) {
+export function throttle(
+  fn: AnyFn,
+  options?: { rAF?: boolean; /** option for setTimeoutWithSecondes */ delay?: number },
+) {
   if (options?.rAF) {
     let requestAnimationFrameId: number | undefined = undefined
     return function throttled(...args: any[]) {
@@ -24,7 +27,7 @@ export function throttle(fn: AnyFn, options?: { rAF?: boolean; /** option for se
       timoutId = setTimeoutWithSecondes(() => {
         timoutId = undefined
         fn(...args)
-      }, options?.delay ?? .4)
+      }, options?.delay ?? 0.4)
     }
   }
 }
@@ -41,7 +44,7 @@ function requestAnimationFrame(fn: AnyFn) {
 
 /**
  *
- * @requires {@link createTimeStamp `createCurrentTimestamp()`}
+ * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
  */
 export function debounce<F extends (...args: any[]) => void>(
   fn: F,
@@ -58,7 +61,7 @@ export function debounce<F extends (...args: any[]) => void>(
       timeoutId = setTimeoutWithSecondes(() => {
         const returnedValue = fn(...args) as ReturnType<F>
         resolve(returnedValue)
-      }, options?.delay ?? .4)
+      }, options?.delay ?? 0.4)
     })
 }
 

@@ -1,12 +1,12 @@
-import { createDate } from "../timeTools/date"
+import { createDate, type Date } from "../timeTools/date"
 
 export type MessageChip = {
-  timeStamp: Date
+  date: Date
   description?: string
 }
-export function createMessageChip(info?: Omit<MessageChip, "timeStamp">): MessageChip {
+export function createMessageChip(info?: Omit<MessageChip, "date">): MessageChip {
   return {
     ...info,
-    timeStamp: createDate(),
+    date: createDate(),
   }
 }

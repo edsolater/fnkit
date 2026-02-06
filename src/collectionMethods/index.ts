@@ -13,7 +13,6 @@ export * from "./reduce"
 // TODO isolate flatMap() (2022-06-10)
 export * from "./shakeNil"
 // TODO: changeCollectionType: (oldCollection, targetType: 'array' | 'object' | 'set' | 'map') => newCollection
-export * from "./arrayEnhanceMethods"
 export * from "./omit"
 export * from "./pick"
 export * from "./entries"

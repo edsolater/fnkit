@@ -1,7 +1,6 @@
-import { isObject } from ".."
+import { isJSDate, isObject } from "../dataType"
 import type { Int } from "../typings"
 import { isDate } from "./date"
-import { isJSDate } from "./dateJSDate"
 
 export type DateInfoAtom = {
   year?: Int

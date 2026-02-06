@@ -22,9 +22,6 @@ export default defineConfig({
         dir: "dist",
       },
     },
-    minify: false, // Disable overall compression
-    terserOptions: {
-      mangle: false, // Disable variable name mangling
-    },
+    minify: false, // 禁止：混淆/改写变量名
   },
 })

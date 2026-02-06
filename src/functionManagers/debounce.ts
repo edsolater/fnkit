@@ -1,11 +1,12 @@
-import { createTimeStamp, setTimeoutWithSecondes } from ".."
+import { setTimeoutWithSecondes } from "../timeTools/buildinTimeUtils"
+import { createCurrentTimestamp } from "../timeTools/date"
 
 const defaultDebouneDelay = 400
 const defaultThrottleDelay = 400
 
 /**
  *
- * @requires {@link createTimeStamp `createCurrentTimestamp()`}
+ * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
  */
 export function debounce<F extends (...args: any[]) => void>(
   fn: F,
@@ -17,7 +18,7 @@ export function debounce<F extends (...args: any[]) => void>(
   const { debounceDelay = defaultDebouneDelay } = options ?? {}
   //@ts-ignore
   return (...args) => {
-    const currentTimestamp = createTimeStamp()
+    const currentTimestamp = createCurrentTimestamp()
     if (currentTimestamp - lastInvokedTimestamp > debounceDelay) {
       lastInvokedTimestamp = currentTimestamp
       return fn(...args)
@@ -27,7 +28,7 @@ export function debounce<F extends (...args: any[]) => void>(
 
 /**
  *
- * @requires {@link createTimeStamp `createCurrentTimestamp()`}
+ * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
  */
 export function throttle<F extends (...args: any[]) => void>(
   fn: F,
@@ -36,31 +37,31 @@ export function throttle<F extends (...args: any[]) => void>(
   },
 ): F {
   const middleParams = [] as Parameters<F>[]
-  let currentTimoutId: any | null = null
+  let currentTimeoutId: any | null = null
   let prevDurationTimestamp: number | null = null
   let remainDelayTime = options?.delay ?? defaultThrottleDelay
 
   const invokeFn = () => {
     fn(...middleParams[middleParams.length - 1])
     middleParams.length = 0 // clear middleParams
-    currentTimoutId = null // clear Timeout Id
+    currentTimeoutId = null // clear Timeout Id
     remainDelayTime = options?.delay ?? defaultThrottleDelay // reset remain time
   }
   // @ts-expect-error force
   return (...args: Parameters<F>) => {
     middleParams.push(args)
 
-    const currentTimestamp = createTimeStamp()
+    const currentTimestamp = createCurrentTimestamp()
 
-    if (currentTimoutId) {
-      clearTimeout(currentTimoutId)
+    if (currentTimeoutId) {
+      clearTimeout(currentTimeoutId)
       remainDelayTime -= prevDurationTimestamp ? currentTimestamp - prevDurationTimestamp : 0
     }
 
     if (remainDelayTime <= 0) {
       invokeFn()
     } else {
-      currentTimoutId = setTimeoutWithSecondes(invokeFn, remainDelayTime)
+      currentTimeoutId = setTimeoutWithSecondes(invokeFn, remainDelayTime)
     }
 
     prevDurationTimestamp = currentTimestamp

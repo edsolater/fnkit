@@ -143,8 +143,8 @@ export function isAsyncIterable(v: unknown): v is AsyncIterable<unknown> {
   return isObject(v) && typeof v[Symbol.asyncIterator] === "function"
 }
 
-export function isDate(v: unknown): v is Date {
-  return v instanceof Date
+export function isJSDate(v: unknown): v is globalThis.Date {
+  return v instanceof globalThis.Date
 }
 
 export function isJSON(jsonString: unknown): jsonString is string {

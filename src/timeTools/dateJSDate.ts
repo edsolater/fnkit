@@ -1,13 +1,9 @@
 import { getYear, getMonth, getDay, getHours, getMinutes, getSeconds, getMilliseconds } from "./dateOperations"
 import type { DateInfoAtom } from "./dateInfoAtom"
-import { Date } from "./date"
 import type { Numberish } from "../numberish"
 
 export const JSDate = globalThis.Date
 export type JSDate = globalThis.Date
-export function isJSDate(value: any): value is JSDate {
-  return value instanceof JSDate
-}
 
 export function transformInfoToJSDate(dateInfo: DateInfoAtom): JSDate {
   const nowDate = new JSDate()
