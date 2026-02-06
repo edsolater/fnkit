@@ -1,4 +1,4 @@
-import { setTimeoutWithSecondes, type TimeRange } from "./date"
+import { setTimeoutWithSecondes, type TimeRange } from "./timeTools"
 import type { Int } from "./typings"
 import { shrinkFn } from "./wrapper"
 

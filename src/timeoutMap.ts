@@ -1,5 +1,5 @@
 import { isFunction } from "./dataType"
-import { setTimeoutWithSecondes } from "./date"
+import { setTimeoutWithSecondes } from "./timeTools"
 
 export function createTimeoutMap<K, V>({ maxAge }: { maxAge: number }) {
   const innerMap = new Map<K, V>()

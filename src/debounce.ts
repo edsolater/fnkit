@@ -1,5 +1,5 @@
-import { setTimeoutWithSecondes } from "./date"
-import { createTimeStamp } from "./date/dateOperations";
+import { setTimeoutWithSecondes } from "./timeTools"
+import { createTimeStamp } from "./timeTools/dateOperations";
 import type { AnyFn } from "./typings"
 
 /**

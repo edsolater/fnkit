@@ -1,5 +1,5 @@
 import { isFunction } from "./dataType"
-import { setTimeoutWithSecondes } from "./date"
+import { setTimeoutWithSecondes } from "./timeTools"
 import { shrinkFn } from "./wrapper"
 
 type EnhancedMapSetOptions = {
