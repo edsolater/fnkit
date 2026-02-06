@@ -1,7 +1,8 @@
 import { map, type Int } from ".."
 import { isNumber, isObject } from "../dataType"
 import { Numberish } from "../numberish/types"
-import { DateInfoAtom, DateParam, TimeStampVerbose } from "./type"
+import { DateInfoAtom, DateParam, type DateInfoFull } from "./parseDate.type"
+import { TimeStampVerbose } from "./parseDuration.type"
 import { Temporal } from "@js-temporal/polyfill"
 
 /**
@@ -236,7 +237,7 @@ export function getTimestamp(date?: DateParam) {
  * @param date specified date or today
  * @requires {@link getYear `getYear()`} {@link getMonth `getMonth()`} {@link getDay `getDay()`} {@link getDayOfWeek `getDayOfWeek()`} {@link getHours `getHours()`} {@link getMinutes `getMinutes()`} {@link getSeconds `getSeconds()`} {@link getMilliseconds `getMilliseconds()`} {@link getTimestamp `getTimestamp()`} {@link getMonthLength `getMonthLength()`}
  */
-export function parseDate(date?: DateParam) {
+export function parseDate(date?: DateParam): DateInfoFull {
   const paramDate = createDate(date)
   const info = {
     year: getYear(paramDate),

@@ -1,5 +1,5 @@
 import { getISO, createDate, getYear, createCurrentDate } from "./parseDate"
-import { TimeStampVerbose } from "./type"
+import { TimeStampVerbose } from "./parseDuration.type"
 
 /**
  * @example

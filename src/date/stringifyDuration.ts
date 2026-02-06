@@ -1,9 +1,9 @@
 import { isObject } from "../dataType"
 import { shakeTailingZero } from "../numberish/trimZero"
 import { shrinkFn } from "../wrapper"
-import { parseTimeTypeToSeconds, type TimeType } from "./buildinTimeUtils"
+import { parseTimeRangeToSeconds, type TimeRange } from "./parseDuration"
 import { parseDuration } from "./parseDuration"
-import { ParsedDurationInfo } from "./type"
+import { DurationInfo } from "./parseDuration.type"
 
 /**
  * date format string list (case insensitive)):
@@ -24,13 +24,13 @@ import { ParsedDurationInfo } from "./type"
  * formatDate(6.5) // '6 Seconds 500 Milliseconds'
  */
 export function formatDuration(
-  timeType: TimeType,
-  rawFormatString?: string | ((durationInfo: ParsedDurationInfo) => string),
+  TimeRange: TimeRange,
+  rawFormatString?: string | ((durationInfo: DurationInfo) => string),
   options?: {
     shakeMillisecondsTailingZero?: boolean
   },
 ) {
-  const parsedDurationInfo = parseDuration(parseTimeTypeToSeconds(timeType))
+  const parsedDurationInfo = parseDuration(parseTimeRangeToSeconds(TimeRange))
   const durationInfo = parseDuration(isObject(parsedDurationInfo) ? parsedDurationInfo.full : parsedDurationInfo)
   const autoFormatString = (() => {
     if (rawFormatString) return undefined

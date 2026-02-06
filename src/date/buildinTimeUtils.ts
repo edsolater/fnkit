@@ -1,62 +1,28 @@
 import { assert, getValue, shrinkFn, type MayFn } from ".."
-import { isNumber, isObject, isString, isUndefined } from "../dataType"
+import { isObject, isUndefined } from "../dataType"
 import { asyncInvoke } from "../functionManagers"
-
-/** use seconds not milliseconds */
-export type TimeType = number /* s */ | `${number}${"ms" | "s" | "m" | "h" | "H" | "d" | "D" | "W" | "M" | "Y"}`
-
-export function isTimeType(time: any): time is TimeType {
-  if (!isNumber(time) && !isString(time)) return false
-  if (isNumber(time)) return true
-  return /^[0-9]+\s?(ms|s|m|h|H|d|D|W|M|Y)$/.test(time)
-}
-
-/** to milliseconds */
-export function parseTimeTypeToMilliseconds(time: TimeType) {
-  if (isNumber(time)) return time * 1000
-  if (time.endsWith("ms")) return Number.parseFloat(time)
-  if (time.endsWith("s")) return Number.parseFloat(time) * 1000
-  if (time.endsWith("m")) return Number.parseFloat(time) * 1000 * 60
-  if (time.endsWith("h") || time.endsWith("H")) return Number.parseFloat(time) * 1000 * 60 * 60
-  if (time.endsWith("d") || time.endsWith("D")) return Number.parseFloat(time) * 1000 * 60 * 60 * 24
-  if (time.endsWith("W")) return Number.parseFloat(time) * 1000 * 60 * 60 * 24 * 7
-  if (time.endsWith("M")) return Number.parseFloat(time) * 1000 * 60 * 60 * 24 * 30
-  if (time.endsWith("Y")) return Number.parseFloat(time) * 1000 * 60 * 60 * 24 * 365
-  throw new Error("Invalid time type")
-}
-export function parseTimeTypeToSeconds(time: TimeType) {
-  if (isNumber(time)) return time
-  if (time.endsWith("ms")) return Number.parseFloat(time) / 1000
-  if (time.endsWith("s")) return Number.parseFloat(time)
-  if (time.endsWith("m")) return Number.parseFloat(time) * 60
-  if (time.endsWith("h") || time.endsWith("H")) return Number.parseFloat(time) * 60 * 60
-  if (time.endsWith("d") || time.endsWith("D")) return Number.parseFloat(time) * 60 * 60 * 24
-  if (time.endsWith("W")) return Number.parseFloat(time) * 60 * 60 * 24 * 7
-  if (time.endsWith("M")) return Number.parseFloat(time) * 60 * 60 * 24 * 30
-  if (time.endsWith("Y")) return Number.parseFloat(time) * 60 * 60 * 24 * 365
-  throw new Error("Invalid time type")
-}
+import { type TimeRange, parseTimeRangeToMilliseconds, parseTimeRangeToSeconds, isTimeRange } from "./parseDuration"
 
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeType | undefined): number {
+export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeRange | undefined): number {
   // @ts-ignore
-  return globalThis.setInterval(fn, interval ? parseTimeTypeToMilliseconds(interval) : undefined)
+  return globalThis.setInterval(fn, interval ? parseTimeRangeToMilliseconds(interval) : undefined)
 }
 
 export type IntervalTaskFunction = (utils: {
   cancel: () => void
   /** start from 0 */
   loopIndex: number
-  changeInterval: (newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) => void
+  changeInterval: (newInterval: MayFn<TimeRange, [oldIntervalSeconds: number]>) => void
   forceRunNextLoop: () => void
 }) => void | Promise<void> | any | Promise<any>
 
 export type SetIntervalOptions = {
   /** if you want run immediately after delay. both set `delay` and `immediate` */
-  delay?: TimeType
-  interval?: TimeType
+  delay?: TimeRange
+  interval?: TimeRange
   immediate?: boolean
   /** if set this, don't auto-run，相反，控制权交给返回的 Controller  */
   haveManuallyController?: boolean
@@ -89,7 +55,7 @@ export type SetIntervalController = {
   forceRunNextLoop(): void
 }
 
-export type SetIntervalVerboseOptions = SetIntervalOptions | TimeType
+export type SetIntervalVerboseOptions = SetIntervalOptions | TimeRange
 /**
  * build-in globalThis.setInterval is not human-friendly
  * @param taskFn function to run (run in future, event immediately, it will run in  micro task)
@@ -115,15 +81,15 @@ export function setInterval(
   // --- 配置参数 ---
   const options = {
     ...(isObject(verboseOption) ? verboseOption : {}),
-    interval: parseTimeTypeToSeconds(
-      isUndefined(verboseOption) ? 1 : isTimeType(verboseOption) ? verboseOption : (verboseOption.interval ?? 1),
+    interval: parseTimeRangeToSeconds(
+      isUndefined(verboseOption) ? 1 : isTimeRange(verboseOption) ? verboseOption : (verboseOption.interval ?? 1),
     ),
     whenTwoTaskConflict: getValue(verboseOption, "whenTwoTaskConflict", "invoke-income"),
   }
   let intervalSeconds = options.interval
 
-  function changeIntervalDuration(newInterval: MayFn<TimeType, [oldIntervalSeconds: number]>) {
-    intervalSeconds = parseTimeTypeToSeconds(shrinkFn(newInterval, [intervalSeconds]))
+  function changeIntervalDuration(newInterval: MayFn<TimeRange, [oldIntervalSeconds: number]>) {
+    intervalSeconds = parseTimeRangeToSeconds(shrinkFn(newInterval, [intervalSeconds]))
     stopLoop()
     runLoop({ canWithImmediate: false })
   }
@@ -219,15 +185,15 @@ export function setInterval(
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeType | undefined): number {
+export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeRange | undefined): number {
   // @ts-ignore
-  return globalThis.setTimeout(fn, delay ? parseTimeTypeToMilliseconds(delay) : undefined)
+  return globalThis.setTimeout(fn, delay ? parseTimeRangeToMilliseconds(delay) : undefined)
 }
 
 export type TimeoutTaskFunction = (utils: { loopCount: number; cancel: () => void }) => void
 
 export type SetTimeoutOptions = {
-  delay?: TimeType
+  delay?: TimeRange
   /** if set this, fn will run immediately, (two times total) */
   immediate?: boolean
   /** if set this, don't auto-run  */
@@ -245,11 +211,11 @@ export type SetTimeoutController = {
  * @param options
  * @returns
  */
-export function setTimeout(taskFn: TimeoutTaskFunction, _options?: SetTimeoutOptions | TimeType): SetTimeoutController {
+export function setTimeout(taskFn: TimeoutTaskFunction, _options?: SetTimeoutOptions | TimeRange): SetTimeoutController {
   let loopCount = 0
   let timeId = 0
 
-  const options: SetTimeoutOptions = isTimeType(_options) ? { delay: _options } : (_options ?? {})
+  const options: SetTimeoutOptions = isTimeRange(_options) ? { delay: _options } : (_options ?? {})
   // core
   const runCore = () => asyncInvoke(() => taskFn({ loopCount: loopCount++, cancel }))
 
