@@ -1,4 +1,5 @@
-import { getISO, createDate, getYear, createCurrentDate } from "./parseDate"
+import { getISO, createDate, createCurrentDate, type DateParam } from "./date"
+import { getYear } from "./dateOperations"
 import { TimeStampVerbose } from "./parseDuration.type"
 
 /**
@@ -13,9 +14,10 @@ export function toUTC(timestamp?: TimeStampVerbose) {
   return `${date} ${hour}:${minutes} UTC`
 }
 
-export const englishDayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-type ChineseDayNames = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
-export const chineseDayNames: ChineseDayNames = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+export const englishDayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const
+type EnglishDayName = typeof englishDayNames[number]
+export const chineseDayNames= ["周一", "周二", "周三", "周四", "周五", "周六", "周日"] as const
+type ChineseDayName = typeof chineseDayNames[number]
 export const englishFullMonthNames: [
   "January",
   "February",
@@ -113,35 +115,35 @@ export const mapToAmPmHour = (hourNumber: number): { hour: number; flag: string 
  * formatDate('2020-08-24 18:54', 'YYYY-MM-DD HH:mm:ss') // 2020-08-24 18:54:00
  */
 export function formatDate(
-  inputDate: string | number | Date | undefined,
+  inputDate: DateParam,
   formatString = "YYYY-MM-DD HH:mm:ss",
   options?: { /** default is 'en' */ weekNameStyle?: "en" | "zh-cn" },
 ) {
-  const dateObj = createDate(inputDate)
+  const date = createDate(inputDate)
 
   return formatString
-    .replace("YYYY", `${getYear(dateObj)}`)
-    .replace("YY", `${dateObj.getFullYear()}`.slice(2))
-    .replace("MM", `${dateObj.getMonth() + 1}`.padStart(2, "0"))
-    .replace("M", `${dateObj.getMonth() + 1}`)
-    .replace("DD", `${dateObj.getDate()}`.padStart(2, "0"))
-    .replace("D", `${dateObj.getDate()}`)
+    .replace("YYYY", `${getYear(date)}`)
+    .replace("YY", `${date.year}`.slice(2))
+    .replace("MM", `${date.month}`.padStart(2, "0"))
+    .replace("M", `${date.month}`)
+    .replace("DD", `${date.day}`.padStart(2, "0"))
+    .replace("D", `${date.day}`)
     .replace(
       "dd",
-      `${options?.weekNameStyle === "zh-cn" ? mapToChineseDay(dateObj.getDay()) : mapToEnglishDay(dateObj.getDay())}`,
+      `${options?.weekNameStyle === "zh-cn" ? mapToChineseDay(date.dayOfWeek) : mapToEnglishDay(date.dayOfWeek)}`,
     )
-    .replace("d", `${dateObj.getDay()}`)
-    .replace("HH", `${dateObj.getHours()}`.padStart(2, "0"))
-    .replace("H", `${dateObj.getHours()}`)
-    .replace("hh", `${mapToAmPmHour(dateObj.getHours()).hour}`.padStart(2, "0"))
-    .replace("h", `${mapToAmPmHour(dateObj.getHours()).hour}`)
-    .replace("mm", `${dateObj.getMinutes()}`.padStart(2, "0"))
-    .replace("m", `${dateObj.getMinutes()}`)
-    .replace("ss", `${dateObj.getSeconds()}`.padStart(2, "0"))
-    .replace("s", `${dateObj.getSeconds()}`)
-    .replace("SSS", `${dateObj.getMilliseconds()}`.padStart(3, "0"))
-    .replace("A", mapToAmPmHour(dateObj.getMilliseconds()).flag)
-    .replace("SSS", mapToAmPmHour(dateObj.getMilliseconds()).flag.toLocaleLowerCase())
+    .replace("d", `${date.dayOfWeek}`)
+    .replace("HH", `${date.hours}`.padStart(2, "0"))
+    .replace("H", `${date.hours}`)
+    .replace("hh", `${mapToAmPmHour(date.hours).hour}`.padStart(2, "0"))
+    .replace("h", `${mapToAmPmHour(date.hours).hour}`)
+    .replace("mm", `${date.minutes}`.padStart(2, "0"))
+    .replace("m", `${date.minutes}`)
+    .replace("ss", `${date.seconds}`.padStart(2, "0"))
+    .replace("s", `${date.seconds}`)
+    .replace("SSS", `${date.milliseconds}`.padStart(3, "0"))
+    .replace("A", mapToAmPmHour(date.hours).flag)
+    .replace("a", mapToAmPmHour(date.hours).flag.toLocaleLowerCase())
 }
 
 export const formatDatePresets = {

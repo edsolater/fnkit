@@ -1,4 +1,4 @@
-import { createDate } from "../date/parseDate"
+import { createDate } from "../date/date"
 
 export type MessageChip = {
   timeStamp: Date

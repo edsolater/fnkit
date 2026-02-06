@@ -1,3 +1,4 @@
+import type { MayEnum } from "."
 import { AnyArr, AnyFn, Primitive, type AnyObj } from "./typings/constants"
 
 /**
@@ -20,36 +21,26 @@ import { AnyArr, AnyFn, Primitive, type AnyObj } from "./typings/constants"
  * getType(Object.create(null)) // 'Object'
  * getType(new Date()) // 'Date'
  */
-export function getType(
-  v: unknown,
-):
-  | "null"
-  | "undefined"
-  | "boolean"
-  | "number"
-  | "string"
-  | "bigint"
-  | "symbol"
-  | "function"
-  | ReturnType<typeof getObjType>
-  | "unknown" {
+export function getType(v: unknown): string {
   // @ts-ignore
   return isNull(v)
     ? "null"
     : isArray(v)
-    ? "Array"
-    : isFunction(v)
-    ? "function"
-    : isSet(v)
-    ? "Set"
-    : isMap(v)
-    ? "Map"
-    : typeof v === "object"
-    ? getObjType(v) ?? "unknown"
-    : typeof v as any
+      ? "Array"
+      : isFunction(v)
+        ? "function"
+        : isSet(v)
+          ? "Set"
+          : isMap(v)
+            ? "Map"
+            : typeof v === "object"
+              ? (getObjType(v) ?? "unknown")
+              : (typeof v as any)
 }
 
-export const getObjType = (obj: unknown): "Array" | "Object" | "Set" | "Map" | "WeakSet" | "WeakMap" | "Date" => {
+export const getObjType = (
+  obj: unknown,
+): MayEnum<"Array" | "Object" | "Set" | "Map" | "WeakSet" | "WeakMap" | "Date" | "DateObj"> => {
   const typeRawString = Object.prototype.toString.call(obj)
   const typeString = typeRawString.match(/object (?<t>\w+)/)?.groups?.["t"]
   //@ts-ignore force

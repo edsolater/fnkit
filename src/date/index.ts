@@ -1,6 +1,5 @@
 export * from "./buildinTimeUtils"
-export * from "./parseDate"
-export * from "./parseDate.type"
+export * from "./date"
 export * from "./parseDuration"
 export * from "./parseDuration.type"
 export * from "./stringifyDate"
