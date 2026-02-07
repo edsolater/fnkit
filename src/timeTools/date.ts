@@ -21,15 +21,24 @@ export type DateParam =
   | JSDate
   | undefined
   | DateInfoAtom
+export type Zone = "UTC" | "local"
+export let dateZone: Zone = "local" // 'UTC' | 'local'
+
+/** 【配置修改器】更改全局配置 */
+export function configDateZone(zone: Zone) {
+  dateZone = zone
+}
 
 export class Date {
+  zone: Zone
   jsDate: JSDate
   timestamp: number
 
   /** 一般不用， 使用static from */
-  constructor(jsDate: JSDate, timestamp: number) {
+  constructor(jsDate: JSDate, timestamp: number, zone: Zone = dateZone) {
     this.jsDate = jsDate
     this.timestamp = timestamp
+    this.zone = zone
   }
 
   /**
@@ -41,9 +50,9 @@ export class Date {
    * Date.from("2021-10-11 12:34:56") //=> 2021-10-11T12:34:56.000Z
    * Date.from({ year: 2021, month: 10, day: 11, hours: 12, minutes: 34, seconds: 56 }) //=> 2021-10-11T12:34:56.000Z
    */
-  static from(dateParam?: DateParam): Date {
+  static from(dateParam?: DateParam, zone: Zone = dateZone): Date {
     function toDate(jsDate: JSDate): Date {
-      return new Date(jsDate, jsDate.getTime() / 1000)
+      return new Date(jsDate, jsDate.getTime() / 1000, zone)
     }
 
     if (dateParam === undefined) return toDate(new JSDate())
@@ -56,22 +65,26 @@ export class Date {
 
   /** 多数情况下无需使用，因为针对于各个操作总是返回一个新的值。 */
   clone(): Date {
-    return Date.from(this.timestamp)
+    return Date.from(this.timestamp, this.zone)
   }
 
   /** set时间 */
-  set(options: Partial<DateInfoAtom>): Date {
-    return createDate({
-      year: options?.year ?? this.year,
-      month: options?.month ?? this.month,
-      day: options?.day ?? this.day,
-      hours: options?.hours ?? this.hours,
-      minutes: options?.minutes ?? this.minutes,
-      seconds: options?.seconds ?? this.seconds,
-      milliseconds: options?.milliseconds ?? this.milliseconds,
-    })
+  set(options: Partial<DateInfoAtom> & { zone?: Zone }): Date {
+    return Date.from(
+      {
+        year: options?.year ?? this.year,
+        month: options?.month ?? this.month,
+        day: options?.day ?? this.day,
+        hours: options?.hours ?? this.hours,
+        minutes: options?.minutes ?? this.minutes,
+        seconds: options?.seconds ?? this.seconds,
+        milliseconds: options?.milliseconds ?? this.milliseconds,
+      },
+      options.zone ?? this.zone,
+    )
   }
 
+  /** 偏移时间 */
   offset(
     offset: number,
     /** seconds by default */
@@ -80,19 +93,22 @@ export class Date {
     },
   ): Date {
     if (options?.unit === "months" || options?.unit === "years") {
-      const { year, month, day, hours, minutes, seconds, milliseconds } = parseDate(this)
+      const { year, month, day, hours, minutes, seconds, milliseconds } = this.getDateInfo()
       const wiredTotalMonth = year * 12 + month + offset * (options?.unit === "months" ? 1 : 12)
       const yearNumber = Math.floor(wiredTotalMonth / 12)
       const monthNumber = wiredTotalMonth % 12
-      return createDate({
-        year: yearNumber,
-        month: monthNumber,
-        day,
-        hours,
-        minutes,
-        seconds,
-        milliseconds,
-      })
+      return Date.from(
+        {
+          year: yearNumber,
+          month: monthNumber,
+          day,
+          hours,
+          minutes,
+          seconds,
+          milliseconds,
+        },
+        this.zone,
+      )
     } else {
       const timestamp = this.timestamp
       const offsetedTimestampSeconds =
@@ -106,7 +122,7 @@ export class Date {
               : options?.unit === "milliseconds"
                 ? offset / 1000
                 : offset)
-      return createDate(offsetedTimestampSeconds)
+      return Date.from(offsetedTimestampSeconds, this.zone)
     }
   }
   getDateInfo(): DateInfoFull {
@@ -129,43 +145,44 @@ export class Date {
 
   /** ‘2024-06-12 22:02‘ 里的 2024 */
   get year(): number {
-    return this.jsDate.getFullYear()
+    return this.zone === "UTC" ? this.jsDate.getUTCFullYear() : this.jsDate.getFullYear()
   }
 
   /** ‘2024-06-12 22:02‘ 里的 6 */
   get month(): number {
-    return this.jsDate.getMonth() + 1
+    const jsDateMounth = this.zone === "UTC" ? this.jsDate.getUTCMonth() : this.jsDate.getMonth()
+    return jsDateMounth + 1
   }
 
   /** ‘2024-06-12 22:02‘ 里的 12 */
   get day(): number {
-    return this.jsDate.getDate()
+    return this.zone === "UTC" ? this.jsDate.getUTCDate() : this.jsDate.getDate()
   }
 
   /** 星期几，1-7 */
   get dayOfWeek(): number {
-    const rawDayOfWeek = this.jsDate.getDay() // 0 - 6 (o 是周日)
+    const rawDayOfWeek = this.zone === "UTC" ? this.jsDate.getUTCDay() : this.jsDate.getDay() // 0 - 6 (0 是周日)
     return rawDayOfWeek === 0 ? 7 : rawDayOfWeek
   }
 
   /** ‘2024-06-12 22:02‘ 里的 22 */
   get hours(): number {
-    return this.jsDate.getHours()
+    return this.zone === "UTC" ? this.jsDate.getUTCHours() : this.jsDate.getHours()
   }
 
   /** ‘2024-06-12 22:02‘ 里的 02 */
   get minutes(): number {
-    return this.jsDate.getMinutes()
+    return this.zone === "UTC" ? this.jsDate.getUTCMinutes() : this.jsDate.getMinutes()
   }
 
   /** ‘2024-06-12 22:02:03‘ 里的 03 */
   get seconds(): number {
-    return this.jsDate.getSeconds()
+    return this.zone === "UTC" ? this.jsDate.getUTCSeconds() : this.jsDate.getSeconds()
   }
 
   /** ‘2024-06-12 22:02:03.456‘ 里的 456 */
   get milliseconds(): number {
-    return this.jsDate.getMilliseconds()
+    return this.zone === "UTC" ? this.jsDate.getUTCMilliseconds() : this.jsDate.getMilliseconds()
   }
 
   toJSON() {
@@ -199,8 +216,8 @@ export function isDate(value: any): value is Date {
  * createDate("2021-10-11 12:34:56") //=> 2021-10-11T12:34:56.000Z
  * createDate({ year: 2021, month: 10, day: 11, hours: 12, minutes: 34, seconds: 56 }) //=> 2021-10-11T12:34:56.000Z
  */
-export function createDate(dateParam?: DateParam): Date {
-  return Date.from(dateParam)
+export function createDate(dateParam?: DateParam, zone?: Zone): Date {
+  return Date.from(dateParam, zone)
 }
 
 /** @deprecated 直接用 Date.timestamp 或 更可读的 {@link getTimestamp} */
@@ -216,7 +233,7 @@ export function getTimestamp(value?: DateParam): number {
  * @example
  * getUnixTime() //=> 1633948800
  */
-export function createCurrentUnixTime(): Int {
+export function createCurrentUnixTime(zone?: Zone): Int {
   return Math.round(getTimestamp())
 }
 
@@ -227,12 +244,12 @@ export function createCurrentTimestamp(): number {
   return getTimestamp()
 }
 
-export function createCurrentDate() {
-  return createDate()
+export function createCurrentDate(zone?: Zone) {
+  return createDate(undefined, zone)
 }
 
-export function getISO(value?: DateParam) {
-  return createDate(value).jsDate.toISOString()
+export function getISO(value?: DateParam, zone?: Zone) {
+  return createDate(value, zone).jsDate.toISOString()
 }
 
 export function offsetDateTime(
@@ -256,7 +273,7 @@ export type DateInfoFull = Required<DateInfoAtom> & {
  * @param dateParam specified date or today
  * @requires {@link getYear `getYear()`} {@link getMonth `getMonth()`} {@link getDay `getDay()`} {@link getDayOfWeek `getDayOfWeek()`} {@link getHours `getHours()`} {@link getMinutes `getMinutes()`} {@link getSeconds `getSeconds()`} {@link getMilliseconds `getMilliseconds()`} {@link getTimestamp `getTimestamp()`}
  */
-export function parseDate(dateParam?: DateParam): DateInfoFull {
-  const date = Date.from(dateParam)
+export function parseDate(dateParam?: DateParam, zone?: Zone): DateInfoFull {
+  const date = Date.from(dateParam, zone)
   return date.getDateInfo()
 }
