@@ -1,4 +1,4 @@
-import { Date, type DateParam, type Zone, createDate } from "./date"
+import { type DateParam, type Zone, createDate } from "./date"
 
 /**
  * this month number is base on 1. (e.g. 1 => January)
@@ -10,6 +10,10 @@ export function getMonth(date?: DateParam, zone?: Zone) {
   return createDate(date, zone).month
 }
 
+export function setMonth(date: DateParam, month: number, zone?: Zone) {
+  const d = createDate(date, zone)
+  return d.set({ month })
+}
 /**
  * @param date specified date or today
  * @requires {@link createDate `createDate()`}

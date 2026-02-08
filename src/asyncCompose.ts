@@ -1,5 +1,5 @@
 import { asyncPipe } from "./asyncPipe"
-import type { MayPromise } from "./typings"
+import type { MayPromise } from "./typings/tools"
 
 export function asyncCompose<T, R, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10>(
   ...fns: [

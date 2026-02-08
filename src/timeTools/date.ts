@@ -277,3 +277,4 @@ export function parseDate(dateParam?: DateParam, zone?: Zone): DateInfoFull {
   const date = Date.from(dateParam, zone)
   return date.getDateInfo()
 }
+

@@ -1,6 +1,5 @@
 import { isFunction } from "./dataType"
-import { AnyFn } from "./typings"
-
+import type { AnyFn } from "./typings/constants"
 /**
  * merge without access, you can config transformer for detail control
  * @example
@@ -66,7 +65,7 @@ export function mergeObjects<T extends object>(...objs: T[]): T {
   if (objs.length === 1) return objs[0]
 
   // ----- 内部属性 -----
-  const containMethods = objs.some(isFunction)// 函数也能作为对象输入
+  const containMethods = objs.some(isFunction) // 函数也能作为对象输入
   let keySet: Set<string | symbol> | undefined = undefined
 
   // ------ 内部方法 -----
@@ -207,4 +206,3 @@ export function getKeySet<T extends object | undefined>(...objs: T[]): Set<strin
   }
   return result
 }
-

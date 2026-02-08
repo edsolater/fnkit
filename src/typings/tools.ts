@@ -352,3 +352,4 @@ export type Promisify<T> = T extends Promise<any> ? T : Promise<T>
  * type A = StringKey<Test, number> // 'b' | 'c'
  */
 export type StringKey<O extends object, IS = any> = keyof { [K in keyof O as O[K] extends IS ? K : never]: O[K] }
+

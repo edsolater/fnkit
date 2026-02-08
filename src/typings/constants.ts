@@ -11,6 +11,7 @@ export type Href = string
 
 export type AnyFn = (...args: any[]) => any
 export type AnyObj = Record<keyof any, any>
+export type AnyClass<T = any> = new (...args: any[]) => T
 export type AnyArr = any[]
 export type AnyMap = Map<any, any>
 export type AnySet = Set<any>
