@@ -229,4 +229,13 @@ describe("ifPattern function", () => {
     expect(handleStatus(500)).toBe("server-error")
     expect(handleStatus(100)).toBe("unknown")
   })
+
+  test("works with plain predicate functions", () => {
+    const result = ifPattern(42, [
+      [(n: number) => n < 10, () => "small"],
+      [(n: number) => n % 2 === 0, () => "even"],
+      [otherwise(), () => "other"],
+    ])
+    expect(result).toBe("even")
+  })
 })

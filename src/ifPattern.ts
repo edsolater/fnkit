@@ -165,7 +165,7 @@ export const otherwise = (): Pattern<unknown> => Pattern.of(() => true, "otherwi
  * @param rules - 规则数组，格式为 [pattern, handler] /  Rules: Array of [pattern, handler] tuples
  *
  * ### 匹配规则:
- * 可以是一个值，也可以是模式。
+ * 可以是一个值，也可以是模式，或者是返回布尔值的普通函数。
  * 模式由一些内部函数组成，如{@link re}, {@link startsWith}, {@link includes}等
  * 或者用户自定义的{@link pred}(返回一个pattern对象)。
  * @returns 匹配的handler执行结果 / The result of the first matching handler
@@ -192,10 +192,25 @@ export const otherwise = (): Pattern<unknown> => Pattern.of(() => true, "otherwi
  *   [startsWith('http').and(includes('localhost').not()), () => 'remote http'],
  *   [otherwise(), () => 'other']
  * ])
+ *
+ * @example 普通函数（plain function）
+ * const result = ifPattern(num, [
+ *   [(n) => n > 10, () => 'big'],
+ *   [(n) => n % 2 === 0, () => 'even'],
+ *   [otherwise(), () => 'odd']
+ * ])
  */
-export function ifPattern<T, R>(value: T, rules: ReadonlyArray<readonly [Pattern<T> | T, (v: T) => R]>): R {
+export function ifPattern<T, R>(
+  value: T,
+  rules: ReadonlyArray<readonly [Pattern<T> | ((v: T) => boolean) | T, (v: T) => R]>,
+): R {
   for (const [pattern, handler] of rules) {
-    const matched = pattern instanceof Pattern ? pattern.test(value) : Object.is(value, pattern)
+    const matched =
+      pattern instanceof Pattern
+        ? pattern.test(value)
+        : typeof pattern === "function"
+          ? (pattern as (v: T) => boolean)(value)
+          : Object.is(value, pattern)
 
     if (matched) {
       return handler(value)
