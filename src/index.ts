@@ -32,7 +32,6 @@ export * from "./functionManagers"
 export * from "./ifPattern" // FP style pattern matching
 export * from "./iife"
 export * from "./lazyMap"
-export * from "./listToMap"
 export * from "./math"
 export * from "./mayArray"
 export * from "./mergeFunctions"
