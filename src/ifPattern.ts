@@ -1,3 +1,5 @@
+import { shrinkFn } from "./wrapper"
+
 /**
  * 可组合的匹配模式类
  * Pattern matching class for type-safe pattern matching in TypeScript.
@@ -164,10 +166,14 @@ export const otherwise = (): Pattern<unknown> => Pattern.of(() => true, "otherwi
  * @param value - 待匹配的值 / The value to match against patterns
  * @param rules - 规则数组，格式为 [pattern, handler] /  Rules: Array of [pattern, handler] tuples
  *
- * ### 匹配规则:
+ * ### pattern:
  * 可以是一个值，也可以是模式，或者是返回布尔值的普通函数。
  * 模式由一些内部函数组成，如{@link re}, {@link startsWith}, {@link includes}等
  * 或者用户自定义的{@link pred}(返回一个pattern对象)。
+ * 
+ * ### handler:
+ * 可以是一个值，也可以是一个函数（如果是函数，会传入被匹配的值作为参数）。
+ * 
  * @returns 匹配的handler执行结果 / The result of the first matching handler
  * @throws 无匹配时 / Error if no pattern matches
  *
@@ -200,9 +206,9 @@ export const otherwise = (): Pattern<unknown> => Pattern.of(() => true, "otherwi
  *   [otherwise(), () => 'odd']
  * ])
  */
-export function ifPattern<T, R>(
+export function ifPattern<T, R extends unknown>(
   value: T,
-  rules: ReadonlyArray<readonly [Pattern<T> | ((v: T) => boolean) | T, (v: T) => R]>,
+  rules: ReadonlyArray<readonly [Pattern<T> | ((v: T) => boolean) | T, ((v: T) => R) | R ]>,
 ): R {
   for (const [pattern, handler] of rules) {
     const matched =
@@ -213,7 +219,8 @@ export function ifPattern<T, R>(
           : Object.is(value, pattern)
 
     if (matched) {
-      return handler(value)
+      //@ts-expect-error ts无法推断handler类型，但我们在文档中约定了它要么是一个函数，要么是一个值
+      return typeof handler === "function" ? handler(value) : handler
     }
   }
 
