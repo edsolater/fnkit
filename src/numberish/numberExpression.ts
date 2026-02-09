@@ -1,5 +1,5 @@
 import { isObject, isString } from "../dataType"
-import { switchCase } from "../switchCase"
+import { ifPattern, otherwise, pred } from "../ifPattern"
 import { toFraction } from "./numberishAtom"
 import { add, div, minus, mul, pow } from "./operations"
 import { Fraction, MathematicalExpression, type BasicNumberish } from "./types"
@@ -122,12 +122,13 @@ export function toRPN(expression: MathematicalExpression): RPNItem[] {
     const prevChar = expression[i - 1] as string | undefined
     const char = expression[i]
     const nextChar = expression[i + 1] as string | undefined
-    switchCase({ prevChar, char, nextChar } as charLoopParams, [
-      [charIsNumberToken, handleNumberToken],
-      [charIsSpace, handleSpace],
-      [charIsOperator, handleOperator],
-      [charIsLeftParenthesis, handleLeftParenthesis],
-      [charIsRightParenthesis, handleRightParenthesis],
+    ifPattern({ prevChar, char, nextChar } as charLoopParams, [
+      [pred(charIsNumberToken, "numberToken"), handleNumberToken],
+      [pred(charIsSpace, "space"), handleSpace],
+      [pred(charIsOperator, "operator"), handleOperator],
+      [pred(charIsLeftParenthesis, "leftParen"), handleLeftParenthesis],
+      [pred(charIsRightParenthesis, "rightParen"), handleRightParenthesis],
+      [otherwise(), () => {}], // ignore unknown characters
     ])
   }
 
