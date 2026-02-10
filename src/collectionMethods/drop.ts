@@ -1,72 +1,52 @@
-import { isMemberOf } from "../compare"
-import { isArray, isSet } from "../dataType"
-import type { MayArray } from "../mayArray"
-import { AnyObj, ShakeNever, Valueof } from "../typings"
-import { filter, filterEntry, filterKey } from "./filter"
-
-type Drop<T, K> = ShakeNever<{
-  [P in keyof T]: T[P] extends K ? never : T[P]
-}>
+import { isArray, isIterable, isMap, isSet } from "../dataType"
+import type { AnyObj } from "../typings"
+import { filter } from "./filter"
 
 /**
- * design for arry and set, object and map
+ * 跳过集合前 n 个元素，惰性处理
+ * Drop first n elements from collection with lazy evaluation
  *
- * drop value
- * it use build-in method `Array.prototype.filter()`
+ * 语义与 JavaScript Iterator Helper 的 drop 一致
+ * Semantics align with JavaScript Iterator Helper's drop
  *
- * accept pairs
- * @param collection collection array or set or object or map
- * @param values value to drop
- * @requires {@link filter `filter()`} {@link split `split()`} {@link isOneOf `isOneOf()`} {@link isArray `isArray()`}
- * @example
- * console.log(drop([5, 2, 9], 2)) // [5, 9]
- * console.log(drop({ a: 3, b: 5 }, 3)) // { b: 5 }
- * console.log(drop({ a: 3, b: 5 }, 3, 5)) // {}
- * @version 0.0.1
+ * @param collection - 集合（Array/Set/Map/Object/Iterable） / Collection
+ * @param n - 跳过的元素数量 / Number of elements to skip
+ * @returns 相同类型的新集合 / New collection of the same type
+ *
+ * @example 数组跳过（Array drop）
+ * drop([1, 2, 3, 4, 5], 2) // [3, 4, 5]
+ *
+ * @example Set 跳过（Set drop）
+ * drop(new Set([1, 2, 3]), 1) // Set { 2, 3 }
+ *
+ * @example Map 跳过（Map drop）
+ * drop(new Map([['a', 1], ['b', 2], ['c', 3]]), 1) // Map { 'b' => 2, 'c' => 3 }
+ *
+ * @example 对象跳过（Object drop）
+ * drop({ a: 1, b: 2, c: 3 }, 1) // { b: 2, c: 3 }
+ *
+ * @example Iterable 跳过（Iterable drop）
+ * drop(someIterable, 2) // IterableIterator
  */
-export function drop<T>(array: T[], items: MayArray<T>): T[]
-export function drop<T>(map: Map<any, T>, items: MayArray<T>): Map<any, T>
-export function drop<T>(set: Set<T>, itemList: MayArray<T>): Set<T>
-export function drop<T extends AnyObj, V>(collection: T, values: MayArray<V>): Drop<T, V>
-export function drop(collection, vs): any {
-  const values = Array.isArray(vs) ? vs : [vs]
-  return isArray(collection)
-    ? dropItems(collection, values)
-    : isSet(collection)
-    ? dropSetItems(collection, values)
-    : filter(collection, (v) => !isMemberOf(values, v))
-}
-
-export function dropEntry<O extends AnyObj>(collection: O, ...values: Valueof<O>[]) {
-  return filterEntry(collection, ([k, v]) => !isMemberOf(values, v))
-}
-
-export function dropKey<O extends AnyObj>(collection: O, ...keys: Valueof<O>[]) {
-  return filterKey(collection, (k) => !isMemberOf(keys, k))
-}
-
-/**
- * Returns a new array with all elements of the input array except for the specified items.
- * @param arr The input array to filter.
- * @param items The item(s) to drop from the array.
- * @returns A new array with all elements of the input array except for the specified items.
- */
-function dropItems<T>(arr: T[], items: T | T[]): T[] {
-  const dropSet = new Set(Array.isArray(items) ? items : [items])
-  return arr.filter((item) => !dropSet.has(item))
-}
-
-/**
- * Returns a new array with all elements of the input array except for the specified items.
- * @param arr The input array to filter.
- * @param items The item(s) to drop from the array.
- * @returns A new array with all elements of the input array except for the specified items.
- */
-function dropSetItems<T>(set: Set<T>, items: T | T[]): Set<T> {
-  const dropSet = new Set(Array.isArray(items) ? items : [items])
-  const newSet = new Set(set)
-  for (const item of dropSet) {
-    newSet.delete(item)
+export function drop<T>(collection: T[], n: number): T[]
+export function drop<T>(collection: Set<T>, n: number): Set<T>
+export function drop<K, V>(collection: Map<K, V>, n: number): Map<K, V>
+export function drop<T>(collection: Iterable<T>, n: number): IterableIterator<T>
+export function drop<T extends AnyObj>(collection: T, n: number): Partial<T>
+export function drop(collection: any, n: number): any {
+  if (isArray(collection)) {
+    return filter(collection, (_, index: number) => index >= n)
+  } else if (isSet(collection)) {
+    return filter(collection, (_, index: number) => index >= n)
+  } else if (isMap(collection)) {
+    let count = 0
+    return filter(collection, () => count++ >= n)
+  } else if (isIterable(collection)) {
+    let count = 0
+    return filter(collection, () => count++ >= n)
+  } else {
+    // Object
+    let count = 0
+    return filter(collection, () => count++ >= n)
   }
-  return newSet
 }
