@@ -9,17 +9,16 @@ import type { AnyObj } from "../typings"
  * console.log(pick({ a: 1, b: true }, ['a'])) //=> { a: 1 }
  */
 export function pick<T extends AnyObj, U extends keyof T>(collection: T, propNameList: MayArray<U>): Pick<T, U>
-export function pick<T extends Map<any, any>, U extends keyof T>(collection: T, propNameList: MayArray<U>): T
-export function pick<T extends AnyObj | Map<any, any>, U extends keyof T>(
-  collection: T,
-  propNameList: MayArray<U>,
-): any {
+export function pick<K, V>(collection: Map<K, V>, propNameList: MayArray<K>): Map<K, V>
+export function pick<T extends AnyObj | Map<any, any>>(collection: T, propNameList: MayArray<any>): any {
   return isMap(collection) ? pickMap(collection, propNameList) : pickObject(collection, propNameList)
 }
 function pickMap<T extends Map<any, any>>(map: T, keys: MayArray<any>): T {
-  const newMap = new Map(map)
+  const newMap = new Map()
   for (const key of arrify(keys)) {
-    newMap.delete(key)
+    if (map.has(key)) {
+      newMap.set(key, map.get(key))
+    }
   }
   return newMap as T
 }

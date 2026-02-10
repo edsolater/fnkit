@@ -7,11 +7,8 @@ import { AnyObj, arrify, hasProperty, isMap, MayArray } from ".."
  * console.log(omit({ a: 1, b: true }, ['a'])) //=> { b: true }
  */
 export function omit<T extends AnyObj, U extends keyof T>(collection: T, propNameList: MayArray<U>): Omit<T, U>
-export function omit<T extends Map<any, any>, U extends keyof T>(collection: T, propNameList: MayArray<U>): T
-export function omit<T extends AnyObj | Map<any, any>, U extends keyof T>(
-  collection: T,
-  propNameList: MayArray<U>,
-): any {
+export function omit<K, V>(collection: Map<K, V>, propNameList: MayArray<K>): Map<K, V>
+export function omit<T extends AnyObj | Map<any, any>>(collection: T, propNameList: MayArray<any>): any {
   return isMap(collection) ? omitMap(collection, propNameList) : omitObject(collection, propNameList)
 }
 

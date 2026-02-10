@@ -46,6 +46,45 @@ test("concat() - Set合并", () => {
   expect(result5).toEqual(new Set([1, 2, 3, 4]))
 })
 
+test("concat() - 大数组惰性执行", () => {
+  const largeArr1 = Array.from({ length: 60 }, (_, i) => i)
+  const largeArr2 = Array.from({ length: 60 }, (_, i) => i + 60)
+  
+  let computeCount = 0
+  const arr1WithSideEffect = largeArr1.map(v => {
+    computeCount++
+    return v
+  })
+  
+  // 重置计数
+  computeCount = 0
+  
+  const result = concat(arr1WithSideEffect, largeArr2)
+  
+  // 创建 Proxy 时不执行
+  expect(computeCount).toBe(0)
+  
+  // 访问属性时才执行
+  const length = result.length
+  expect(length).toBe(120)
+  
+  // 验证结果正确
+  expect(result[0]).toBe(0)
+  expect(result[59]).toBe(59)
+  expect(result[60]).toBe(60)
+  expect(result[119]).toBe(119)
+})
+
+test("concat() - 小数组立即执行", () => {
+  const arr1 = [1, 2, 3]
+  const arr2 = [4, 5]
+  const result = concat(arr1, arr2)
+  
+  // 小数组不是 Proxy
+  expect(Array.isArray(result)).toBe(true)
+  expect(result).toEqual([1, 2, 3, 4, 5])
+})
+
 test("concat() - Map合并", () => {
   const result1 = concat(
     new Map([

@@ -2,6 +2,14 @@ import { isArray, isIterable } from "../dataType"
 import { AnyObj } from "../typings"
 
 /**
+ * 惰性执行阈值
+ * Lazy execution thresholds
+ */
+const LAZY_THRESHOLD = {
+  array: 100,
+}
+
+/**
  * 合并两个相同类型的集合，返回新集合
  * Concatenate two collections of the same type and return a new collection
  *
@@ -37,7 +45,33 @@ export function concat<T extends AnyObj, D extends AnyObj>(obj1: T, obj2: D): T 
 export function concat(collection, collection2) {
   // 数组
   if (isArray(collection) && isArray(collection2)) {
-    return collection.concat(collection2)
+    const totalLength = collection.length + collection2.length
+    
+    // 小数组直接合并
+    if (totalLength < LAZY_THRESHOLD.array) {
+      return collection.concat(collection2)
+    }
+    
+    // 大数组惰性合并
+    let cached: any[] | null = null
+    const compute = () => {
+      if (!cached) {
+        cached = collection.concat(collection2)
+      }
+      return cached
+    }
+    
+    return new Proxy([] as any[], {
+      get(target, prop) {
+        const value = Reflect.get(compute(), prop)
+        if (typeof value === 'function') return value.bind(compute())
+        return value
+      },
+      has(target, prop) { return Reflect.has(compute(), prop) },
+      ownKeys(target) { return Reflect.ownKeys(compute()) },
+      getOwnPropertyDescriptor(target, prop) { return Reflect.getOwnPropertyDescriptor(compute(), prop) },
+      getPrototypeOf(target) { return Reflect.getPrototypeOf(compute()) },
+    })
   }
   
   // Set
@@ -50,7 +84,7 @@ export function concat(collection, collection2) {
     return new Map([...collection, ...collection2])
   }
   
-  // 可迭代对象
+  // 可迭代对象（已经是惰性的）
   if (isIterable(collection) && isIterable(collection2)) {
     return (function* () {
       for (const item of collection) {

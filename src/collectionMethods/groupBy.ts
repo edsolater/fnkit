@@ -1,6 +1,6 @@
 import { getEntryKey, getEntryValue, map, shakeNil, type GetCollectionKey, type GetCollectionValue } from ".."
 import { isArray, isMap } from "../dataType"
-import { AnyArr, AnyObj, SKeyof, Valueof, Keyof } from "../typings"
+import { AnyArr, AnyObj, SKeyof, Valueof, CollectionKeyof } from "../typings"
 import { toEntries } from "./entries"
 
 type Stringifiable = string | number | undefined
@@ -19,7 +19,7 @@ export function groupBy<K, V, GroupName extends Stringifiable>(
 ): Record<NonNullable<GroupName>, Map<K, V>>
 export function groupBy<O extends AnyObj, GroupName extends Stringifiable>(
   obj: O,
-  predicate: (value: Valueof<O>, key: Keyof<O>, obj: O) => GroupName,
+  predicate: (value: Valueof<O>, key: CollectionKeyof<O>, obj: O) => GroupName,
 ): Record<NonNullable<GroupName>, Partial<O>>
 export function groupBy(collection, predicate) {
   return shakeNil(

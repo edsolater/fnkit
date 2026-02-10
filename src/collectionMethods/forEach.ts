@@ -26,7 +26,7 @@ export function forEach(collection, predicate) {
       if (v) predicate(v, v, collection)
     }
   } else {
-    Object.entries(collection).forEach(([k, v]) => predicate([k, v], collection))
+    Object.entries(collection).forEach(([k, v]) => predicate(v, k, collection))
   }
 }
 
@@ -35,5 +35,5 @@ export function forEachKey<O extends AnyObj>(
   predicate: (key: keyof O, value: O[keyof O], obj: O) => void,
 ): void {
   // @ts-ignore force for alias
-  return forEach(collection, (_, k, v) => predicate(k, v, collection))
+  return forEach(collection, (v, k, obj) => predicate(k, v, obj))
 }
