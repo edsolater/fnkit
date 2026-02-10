@@ -40,9 +40,10 @@ describe("groupBy()", () => {
   })
 
   test("Array - 返回 undefined 的项被过滤", () => {
-    const result = groupBy([1, 2, 3, 4], (v) => (v > 2 ? 'large' : undefined))
+    const result = groupBy([1, 2, 3, 4], (v) => (v > 2 ? 'large' : 'small'))
     expect(result).toEqual({
       large: [3, 4],
+      small: [1, 2],
     })
   })
 

@@ -1,4 +1,18 @@
-import { isArray, isIterable, isMap, isSet } from "../dataType"
+import {
+  Entry,
+  getIteratorInnerKey,
+  getIteratorInnerValue,
+  isEntriable,
+  isItemable,
+  Item,
+  type Entriable,
+  type EntriableKey,
+  type EntriableValue,
+  type Itemable,
+  type ItemableValue,
+} from "./iteratorableItemAndEntry"
+import { toIterator } from "./iteratorableUtils"
+import { isArray, isExist, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj } from "../typings"
 
 /**
@@ -6,7 +20,7 @@ import type { AnyObj } from "../typings"
  * Find first matching element with short-circuit evaluation (no lazy needed)
  *
  * @param collection - 集合（Array/Set/Map/Object/Iterable） / Collection to search
- * @param predicate - 断言函数 (value, key) => boolean / Predicate function  
+ * @param predicate - 断言函数 (value, key) => boolean / Predicate function
  * @returns 第一个匹配的元素或 undefined / First matching element or undefined
  *
  * @example 数组查找（Array find）
@@ -23,36 +37,36 @@ import type { AnyObj } from "../typings"
  */
 export function find<T>(arr: T[], predicate: (value: T, index: number) => unknown): T | undefined
 export function find<T>(set: Set<T>, predicate: (value: T, index: number) => unknown): T | undefined
-export function find<K, V>(map: Map<K, V>, predicate: (value: V, key: K) => unknown): V | undefined
-export function find<T>(iterable: Iterable<T>, predicate: (value: T, index: number) => unknown): T | undefined
+export function find<K, V>(map: Map<K, V>, predicate: (value: V, key: K) => unknown): { key: K; value: V } | undefined
+export function find<T extends Itemable>(
+  iterable: Iterable<T>,
+  predicate: (value: ItemableValue<T>, index: number) => unknown,
+): T | undefined
+export function find<T extends Entriable>(
+  iterable: Iterable<T>,
+  predicate: (value: EntriableValue<T>, key: EntriableKey<T>) => unknown,
+): T | undefined
 export function find<T extends AnyObj>(
   obj: T,
   predicate: (value: T[keyof T], key: string) => unknown,
-): T[keyof T] | undefined
+): { key: keyof T; value: T[keyof T] } | undefined
 export function find(collection: any, predicate: any): any {
   if (isArray(collection)) {
     return collection.find(predicate)
   } else if (isSet(collection)) {
-    let index = 0
-    for (const v of collection) {
-      if (predicate(v, index++)) return v
-    }
-    return undefined
+    return collection.values().find((v, i) => predicate(v, i))
   } else if (isMap(collection)) {
-    for (const [k, v] of collection) {
-      if (predicate(v, k)) return v
-    }
-    return undefined
+    const result = collection.entries().find(([k, v]) => predicate(v, k))
+    return result ? { key: result[0], value: result[1] } : undefined
   } else if (isIterable(collection)) {
-    let index = 0
-    for (const v of collection) {
-      if (predicate(v, index++)) return v
-    }
-    return undefined
+    const result = toIterator(collection).find((v, i) =>
+      predicate(getIteratorInnerValue(v), getIteratorInnerKey(v) ?? i),
+    )
+    return result
   } else {
     // Object
     for (const k in collection) {
-      if (predicate(collection[k], k)) return collection[k]
+      if (predicate(collection[k], k)) return { key: k, value: collection[k] }
     }
     return undefined
   }

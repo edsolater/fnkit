@@ -1,7 +1,7 @@
-import { toIterable, type Iteratorable } from ".."
 import { isArray, isIterable, isMap, isSet } from "../dataType"
-import type { AnyObj } from "../typings"
-import type { Collection, GetCollectionKey, GetCollectionValue } from "./type"
+import type { AnyObj, Keyof, ValueOf } from "../typings"
+import { getIteratorInnerKey, getIteratorInnerValue } from "./iteratorableItemAndEntry"
+import { toIterator, type Iteratorable } from "./iteratorableUtils"
 
 /**
  * 惰性执行阈值
@@ -53,7 +53,7 @@ export function filter(collection: any, predicate: any): any {
   } else if (isMap(collection)) {
     return filterMap(collection, predicate)
   } else if (isIterable(collection)) {
-    return toIterable(collection).filter(predicate)
+    return filterIterator(collection, predicate)
   } else {
     return filterObject(collection, predicate)
   }
@@ -197,6 +197,14 @@ function filterMap<K, V>(map: Map<K, V>, predicate: (value: V, key: K) => boolea
   })
 }
 
+function filterIterator<T extends Iteratorable<any>>(
+  iterator: T,
+  predicate: (value: ValueOf<T>, key: Keyof<T>) => boolean,
+) {
+  return toIterator(iterator).filter((v, i) =>
+    predicate(getIteratorInnerValue(v), getIteratorInnerKey(v) ?? (i as Keyof<T>)),
+  )
+}
 /**
  * 过滤对象，大对象惰性处理
  * Filter object with lazy evaluation for large objects

@@ -1,3 +1,4 @@
+import { getIteratorInnerKey, getIteratorInnerValue, isIterableOrIterator, toIterator, type Iteratorable, type Keyof, type ValueOf } from ".."
 import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj } from "../typings"
 
@@ -24,29 +25,18 @@ import type { AnyObj } from "../typings"
 export function every<T>(arr: T[], predicate: (value: T, index: number) => unknown): boolean
 export function every<T>(set: Set<T>, predicate: (value: T, index: number) => unknown): boolean
 export function every<K, V>(map: Map<K, V>, predicate: (value: V, key: K) => unknown): boolean
-export function every<T>(iterable: Iterable<T>, predicate: (value: T, index: number) => unknown): boolean
-export function every<T extends AnyObj>(obj: T, predicate: (value: T[keyof T], key: string) => unknown): boolean
+export function every<T extends Iteratorable>(
+  iterable: T,
+  predicate: (value: ValueOf<T>, index: Keyof<T>) => unknown,
+): boolean
+export function every<T extends AnyObj>(obj: T, predicate: (value: ValueOf<T>, key: Keyof<T>) => unknown): boolean
 export function every(collection: any, predicate: any): boolean {
-  if (isArray(collection)) {
-    return collection.every(predicate)
-  } else if (isSet(collection)) {
-    let index = 0
-    for (const v of collection) {
-      if (!predicate(v, index++)) return false
-    }
-    return true
-  } else if (isMap(collection)) {
-    for (const [k, v] of collection) {
-      if (!predicate(v, k)) return false
-    }
-    return true
-  } else if (isIterable(collection)) {
-    let index = 0
-    for (const v of collection) {
-      if (!predicate(v, index++)) return false
-    }
-    return true
-  } else {
+  if (isArray(collection)) return collection.every(predicate)
+  if (isSet(collection)) return collection.values().every((v, i) => predicate(v, i))
+  if (isMap(collection)) return collection.entries().every(([k, v]) => predicate(v, k))
+  if (isIterableOrIterator(collection)) return toIterator(collection).every((v, i) => predicate(getIteratorInnerValue(v), getIteratorInnerKey(v)?? i))
+
+  {
     // Object
     for (const k in collection) {
       if (!predicate(collection[k], k)) return false

@@ -1,18 +1,13 @@
-import type { Iteratorable } from "./iterableUtils";
+import type { Entriable } from "./iteratorableItemAndEntry"
+import type { Iteratorable } from "./iteratorableUtils"
 
-export type Entry<Value = any, Key = any> = { key: Key; value: Value } | [Key, Value]
-export type GetEntryValue<E extends Entry> = E extends [infer K, infer V]
-  ? V
-  : E extends { key: infer K; value: infer V }
-    ? V
-    : never
-export type GetEntryKey<E extends Entry> = E extends [infer K, infer V]
-  ? K
-  : E extends { key: infer K; value: infer V }
-    ? K
-    : never
-export type ItemEntry<Item = any> = Entry<Item, number>
+// Entry 类型已废弃，请使用 itemAndEntry.ts 中的 Entry 类或 Entriable 类型
+// Entry type deprecated, use Entry class or Entriable type from itemAndEntry.ts
 
+/**
+ * GetCollectionKey：获取集合的键类型
+ * @deprecated 使用 {@link KeyOf} 替代
+ */
 export type GetCollectionKey<T extends Collection> =
   T extends Array<any>
     ? number
@@ -20,13 +15,15 @@ export type GetCollectionKey<T extends Collection> =
       ? K
       : T extends Map<infer K, any>
         ? K
-        : T extends Iteratorable<[any, infer K]>
+        // Entriable 流：key 来自 Entry
+        : T extends Iteratorable<Entriable<any, infer K>>
           ? K
-          : T extends Iteratorable<any>
-            ? number
-            : T extends Record<infer K, any>
-              ? K
-              : never
+        // Item 流：key 由 Iterator Helper 生成（index）
+        : T extends Iteratorable<any>
+          ? number
+        : T extends Record<infer K, any>
+          ? K
+          : never
 
 export type GetCollectionValue<T extends Collection> =
   T extends Array<infer V>
@@ -35,13 +32,15 @@ export type GetCollectionValue<T extends Collection> =
       ? V
       : T extends Map<any, infer V>
         ? V
-        : T extends Iteratorable<[infer V, any]>
+        // Entriable 流：提取 value 部分
+        : T extends Iteratorable<Entriable<infer V, any>>
           ? V
-          : T extends Iteratorable<infer V>
+        // Item 流：整个元素就是 value
+        : T extends Iteratorable<infer V>
+          ? V
+          : T extends Record<keyof any, infer V>
             ? V
-            : T extends Record<keyof any, infer V>
-              ? V
-              : never
+            : never
 
 export type GetNewCollection<OldCollection extends Collection, NewValue, NewKey = GetCollectionKey<OldCollection>> =
   OldCollection extends Array<any>
@@ -62,13 +61,38 @@ export type GetNewCollection<OldCollection extends Collection, NewValue, NewKey 
                 ? {
                     [k in keyof OldCollection]: NewValue
                   }
-                : OldCollection extends Record<any, any>
-                  ? Record<Extract<NewKey, string | number | symbol>, NewValue>
-                  : never
+                : never
 
-// TODO: should can iterator , because iterator can have iterator helpers. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/forEach
-export type CollectionItems<V = any> = Set<V> | V[] | Iteratorable<[V, number]>
+/**
+ * CollectionItems：单值集合
+ * Item collections: collections containing single values
+ * 
+ * - Array：索引是 key
+ * - Set：value 即 key
+ * - Iteratorable<Item>：Iterator Helper 生成 index 作为 key
+ */
+export type CollectionItems<V = any> = 
+  | V[]
+  | Set<V>
+  | Iteratorable<V>  // Item 流
 
-export type CollectionEntries<V = any, K = any> = Map<K, V> | Record<K & string, V> | Iteratorable<[V, K]>
+/**
+ * CollectionEntries：键值对集合
+ * Entry collections: collections containing key-value pairs
+ * 
+ * - Map：显式的 key-value
+ * - Record：对象的 key-value
+ * - Iteratorable<Entriable>：Entry 流，key 由 Entry 携带
+ */
+export type CollectionEntries<V = any, K = any> = 
+  | Map<K, V>
+  | Record<K & string, V>
+  | Iteratorable<Entriable<V, K>>  // Entriable 流
 
-export type Collection<V = any, K = any> = CollectionItems<V> | CollectionEntries<V, K>
+/**
+ * Collection：所有集合类型的联合
+ * Collection: union of all collection types
+ */
+export type Collection<V = any, K = any> = 
+  | CollectionItems<V> 
+  | CollectionEntries<V, K>

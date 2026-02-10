@@ -1,6 +1,6 @@
 import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj } from "../typings"
-import { toIterable } from "./iterableUtils"
+import { toIterator } from "./iteratorableUtils"
 
 /**
  * 惰性执行阈值
@@ -49,7 +49,7 @@ export function map(collection: any, mapper: any): any {
   } else if (isMap(collection)) {
     return mapMap(collection, mapper)
   } else if (isIterable(collection)) {
-    return toIterable(collection).map(mapper)
+    return toIterator(collection).map(mapper)
   } else {
     return mapObject(collection, mapper)
   }

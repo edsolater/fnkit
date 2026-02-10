@@ -1,4 +1,4 @@
-import { CollectionItems, type Iteratorable } from "../collectionMethods"
+import { CollectionItems, type Entriable, type Itemable, type Iteratorable } from "../collectionMethods"
 import { MayArray, DeMayArray } from "../mayArray"
 import { AnyFn, Falsy, Primitive } from "./constants"
 
@@ -215,6 +215,8 @@ export type SnakeCase<S extends string> =
  * Extract key type from collection
  *
  * - Map/Set 等特殊集合：提取泛型参数
+ * - Iteratorable<Entriable>：Entry 流，key 来自 Entry
+ * - Iteratorable<Item>：Item 流，key 由 Iterator Helper 生成（index: number）
  * - 普通对象：使用标准 keyof
  *
  * @example
@@ -222,48 +224,66 @@ export type SnakeCase<S extends string> =
  * type B = Keyof<Map<string, number>> // string
  * type C = Keyof<number[]> // number
  * type D = Keyof<Set<string>> // string
+ * type E = Keyof<Iteratorable<[number, string]>> // string (Entriable 流)
+ * type F = Keyof<Iteratorable<number>> // number (Item 流，Iterator Helper 的 index)
  */
-export type CollectionKeyof<O> =
+export type Keyof<O> =
+  // Map 和 Set
   O extends Map<infer K, any>
     ? K
     : O extends Set<infer K>
       ? K
       : O extends Array<any>
         ? number
-        : O extends Iteratorable<[infer V, infer K]>
-          ? K
-          : keyof O
+        : // Entry 流
+          O extends Iteratorable<Entriable<infer V, infer K>>
+          ? V
+          : // Item 流：key 由 Iterator Helper 生成（index）
+            O extends Iteratorable<Itemable<infer V>>
+            ? number
+            : // 普通对象
+              keyof O
 
 /**
  * 提取集合的值类型
  * Extract value type from collection
  *
  * - Map/Set/Array 等特殊集合：提取泛型参数
+ * - Iteratorable<Entriable>：Entry 流，提取 value 部分
+ * - Iteratorable<Item>：Item 流，整个元素就是 value
  * - 普通对象：使用索引访问类型 O[keyof O]
  *
  * @example
- * type A = Valueof<{ a: 1, b: 2 }> // 1 | 2
- * type B = Valueof<Map<string, number>> // number
- * type C = Valueof<number[]> // number
- * type D = Valueof<Set<string>> // string
+ * type A = ValueOf<{ a: 1, b: 2 }> // 1 | 2
+ * type B = ValueOf<Map<string, number>> // number
+ * type C = ValueOf<number[]> // number
+ * type D = ValueOf<Set<string>> // string
+ * type E = ValueOf<Iteratorable<[number, string]>> // number (Entriable 流)
+ * type F = ValueOf<Iteratorable<number>> // number (Item 流)
  */
-export type Valueof<O> =
+export type ValueOf<O> =
+  // Map, Set, Array
   O extends Map<any, infer V>
     ? V
     : O extends Set<infer V>
       ? V
       : O extends Array<infer V>
         ? V
-        : O extends Iteratorable<[infer V, infer K]>
+        : // Entriable 流
+          O extends Iteratorable<Entriable<infer V, any>>
           ? V
-          : O extends Record<string | number | symbol, any>
-            ? O[keyof O]
-            : never
+          : // Item 流：整个元素就是 value
+            O extends Iteratorable<Itemable<infer V>>
+            ? V
+            : // 普通对象
+              O extends Record<string | number | symbol, any>
+              ? O[keyof O]
+              : never
 
 /**
  * extract only string
  */
-export type SKeyof<O> = CollectionKeyof<O> & string
+export type SKeyof<O> = Keyof<O> & string
 
 //#endregion
 

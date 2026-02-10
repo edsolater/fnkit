@@ -1,5 +1,5 @@
 import { count, type Collection } from ".."
-import { toCollectionIterator } from "../collectionMethods/iterableUtils"
+import { toCollectionIterator } from "../collectionMethods/iteratorableUtils"
 
 /**
  * 拼接多个可迭代对象为一个可迭代对象

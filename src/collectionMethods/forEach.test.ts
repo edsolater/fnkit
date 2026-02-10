@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest"
-import { forEach, forEachKey } from "./forEach"
+import { forEach } from "./forEach"
 
 describe("forEach()", () => {
   test("Array - 遍历数组", () => {
@@ -27,10 +27,10 @@ describe("forEach()", () => {
 
   test("Set - 遍历集合", () => {
     const result: string[] = []
-    forEach(new Set(['a', 'b', 'c']), (v, k) => {
+    forEach(new Set(["a", "b", "c"]), (v, k) => {
       result.push(`${v}:${k}`)
     })
-    expect(result).toEqual(['a:a', 'b:b', 'c:c'])
+    expect(result).toEqual(["a:a", "b:b", "c:c"])
   })
 
   test("Set - 空集合", () => {
@@ -43,14 +43,14 @@ describe("forEach()", () => {
     const result: string[] = []
     forEach(
       new Map([
-        ['a', 1],
-        ['b', 2],
+        ["a", 1],
+        ["b", 2],
       ]),
       (v, k) => {
         result.push(`${k}:${v}`)
-      }
+      },
     )
-    expect(result).toEqual(['a:1', 'b:2'])
+    expect(result).toEqual(["a:1", "b:2"])
   })
 
   test("Map - 空映射", () => {
@@ -65,9 +65,9 @@ describe("forEach()", () => {
       result.push(`${String(k)}:${v}`)
     })
     expect(result.length).toBe(3)
-    expect(result).toContain('a:1')
-    expect(result).toContain('b:2')
-    expect(result).toContain('c:3')
+    expect(result).toContain("a:1")
+    expect(result).toContain("b:2")
+    expect(result).toContain("c:3")
   })
 
   test("Object - 空对象", () => {
@@ -95,38 +95,5 @@ describe("forEach()", () => {
       results.push(v * 2)
     })
     expect(results).toEqual([2, 4, 6])
-  })
-})
-
-describe("forEachKey()", () => {
-  test("对象 - 遍历键", () => {
-    const keys: string[] = []
-    const values: number[] = []
-    forEachKey({ a: 1, b: 2, c: 3 }, (k, v) => {
-      keys.push(String(k))
-      values.push(v)
-    })
-    expect(keys.length).toBe(3)
-    expect(values.length).toBe(3)
-    expect(keys).toContain('a')
-    expect(keys).toContain('b')
-    expect(keys).toContain('c')
-    expect(values).toContain(1)
-    expect(values).toContain(2)
-    expect(values).toContain(3)
-  })
-
-  test("对象 - 空对象", () => {
-    let count = 0
-    forEachKey({}, () => count++)
-    expect(count).toBe(0)
-  })
-
-  test("对象 - 键值对应正确", () => {
-    const result: Record<string, number> = {}
-    forEachKey({ a: 1, b: 2 }, (k, v) => {
-      result[String(k)] = v * 2
-    })
-    expect(result).toEqual({ a: 2, b: 4 })
   })
 })

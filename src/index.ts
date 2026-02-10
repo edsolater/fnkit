@@ -1,11 +1,11 @@
 export * from "./asyncCompose"
 export * from "./asyncPipe"
-export * from "./bindParams" // FP style get function faster
+export * from "./bindParams"; // FP style get function faster
 export * from "./buildinStructureTools"
 export * from "./cache"
 export * from "./cacheFunction"
 export * from "./callbackManager"
-export * from "./callStack" // for debug, should only use it in development mode
+export * from "./callStack"; // for debug, should only use it in development mode
 export * from "./changeCase"
 export * from "./classTools/DecoratorPart"
 export * from "./classTools/mix"
@@ -24,12 +24,13 @@ export * from "./dataType"
 export * from "./dataWrapper"
 export * from "./debounce"
 export * from "./enhance"
+export * from "./flap"
 export * from "./FPTools/ensure"
 export * from "./FPTools/loop"
 export * from "./FPTools/Task"
 export * from "./FPTools/when"
 export * from "./functionManagers"
-export * from "./ifPattern" // FP style pattern matching
+export * from "./ifPattern"; // FP style pattern matching
 export * from "./iife"
 export * from "./lazyMap"
 export * from "./math"
@@ -43,10 +44,10 @@ export * from "./oldMethodsFunctionFactory"
 export * from "./oldMethodsMagic"
 export * from "./oldMethodsMath"
 export * from "./oldMethodsString"
-export * from "./pickProperty" // FP style utils to get property easily
+export * from "./pickProperty"; // FP style utils to get property easily
 export * from "./pipe"
 export * from "./promiseHelpers"
-export * from "./promisify" // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
+export * from "./promisify"; // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
 export * from "./proxyObject"
 export * from "./queryDiffInfo"
 export * from "./retryMaster"
@@ -60,3 +61,4 @@ export * from "./toPrimitiveValue"
 export * from "./toStringOrUndefined"
 export * from "./typings"
 export * from "./wrapper"
+

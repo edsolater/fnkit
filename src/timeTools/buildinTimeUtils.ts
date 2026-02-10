@@ -1,4 +1,4 @@
-import { assert, getValue, shrinkFn, type MayFn } from ".."
+import { assert, getIteratorInnerValue, shrinkFn, type MayFn } from ".."
 import { isObject, isUndefined } from "../dataType"
 import { asyncInvoke } from "../functionManagers"
 import { type TimeRange, parseTimeRangeToMilliseconds, parseTimeRangeToSeconds, isTimeRange } from "./parseDuration"
@@ -84,7 +84,7 @@ export function setInterval(
     interval: parseTimeRangeToSeconds(
       isUndefined(verboseOption) ? 1 : isTimeRange(verboseOption) ? verboseOption : (verboseOption.interval ?? 1),
     ),
-    whenTwoTaskConflict: getValue(verboseOption, "whenTwoTaskConflict", "invoke-income"),
+    whenTwoTaskConflict: getIteratorInnerValue(verboseOption, "whenTwoTaskConflict", "invoke-income"),
   }
   let intervalSeconds = options.interval
 

@@ -1,7 +1,7 @@
 import { flap, unifyItem } from "../collectionMethods"
 import { isObjectLike, isFunction, isObject } from "../dataType"
 import { AnyObj } from "../typings/constants"
-import { SKeyof, Valueof } from "../typings/tools"
+import { SKeyof, ValueOf } from "../typings/tools"
 
 /**
  *
@@ -55,7 +55,7 @@ export function appendEntries<T extends object, U extends keyof any, V>(
 
 export function flatMapObjectEntry<T>(
   target: T,
-  flatMapper: (entry: [key: SKeyof<T>, value: Valueof<T>]) => any[],
+  flatMapper: (entry: [key: SKeyof<T>, value: ValueOf<T>]) => any[],
 ): any {
   //@ts-ignore
   return Object.fromEntries(Object.entries(target ?? {}).flatMap(flatMapper)) as any

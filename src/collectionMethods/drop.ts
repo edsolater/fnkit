@@ -1,3 +1,4 @@
+import type { Iteratorable } from ".."
 import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj } from "../typings"
 import { filter } from "./filter"
@@ -26,12 +27,12 @@ import { filter } from "./filter"
  * drop({ a: 1, b: 2, c: 3 }, 1) // { b: 2, c: 3 }
  *
  * @example Iterable 跳过（Iterable drop）
- * drop(someIterable, 2) // IterableIterator
+ * drop(someIterable, 2) // IteratorObject<T>
  */
 export function drop<T>(collection: T[], n: number): T[]
 export function drop<T>(collection: Set<T>, n: number): Set<T>
 export function drop<K, V>(collection: Map<K, V>, n: number): Map<K, V>
-export function drop<T>(collection: Iterable<T>, n: number): IterableIterator<T>
+export function drop<T>(collection: Iteratorable<T>, n: number): IteratorObject<T>
 export function drop<T extends AnyObj>(collection: T, n: number): Partial<T>
 export function drop(collection: any, n: number): any {
   if (isArray(collection)) {

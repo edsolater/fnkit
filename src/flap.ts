@@ -1,5 +1,5 @@
-import { DeMayDeepArray } from "../typings/tools"
-import { type DeMayArray } from "../mayArray"
+import { DeMayDeepArray } from "./typings/tools"
+import { type DeMayArray } from "./mayArray"
 
 /**
  * only array can flat

@@ -56,7 +56,7 @@ describe("find()", () => {
       ]),
       (v) => v > 1,
     )
-    expect(result).toBe(2)
+    expect(result).toEqual({ key: "b", value: 2 })
   })
 
   test("Map - 使用 key 参数", () => {
@@ -67,7 +67,7 @@ describe("find()", () => {
       ]),
       (v, k) => k === "b",
     )
-    expect(result).toBe(2)
+    expect(result).toEqual({ key: "b", value: 2 })
   })
 
   test("Map - 未找到", () => {
@@ -83,12 +83,12 @@ describe("find()", () => {
 
   test("Object - 查找值", () => {
     const result = find({ a: 1, b: 2, c: 3 }, (v) => v > 1)
-    expect(result).toBe(2)
+    expect(result).toEqual({ key: "b", value: 2 })
   })
 
   test("Object - 使用 key 参数", () => {
     const result = find({ a: 1, b: 2 }, (v, k) => k === "b")
-    expect(result).toBe(2)
+    expect(result).toEqual({ key: "b", value: 2 })
   })
 
   test("Object - 未找到", () => {
