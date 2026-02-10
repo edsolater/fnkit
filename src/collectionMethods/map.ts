@@ -1,290 +1,234 @@
-import { cacheFn } from "../cache"
-import { isArray, isIterable, isMap, isNumber, isSet, isString, isUndefined } from "../dataType"
-import type { Collection, CollectionEntries, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./type"
-import { toIterableEntries, toIterableValue } from "./entries"
-import { count } from "./itemMethods"
+import { isArray, isIterable, isMap, isSet } from "../dataType"
+import type { AnyObj } from "../typings"
 
 /**
- * change collection's both value and key
- * {@link mapEntry `mapEntry()`}
- *
- * entry version of array.prototype.map() , just object an map
- * @requires {@link toEntries `toEntries()`} {@link fromEntries `fromEntries()`} {@link getType `getType()`}
- * @example
- * console.log(mapEntry({ a: 1, b: 2 }, (value, key) => [key + 'c', value + 2])) // {  ac: 3, bc: 4 }
+ * 惰性执行阈值
+ * Lazy execution thresholds
  */
-export function mapEntry<E extends CollectionEntries, V, K = GetCollectionKey<E>>(
-  collection: E,
-  cb: (value: GetCollectionValue<E>, key: GetCollectionKey<E>, source: E) => [K, V],
-): GetNewCollection<E, V, K> {
-  if (isMap(collection)) {
-    const outputSet = new Map<K, V>()
-    for (const [key, value] of collection as Map<any, any>) {
-      // @ts-ignore
-      const [mappedK, mappedV] = cb(value, key, collection)
-      if (mappedV == undefined) continue
-      outputSet.set(mappedK, mappedV)
-    }
-    return outputSet as any
-  } else if (isIterable(collection)) {
-    // @ts-ignore
-    return (function* () {
-      if (cb.length <= 1) {
-        for (const iterator of toIterableValue(collection)) {
-          //@ts-expect-error force parameter length is 1
-          yield cb(iterator)
-        }
-      }
-      for (const [key, value] of toIterableEntries(collection)) {
-        yield cb(value, key, collection)
-      }
-    })()
-  } else {
-    const outputSet: Record<any, V> = {}
-    for (const key in collection) {
-      // @ts-ignore
-      const [mappedK, mappedV] = cb(collection[key], key, collection)
-      if (mappedV === undefined) continue
-      // @ts-ignore
-      outputSet[mappedK] = mappedV
-    }
-    return outputSet as any
-  }
+const LAZY_THRESHOLD = {
+  array: 100,
+  set: 100,
+  map: 50,
+  object: 50,
 }
 
 /**
- * only change collection's value.
- * 
- * **lazy mode**(default when count >1000): return a proxy object, only calc when query the real value. user can input `{lazy:false}` to stop this
- * {@link map `map()`}: simliar to array.prototype.map()
- * @requires {@link mapEntry `mapEntry()`}
+ * 映射集合元素，大集合自动惰性处理
+ * Map collection elements with automatic lazy evaluation for large collections
  *
- * @example
- * console.log(map([1, 2], (v) => v + 1)) // [2, 3]
- * console.log(map({ a: 1, b: 2}, (v, k) => [k + 'v', v + 1])) // { av: 2, bv: 3 }
- * console.log(map(new Set([1, 2]), (v) => v + 1)) // Set { 2, 3 }
- * console.log(map(new Map([['a', 1], ['b', 2]]), (v) => v + 1)) // Map { 'a' => 2, 'b' => 3 }
+ * @param collection - 集合（Array/Set/Map/Object/Iterable） / Collection to map
+ * @param mapper - 映射函数 (value, key) => newValue / Mapper function
+ * @returns 相同类型的新集合 / New collection of the same type
+ *
+ * @example 数组映射（Array mapping）
+ * map([1, 2, 3], v => v * 2) // [2, 4, 6]
+ *
+ * @example Set 映射（Set mapping）
+ * map(new Set([1, 2, 3]), v => v * 2) // Set { 2, 4, 6 }
+ *
+ * @example Map 映射（Map mapping）
+ * map(new Map([['a', 1], ['b', 2]]), v => v * 2) // Map { 'a' => 2, 'b' => 4 }
+ *
+ * @example 对象映射（Object mapping）
+ * map({ a: 1, b: 2 }, v => v * 2) // { a: 2, b: 4 }
  */
-export function map<C extends Collection, V, K = GetCollectionKey<C>>(
-  collection: C,
-  cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
-  options?: {
-    /**
-     *  only calc needed value when needed
-     * 'auto' means if collection size is too big, use lazy mode
-     */
-    lazy?: boolean | "auto"
-  },
-): GetNewCollection<C, V, K> {
-  if (isUndefined(collection)) return collection as any
+export function map<T, R>(collection: T[], mapper: (value: T, index: number) => R): R[]
+export function map<T, R>(collection: Set<T>, mapper: (value: T, index: number) => R): Set<R>
+export function map<K, V, R>(collection: Map<K, V>, mapper: (value: V, key: K) => R): Map<K, R>
+export function map<T, R>(collection: Iterable<T>, mapper: (value: T, index: number) => R): IterableIterator<R>
+export function map<T extends AnyObj, R>(
+  collection: T,
+  mapper: (value: T[keyof T], key: string) => R,
+): { [K in keyof T]: R }
+export function map(collection: any, mapper: any): any {
   if (isArray(collection)) {
-    const needLazy = !options || options?.lazy === "auto" ? count(collection) > 1000 : options?.lazy
-    //@ts-expect-error 🤔
-    return needLazy ? lazyMapArray(collection, cb) : (collection.map(cb as any) as any)
+    return mapArray(collection, mapper)
   } else if (isSet(collection)) {
-    const needLazy = !options || options?.lazy === "auto" ? count(collection) > 1000 : options?.lazy
-    if (needLazy) {
-      //@ts-expect-error force
-      return lazyMapSet(collection, cb)
-    } else {
-      const outputSet = new Set<V>()
-      if (cb.length <= 1) {
-        for (const v of collection as Set<unknown>) {
-          //@ts-expect-error force parameter length is 1
-          const mappedV = cb(v)
-          outputSet.add(mappedV)
-        }
-      } else {
-        for (const [idx, v] of collection.entries()) {
-          // @ts-ignore
-          const mappedV = cb(v, idx, collection)
-          outputSet.add(mappedV)
-        }
-      }
-      return outputSet as any
-    }
+    return mapSet(collection, mapper)
   } else if (isMap(collection)) {
-    const outputMap = new Map<K, V>()
-    for (const [key, value] of collection as Map<any, any>) {
-      // @ts-ignore
-      const mappedV = cb(value, key, collection)
-      outputMap.set(key, mappedV)
-    }
-    return outputMap as GetNewCollection<C, V, K>
+    return mapMap(collection, mapper)
   } else if (isIterable(collection)) {
-    return iterableMap(collection, cb) as GetNewCollection<C, V, K>
+    const iterator = collection[Symbol.iterator]()
+    let index = 0
+    return {
+      [Symbol.iterator]() {
+        return this
+      },
+      next() {
+        const { value, done } = iterator.next()
+        if (done) return { value: undefined, done: true }
+        return { value: mapper(value, index++), done: false }
+      },
+    } as IterableIterator<any>
   } else {
-    const needLazy = !options || options?.lazy === "auto" ? true : options?.lazy
-    if (needLazy) {
-      //@ts-expect-error 🤔
-      return lazyMapRecord(collection, cb)
-    } else {
-      const outputRecord: Record<string, V> = {}
-      for (const key in collection) {
-        // @ts-ignore
-        const mappedV = cb(collection[key], key, collection)
-        outputRecord[key] = mappedV
-      }
-      return outputRecord as GetNewCollection<C, V, K>
-    }
+    return mapObject(collection, mapper)
   }
 }
 
-/** only calc when query the real value */
-function lazyMapSet<T, U>(set: Set<T>, cb: (value: T, key: T, source: Set<T>) => U) {
-  let haveLoadAll: boolean = false
-  let mappedSet = new Set<U>()
-  const getItems = cacheFn(() => {
-    if (haveLoadAll) return mappedSet
-    for (const value of set) {
-      // if (mappedSet) continue
-      const mappedSetValue = cb(value, value, set)
-      mappedSet.add(mappedSetValue)
-    }
-    haveLoadAll = true
-    return mappedSet
-  })
-  const lazySet = new Proxy(mappedSet, {
-    get(_target, key) {
-      if (key === "set") {
-        return function set(value: U) {
-          mappedSet.add(value)
-          return lazySet
-        }
-      }
-      if (key === "size") return set.size
-      if (key === Symbol.iterator) return iterableMap(set, cb)
-
-      getItems()
-      return Reflect.get(mappedSet, key, mappedSet)
-    },
-  })
-  return lazySet
-}
-
-/** only calc when query the real value */
-function lazyMapArray<T, U>(array: T[], cb: (value: T, idx: number, source: T[]) => U) {
-  let haveLoadAll: boolean = false
-  let mappedArray: U[] = []
-  const getItems = cacheFn(() => {
-    if (haveLoadAll) return mappedArray
-    for (let i = 0; i < array.length; i++) {
-      if (i in mappedArray) continue
-      mappedArray[i] = cb(array[i], i, array)
-    }
-    haveLoadAll = true
-    return mappedArray
-  })
-  return new Proxy(mappedArray, {
-    get(target, key) {
-      if (isNumber(key) || (isString(key) && /^\d+$/.test(String(key)))) {
-        if (key in target) return target[key]
-        if (key in array) {
-          const mappedValue = cb(array[key], +key, array)
-          target[key] = mappedValue
-          return mappedValue
-        } else {
-          return undefined // empty value
-        }
-      }
-      if (key === "length") return array.length
-      if (key === Symbol.iterator) return iterableMap(array, cb)
-      return Reflect.get(getItems(), key, target)
-    },
-  })
-}
-/** only calc when query the real value */
-function lazyMapRecord<T, K extends keyof any, U>(
-  record: Record<K, T>,
-  cb: (value: T, key: K, source: Record<K, T>) => U,
-) {
-  let mappedRecord = {} as Record<K, U>
-  let keys: (string | symbol)[]
-  let keySet: Set<string | symbol>
-
-  function getKeys() {
-    if (!keys) {
-      keys = Reflect.ownKeys(record)
-    }
-    return keys!
-  }
-  function getKeySet() {
-    if (!keySet) {
-      keySet = new Set(getKeys())
-    }
-    return keySet!
+/**
+ * 映射数组，大数组惰性处理
+ * Map array with lazy evaluation for large arrays
+ */
+function mapArray<T, R>(arr: T[], mapper: (value: T, index: number) => R): R[] {
+  if (arr.length < LAZY_THRESHOLD.array) {
+    return arr.map(mapper)
   }
 
-  const getValue = (target: Record<K, U>, key: string | symbol): any => {
-    if (!getKeySet().has(key)) return undefined
-    if (key in target) return target[key]
-    if (key in record) {
-      const mappedValue = cb(record[key], key as K, record)
-      target[key] = mappedValue
-      return mappedValue
-    } else {
-      return undefined
-    }
+  let cached: R[] | null = null
+  const compute = () => {
+    if (!cached) cached = arr.map(mapper)
+    return cached
   }
-  return new Proxy(mappedRecord, {
-    get: getValue,
-    has: (_target, p) => Boolean(getKeySet().has(p)),
-    ownKeys: (_target) => getKeys(),
-    getOwnPropertyDescriptor: (target, p) => {
-      if (!getKeySet().has(p)) return undefined
-      return {
-        configurable: true,
-        enumerable: true,
-        value: getValue(target, p),
-      }
+
+  return new Proxy([] as R[], {
+    get(target, prop) {
+      return Reflect.get(compute(), prop)
     },
-    set: (target, p, newValue, receiver) => {
-      getKeySet().add(p)
-      if (!getKeys().includes(p)) {
-        getKeys()
-      }
-      Reflect.set(target, p, newValue, receiver)
-      return true
+    has(target, prop) {
+      return Reflect.has(compute(), prop)
     },
-    setPrototypeOf: (target, v) => Reflect.setPrototypeOf(target, v),
+    ownKeys(target) {
+      return Reflect.ownKeys(compute())
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      return Reflect.getOwnPropertyDescriptor(compute(), prop)
+    },
+    getPrototypeOf(target) {
+      return Reflect.getPrototypeOf(compute())
+    },
   })
 }
 
 /**
- *
- * @param collection
- * @param cb
+ * 映射 Set，大集合惰性处理
+ * Map Set with lazy evaluation for large sets
  */
-function* iterableMap<C extends Collection, V>(
-  collection: C,
-  cb: (value: GetCollectionValue<C>, idx: GetCollectionKey<C>, source: C) => V,
-): Iterable<V> {
-  if (cb.length <= 1) {
-    for (const iterator of toIterableValue(collection)) {
-      //@ts-expect-error force parameter length is 1
-      yield cb(iterator)
+function mapSet<T, R>(set: Set<T>, mapper: (value: T, index: number) => R): Set<R> {
+  if (set.size < LAZY_THRESHOLD.set) {
+    const result = new Set<R>()
+    let index = 0
+    for (const v of set) {
+      result.add(mapper(v, index++))
     }
-  } else {
-    for (const [idx, iterator] of toIterableEntries(collection)) {
-      yield cb(iterator, idx, collection)
-    }
+    return result
   }
+
+  let cached: Set<R> | null = null
+  const compute = () => {
+    if (!cached) {
+      cached = new Set<R>()
+      let index = 0
+      for (const v of set) {
+        cached.add(mapper(v, index++))
+      }
+    }
+    return cached
+  }
+
+  return new Proxy(new Set<R>(), {
+    get(target, prop) {
+      const value = Reflect.get(compute(), prop)
+      if (typeof value === "function") {
+        return value.bind(compute())
+      }
+      return value
+    },
+    has(target, prop) {
+      return Reflect.has(compute(), prop)
+    },
+    ownKeys(target) {
+      return Reflect.ownKeys(compute())
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      return Reflect.getOwnPropertyDescriptor(compute(), prop)
+    },
+  })
 }
 
-// /** iterator map
-// just use `pipeDo(toIterable(i), a => map(a, a+1))` is ok*/
-// export function* imap<C extends Collection, V>(
-//   collection: C,
-//   cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
-// ): IterableIterator<V> {
-//   if (cb.length <= 1) {
-//     for (const value of toIterableValue(collection)) {
-//       //@ts-expect-error force parameter length is 1
-//       yield cb(value)
-//     }
-//   } else {
-//     for (const [key, value] of toIterableEntries(collection)) {
-//       yield cb(value, key, collection)
-//     }
-//   }
-// }
+/**
+ * 映射 Map，大集合惰性处理
+ * Map Map with lazy evaluation for large maps
+ */
+function mapMap<K, V, R>(map: Map<K, V>, mapper: (value: V, key: K) => R): Map<K, R> {
+  if (map.size < LAZY_THRESHOLD.map) {
+    const result = new Map<K, R>()
+    for (const [k, v] of map) {
+      result.set(k, mapper(v, k))
+    }
+    return result
+  }
+
+  let cached: Map<K, R> | null = null
+  const compute = () => {
+    if (!cached) {
+      cached = new Map<K, R>()
+      for (const [k, v] of map) {
+        cached.set(k, mapper(v, k))
+      }
+    }
+    return cached
+  }
+
+  return new Proxy(new Map<K, R>(), {
+    get(target, prop) {
+      const value = Reflect.get(compute(), prop)
+      if (typeof value === "function") {
+        return value.bind(compute())
+      }
+      return value
+    },
+    has(target, prop) {
+      return Reflect.has(compute(), prop)
+    },
+    ownKeys(target) {
+      return Reflect.ownKeys(compute())
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      return Reflect.getOwnPropertyDescriptor(compute(), prop)
+    },
+  })
+}
+
+/**
+ * 映射对象，大对象惰性处理
+ * Map object with lazy evaluation for large objects
+ */
+function mapObject<T extends AnyObj, R>(obj: T, mapper: (value: any, key: string) => R): { [K in keyof T]: R } {
+  const keys = Object.keys(obj)
+  if (keys.length < LAZY_THRESHOLD.object) {
+    const result: AnyObj = {}
+    for (const k in obj) {
+      result[k] = mapper(obj[k], k)
+    }
+    return result as { [K in keyof T]: R }
+  }
+
+  let cached: AnyObj | null = null
+  const compute = () => {
+    if (!cached) {
+      cached = {}
+      for (const k in obj) {
+        cached[k] = mapper(obj[k], k)
+      }
+    }
+    return cached
+  }
+
+  return new Proxy({} as AnyObj, {
+    get(target, prop) {
+      return Reflect.get(compute(), prop)
+    },
+    has(target, prop) {
+      return Reflect.has(compute(), prop)
+    },
+    ownKeys(target) {
+      return Reflect.ownKeys(compute())
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      return Reflect.getOwnPropertyDescriptor(compute(), prop)
+    },
+    getPrototypeOf(target) {
+      return Reflect.getPrototypeOf(compute())
+    },
+  }) as { [K in keyof T]: R }
+}
