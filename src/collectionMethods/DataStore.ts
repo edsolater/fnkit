@@ -22,14 +22,14 @@ export function createEmptyIterable<T>(): Iterable<T> {
   }
 }
 
-export class Database<V = any, K = any> {
-  size: number  = 0
+export class DataStore<V = any, K = any> {
+  size: number = 0
   entries: Iterable<[V, K]> = createEmptyIterable<[V, K]>()
-  static from<U, W>(collectionable: Collectionable<U, W>): Database<U, W> {
+  static from<U, W>(collectionable: Collectionable<U, W>): DataStore<U, W> {
     const collectionIterator = toCollectionIterator(collectionable)
-    const emptyCollection = new Database<U, W>()
+    const emptyCollection = new DataStore<U, W>()
     emptyCollection.entries = collectionIterator as Iterable<[any, any]>
-    emptyCollection.size =count(collectionable)
+    emptyCollection.size = count(collectionable)
     return emptyCollection
-  }yyhy
+  }
 }
