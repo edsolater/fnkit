@@ -1,4 +1,4 @@
-import { count, type Collectionable } from ".."
+import { count, type Collection } from ".."
 import { toCollectionIterator } from "./iterableCollectionUtils"
 
 /**
@@ -25,7 +25,7 @@ export function createEmptyIterable<T>(): Iterable<T> {
 export class DataStore<V = any, K = any> {
   size: number = 0
   entries: Iterable<[V, K]> = createEmptyIterable<[V, K]>()
-  static from<U, W>(collectionable: Collectionable<U, W>): DataStore<U, W> {
+  static from<U, W>(collectionable: Collection<U, W>): DataStore<U, W> {
     const collectionIterator = toCollectionIterator(collectionable)
     const emptyCollection = new DataStore<U, W>()
     emptyCollection.entries = collectionIterator as Iterable<[any, any]>

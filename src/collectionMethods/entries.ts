@@ -12,9 +12,9 @@ import {
   isObjectLiteral,
   isUndefined,
   map,
-  type Collectionable,
-  type CollectionableEntries,
-  type CollectionableItems,
+  type Collection,
+  type CollectionEntries,
+  type CollectionItems,
 } from "../"
 import { toCollectionIterator } from "./iterableCollectionUtils"
 
@@ -43,7 +43,7 @@ export function toEntry<E, K>(value: E, key?: K): E extends Entry ? E : Entry<E,
  * @returns a list of Entry
  * @requires {@link isArray `isArray()`} {@link isMap `isMap()`} {@link isObject `isObject()`} {@link isSet `isSet()`}
  */
-export function toEntries<C extends Collectionable>(target: C): Array<Entry<GetCollectionValue<C>, GetCollectionKey<C>>> {
+export function toEntries<C extends Collection>(target: C): Array<Entry<GetCollectionValue<C>, GetCollectionKey<C>>> {
   return Array.from(toCollectionIterator(target)).map((v, k) => toEntry(v, k))
 }
 // /**

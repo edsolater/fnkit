@@ -1,6 +1,6 @@
 import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj, SKeyof, Valueof } from "../typings"
-import type { Collectionable, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./type"
+import type { Collection, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./type"
 import { toIterableEntries, toIterableValue } from "./entries"
 
 /**
@@ -11,15 +11,15 @@ import { toIterableEntries, toIterableValue } from "./entries"
  * console.log(filter({ a: 1, b: 2 }, (v) => v > 1)) // { b: 2 }
  * @version 0.0.1
  */
-export function filter<C extends Collectionable, V extends GetCollectionValue<C>>(
+export function filter<C extends Collection, V extends GetCollectionValue<C>>(
   collection: C,
   predicate: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => value is V,
 ): GetNewCollection<C, V, GetCollectionKey<C>>
-export function filter<C extends Collectionable>(
+export function filter<C extends Collection>(
   collection: C,
   predicate: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => unknown,
 ): C
-export function filter<C extends Collectionable, V>(
+export function filter<C extends Collection, V>(
   collection: C,
   predicate: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
 ): any {
@@ -72,7 +72,7 @@ export function filter<C extends Collectionable, V>(
   }
 }
 
-export function ifilter<C extends Collectionable, V>(
+export function ifilter<C extends Collection, V>(
   collection: C,
   predicate: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
 ): IterableIterator<V> {

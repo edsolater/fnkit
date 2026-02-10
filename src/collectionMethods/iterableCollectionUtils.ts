@@ -1,4 +1,4 @@
-import { type Collectionable, type GetCollectionValue, type GetCollectionKey, assert } from ".."
+import { type Collection, type GetCollectionValue, type GetCollectionKey, assert } from ".."
 import { getType, isArray, isIterable, isIterator, isMap, isObject, isSet } from "../dataType"
 
 export type IterableCollection<E = any> = Iterable<E> | IterableIterator<E> | Iterator<E>
@@ -23,7 +23,7 @@ export function toIterable<T>(target: Iterator<T> | Iterable<T> | IterableIterat
  * toIterable([1, 2]) // [1, 2]
  * toIterable({ a: 1, b: 2 }) // [['a', 1], ['b', 2]]
  */
-export function toCollectionIterator<C extends Collectionable>(
+export function toCollectionIterator<C extends Collection>(
   collection: C,
 ): Iterable<[GetCollectionValue<C> | GetCollectionKey<C>]> {
   if (isIterable(collection)) return collection as any

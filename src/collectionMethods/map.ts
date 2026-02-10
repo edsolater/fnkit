@@ -1,6 +1,6 @@
 import { cacheFn } from "../cache"
 import { isArray, isIterable, isMap, isNumber, isSet, isString, isUndefined } from "../dataType"
-import type { Collectionable, CollectionableEntries, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./type"
+import type { Collection, CollectionEntries, GetCollectionKey, GetCollectionValue, GetNewCollection } from "./type"
 import { toIterableEntries, toIterableValue } from "./entries"
 import { count } from "./itemMethods"
 
@@ -13,7 +13,7 @@ import { count } from "./itemMethods"
  * @example
  * console.log(mapEntry({ a: 1, b: 2 }, (value, key) => [key + 'c', value + 2])) // {  ac: 3, bc: 4 }
  */
-export function mapEntry<E extends CollectionableEntries, V, K = GetCollectionKey<E>>(
+export function mapEntry<E extends CollectionEntries, V, K = GetCollectionKey<E>>(
   collection: E,
   cb: (value: GetCollectionValue<E>, key: GetCollectionKey<E>, source: E) => [K, V],
 ): GetNewCollection<E, V, K> {
@@ -65,7 +65,7 @@ export function mapEntry<E extends CollectionableEntries, V, K = GetCollectionKe
  * console.log(map(new Set([1, 2]), (v) => v + 1)) // Set { 2, 3 }
  * console.log(map(new Map([['a', 1], ['b', 2]]), (v) => v + 1)) // Map { 'a' => 2, 'b' => 3 }
  */
-export function map<C extends Collectionable, V, K = GetCollectionKey<C>>(
+export function map<C extends Collection, V, K = GetCollectionKey<C>>(
   collection: C,
   cb: (value: GetCollectionValue<C>, key: GetCollectionKey<C>, source: C) => V,
   options?: {
@@ -255,7 +255,7 @@ function lazyMapRecord<T, K extends keyof any, U>(
  * @param collection
  * @param cb
  */
-function* iterableMap<C extends Collectionable, V>(
+function* iterableMap<C extends Collection, V>(
   collection: C,
   cb: (value: GetCollectionValue<C>, idx: GetCollectionKey<C>, source: C) => V,
 ): Iterable<V> {
