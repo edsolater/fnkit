@@ -1,8 +1,8 @@
 import { type Collection, type GetCollectionValue, type GetCollectionKey, assert } from ".."
 import { getType, isArray, isIterable, isIterator, isMap, isObject, isSet } from "../dataType"
 
-export type MayIterable<E = any> = Iterable<E> | IterableIterator<E> | Iterator<E> | IteratorObject<E>
-export function isIterableOrIterator(v: unknown): v is MayIterable<any> {
+export type Iteratorable<E = any> = Iterable<E> | IterableIterator<E> | Iterator<E> | IteratorObject<E>
+export function isIterableOrIterator(v: unknown): v is Iteratorable<any> {
   return isIterable(v) || isIterator(v)
 }
 
@@ -46,18 +46,11 @@ export function toIterable<T>(target: Iterator<T> | Iterable<T> | IterableIterat
  */
 export function toCollectionIterator<C extends Collection>(
   collection: C,
-): IteratorObject<[GetCollectionValue<C>, GetCollectionKey<C> | number]> {
-  if (isArray(collection)) {
-    return toIterable(collection.values()).map((v: any, idx: number) => [v, idx]) as any
-  } else if (isSet(collection)) {
-    return toIterable(collection.values()).map((v: any, idx: number) => [v, idx]) as any
-  } else if (isMap(collection)) {
-    return toIterable(collection.entries()).map(([k, v]: [any, any]) => [v, k]) as any
-  } else if (isIterable(collection)) {
-    return toIterable(collection).map((v: any, idx: number) => [v, idx]) as any
-  } else if (isObject(collection)) {
-    return toIterable(Object.entries(collection)) as any
-  } else {
-    throw new Error(`toCollectionIterator: unsupported collection type: ${typeof collection}`)
-  }
+): Iterable<[GetCollectionValue<C> | GetCollectionKey<C>]> {
+  if (isIterable(collection)) return collection as any
+  if (isSet(collection)) return collection.values().map((v, idx) => [v, idx]) as any
+  if (isArray(collection)) return collection.values().map((v, idx) => [v, idx]) as any
+  if (isMap(collection)) return collection.entries().map(([k, v]) => [v, k]) as any
+  if (isObject(collection)) return Object.entries(collection) as any
+  throw new Error(`toCollectionIterable: unsupported collection type: ${typeof collection}`)
 }

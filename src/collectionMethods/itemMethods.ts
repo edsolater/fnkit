@@ -3,7 +3,7 @@ import { cloneObject } from "../objectUtils/objectUtils"
 import { shrinkFn } from "../wrapper"
 import { Collection, type GetCollectionKey, type GetCollectionValue } from "./type"
 import { pick } from "./pick"
-import { isIterableOrIterator, toCollectionIterator } from "./iterableCollectionUtils"
+import { isIterableOrIterator, toCollectionIterator } from "./iterableUtils"
 import { ifPattern } from "../ifPattern"
 
 // /** accept all may iterable data type */

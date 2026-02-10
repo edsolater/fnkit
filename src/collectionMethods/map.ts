@@ -1,5 +1,6 @@
 import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj } from "../typings"
+import { toIterable } from "./iterableUtils"
 
 /**
  * 惰性执行阈值
@@ -48,18 +49,7 @@ export function map(collection: any, mapper: any): any {
   } else if (isMap(collection)) {
     return mapMap(collection, mapper)
   } else if (isIterable(collection)) {
-    const iterator = collection[Symbol.iterator]()
-    let index = 0
-    return {
-      [Symbol.iterator]() {
-        return this
-      },
-      next() {
-        const { value, done } = iterator.next()
-        if (done) return { value: undefined, done: true }
-        return { value: mapper(value, index++), done: false }
-      },
-    } as IterableIterator<any>
+    return toIterable(collection).map(mapper)
   } else {
     return mapObject(collection, mapper)
   }

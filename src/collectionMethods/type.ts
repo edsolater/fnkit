@@ -1,4 +1,4 @@
-import type { IterableCollection } from "./iterableCollectionUtils";
+import type { Iteratorable } from "./iterableUtils";
 
 export type Entry<Value = any, Key = any> = { key: Key; value: Value } | [Key, Value]
 export type GetEntryValue<E extends Entry> = E extends [infer K, infer V]
@@ -20,9 +20,9 @@ export type GetCollectionKey<T extends Collection> =
       ? K
       : T extends Map<infer K, any>
         ? K
-        : T extends IterableCollection<[any, infer K]>
+        : T extends Iteratorable<[any, infer K]>
           ? K
-          : T extends IterableCollection<any>
+          : T extends Iteratorable<any>
             ? number
             : T extends Record<infer K, any>
               ? K
@@ -35,9 +35,9 @@ export type GetCollectionValue<T extends Collection> =
       ? V
       : T extends Map<any, infer V>
         ? V
-        : T extends IterableCollection<[infer V, any]>
+        : T extends Iteratorable<[infer V, any]>
           ? V
-          : T extends IterableCollection<infer V>
+          : T extends Iteratorable<infer V>
             ? V
             : T extends Record<keyof any, infer V>
               ? V
@@ -67,8 +67,8 @@ export type GetNewCollection<OldCollection extends Collection, NewValue, NewKey 
                   : never
 
 // TODO: should can iterator , because iterator can have iterator helpers. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/forEach
-export type CollectionItems<V = any> = Set<V> | V[] | IterableCollection<[V, number]>
+export type CollectionItems<V = any> = Set<V> | V[] | Iteratorable<[V, number]>
 
-export type CollectionEntries<V = any, K = any> = Map<K, V> | Record<K & string, V> | IterableCollection<[V, K]>
+export type CollectionEntries<V = any, K = any> = Map<K, V> | Record<K & string, V> | Iteratorable<[V, K]>
 
 export type Collection<V = any, K = any> = CollectionItems<V> | CollectionEntries<V, K>

@@ -16,7 +16,7 @@ import {
   type CollectionEntries,
   type CollectionItems,
 } from "../"
-import { toCollectionIterator } from "./iterableCollectionUtils"
+import { toCollectionIterator } from "./iterableUtils"
 
 /**
  * there two types of Entry, `[key, value]` and `{key, value}` (e.g. `['a', 1]` and `{key: 'a', value: 1}`)

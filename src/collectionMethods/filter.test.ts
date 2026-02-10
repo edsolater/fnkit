@@ -134,7 +134,7 @@ describe("filter()", () => {
     expect(typeof result[Symbol.iterator]).toBe("function")
 
     // 消费迭代器
-    const values = Array.from(result)
+    const values = [...(result as any)]
     expect(values).toEqual([2, 4])
   })
 

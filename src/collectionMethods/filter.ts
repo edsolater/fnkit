@@ -1,3 +1,4 @@
+import { toIterable, type Iteratorable } from ".."
 import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj } from "../typings"
 import type { Collection, GetCollectionKey, GetCollectionValue } from "./type"
@@ -39,7 +40,7 @@ const LAZY_THRESHOLD = {
 export function filter<V>(collection: V[], predicate: (value: V, index: number) => unknown): V[]
 export function filter<V>(collection: Set<V>, predicate: (value: V, index: number) => unknown): Set<V>
 export function filter<K, V>(collection: Map<K, V>, predicate: (value: V, key: K) => unknown): Map<K, V>
-export function filter<V>(collection: Iterable<V>, predicate: (value: V, index: number) => unknown): IterableIterator<V>
+export function filter<V>(collection: Iteratorable<V>, predicate: (value: V, index: number) => unknown): Iterator<V>
 export function filter<O extends AnyObj>(
   collection: O,
   predicate: (value: O[keyof O], key: string) => unknown,
@@ -52,24 +53,7 @@ export function filter(collection: any, predicate: any): any {
   } else if (isMap(collection)) {
     return filterMap(collection, predicate)
   } else if (isIterable(collection)) {
-    // 使用 iterator helper
-    // Use iterator helper
-    const iterator = collection[Symbol.iterator]()
-    let index = 0
-    return {
-      [Symbol.iterator]() {
-        return this
-      },
-      next() {
-        while (true) {
-          const { value, done } = iterator.next()
-          if (done) return { value: undefined, done: true }
-          if (predicate(value, index++)) {
-            return { value, done: false }
-          }
-        }
-      },
-    } as IterableIterator<any>
+    return toIterable(collection).filter(predicate)
   } else {
     return filterObject(collection, predicate)
   }

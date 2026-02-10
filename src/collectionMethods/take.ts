@@ -1,6 +1,7 @@
-import { isArray, isIterable, isMap, isSet } from "../dataType"
+import { isArray, isIterable, isMap, isObject, isSet } from "../dataType"
 import type { AnyObj } from "../typings"
 import { filter } from "./filter"
+import type { Collection } from "./type"
 
 /**
  * 保留集合前 n 个元素惰性处理
@@ -46,39 +47,4 @@ export function take(collection: any, n: number): any {
     let count = 0
     return filter(collection, () => count++ < n)
   }
-}
-
-/**
- * convert collection to array
- */
-function toArray<T>(collection: Collection<T>): T[] {
-  return isArray(collection)
-    ? collection
-    : isSet(collection)
-    ? Array.from(collection)
-    : isMap(collection)
-    ? Array.from(collection.values())
-    : isIterable(collection)
-    ? Array.from(collection)
-    : isObject(collection)
-    ? Object.values(collection)
-    : []
-}
-
-function isEmpty<T extends Collection>(collection: T): boolean {
-  return isArray(collection)
-    ? collection.length === 0
-    : isSet(collection)
-    ? collection.size === 0
-    : isMap(collection)
-    ? collection.size === 0
-    : isIterable(collection)
-    ? Array.from(collection).length === 0
-    : isObject(collection)
-    ? Object.keys(collection).length === 0
-    : true
-}
-
-function notEmpty<T extends Collection>(collection: T): boolean {
-  return !isEmpty(collection)
 }
