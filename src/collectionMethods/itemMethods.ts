@@ -1,112 +1,114 @@
-import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject, isString } from "../dataType"
+import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject, isString, getType } from "../dataType"
 import { cloneObject } from "../objectUtils/objectUtils"
 import { shrinkFn } from "../wrapper"
-import { Collection } from "./type"
+import { Collectionable, type GetCollectionKey, type GetCollectionValue } from "./type"
 import { pick } from "./pick"
+import { isIterableOrIterator, toCollectionIterator } from "./iterableCollectionUtils"
+import { ifPattern } from "../ifPattern"
 
-/** accept all may iterable data type */
-export function toList<T>(i: Collection<T>) {
-  if (isUndefined(i)) return []
-  if (isMap(i)) return Array.from(i.values())
-  if (isIterable(i)) return Array.from(i)
-  return Object.values(i)
-}
+// /** accept all may iterable data type */
+// export function toList<T>(i: Collection<T>) {
+//   if (isUndefined(i)) return []
+//   if (isMap(i)) return Array.from(i.values())
+//   if (isIterable(i)) return Array.from(i)
+//   return Object.values(i)
+// }
 
-export function toMap<T>(i: Collection<T>, key?: (item: T) => any) {
-  if (isUndefined(i)) return new Map()
-  if (isMap(i)) return i
-  if (isArray(i)) return new Map(i.map((item) => [key?.(item) ?? item, item]))
-  if (isSet(i)) return new Map([...i.values()].map((item) => [key?.(item) ?? item, item]))
-  if (isIterable(i)) {
-    const newMap = new Map()
-    for (const item of i) {
-      newMap.set(key?.(item) ?? item, item)
-    }
-    return newMap
-  }
-  return new Map(Object.entries(i))
-}
+// export function toMap<T>(i: Collection<T>, key?: (item: T) => any) {
+//   if (isUndefined(i)) return new Map()
+//   if (isMap(i)) return i
+//   if (isArray(i)) return new Map(i.map((item) => [key?.(item) ?? item, item]))
+//   if (isSet(i)) return new Map([...i.values()].map((item) => [key?.(item) ?? item, item]))
+//   if (isIterable(i)) {
+//     const newMap = new Map()
+//     for (const item of i) {
+//       newMap.set(key?.(item) ?? item, item)
+//     }
+//     return newMap
+//   }
+//   return new Map(Object.entries(i))
+// }
 
-export function toSet<T>(i: Collection<T>) {
-  if (isUndefined(i)) return new Set()
-  if (isSet(i)) return i
-  if (isArray(i)) return new Set(i)
-  if (isIterable(i)) return new Set([...i])
-  return new Set(Object.values(i))
-}
+// export function toSet<T>(i: Collection<T>) {
+//   if (isUndefined(i)) return new Set()
+//   if (isSet(i)) return i
+//   if (isArray(i)) return new Set(i)
+//   if (isIterable(i)) return new Set([...i])
+//   return new Set(Object.values(i))
+// }
 
-export function toRecord<T, K extends keyof any>(i: Collection<T>, key: (item: T, key: unknown) => K): Record<K, T> {
-  if (isUndefined(i)) return {} as Record<K, T>
-  if (isMap(i)) {
-    const result = {} as Record<keyof any, T>
-    for (const [k, v] of i.entries()) {
-      result[key(v, k)] = v
-    }
-    return result
-  }
-  if (isArray(i)) {
-    const result = {} as Record<keyof any, T>
-    for (const [k, v] of i.entries()) {
-      result[key(v, k)] = v
-    }
-    return result
-  }
-  if (isSet(i)) {
-    const result = {} as Record<keyof any, T>
-    let index = 0
-    for (const item of i.values()) {
-      result[key(item, index++)] = item
-    }
-    return result
-  }
-  if (isIterable(i)) {
-    const result = {} as Record<keyof any, T>
-    let index = 0
-    for (const item of i) {
-      result[key(item, index++)] = item
-    }
-    return result
-  }
-  return i
-}
+// export function toRecord<T, K extends keyof any>(i: Collection<T>, key: (item: T, key: unknown) => K): Record<K, T> {
+//   if (isUndefined(i)) return {} as Record<K, T>
+//   if (isMap(i)) {
+//     const result = {} as Record<keyof any, T>
+//     for (const [k, v] of i.entries()) {
+//       result[key(v, k)] = v
+//     }
+//     return result
+//   }
+//   if (isArray(i)) {
+//     const result = {} as Record<keyof any, T>
+//     for (const [k, v] of i.entries()) {
+//       result[key(v, k)] = v
+//     }
+//     return result
+//   }
+//   if (isSet(i)) {
+//     const result = {} as Record<keyof any, T>
+//     let index = 0
+//     for (const item of i.values()) {
+//       result[key(item, index++)] = item
+//     }
+//     return result
+//   }
+//   if (isIterable(i)) {
+//     const result = {} as Record<keyof any, T>
+//     let index = 0
+//     for (const item of i) {
+//       result[key(item, index++)] = item
+//     }
+//     return result
+//   }
+//   return i
+// }
 
-export function count(i: Collection) {
-  if (isUndefined(i)) return 0
+export function count(i: Collectionable) {
   if (isMap(i) || isSet(i)) return i.size
   if (isArray(i)) return i.length
-  if (isIterable(i)) {
+  if (isIterableOrIterator(i)) {
+    const iterable = toCollectionIterator(i)
     let count = 0
-    for (const _ of i) {
+    for (const _ of iterable) {
       count++
     }
     return count
   }
-  return Object.keys(i).length
+  if (isObject(i)) return Object.keys(i).length
+  throw new Error(`count: unsupported collection type: ${getType(i)}`)
 }
 
 /**
  * get value of Itemsable, regardless of order
  */
-export function get<T>(i: Collection<T>, key: string | number): T | undefined {
-  if (isUndefined(i)) return undefined
-  if (isMap(i)) return i.get(key)
-  if (isArray(i) && isNumber(key)) return i[key]
-  if (isSet(i) && isNumber(key)) return [...i.values()][key]
-  if (isIterable(i) && isNumber(key)) {
+export function get<C extends Collectionable>(collection: C, key: GetCollectionKey<C>): GetCollectionValue<C> | undefined {
+  if (isMap(collection)) return collection.get(key) as any
+  if (isArray(collection) && isNumber(key)) return collection.at(key) as any
+  if (isSet(collection) && isNumber(key)) return Array.from(collection).at(key) as any
+  if (isIterable(collection) && isNumber(key)) {
     let index = 0
-    for (const item of i) {
+    for (const item of collection) {
       if (index === key) return item
       index++
     }
   }
-  return i[key]
+  return collection[key]
 }
 
-export function getFirstItem<T>(i: Collection<T>) {
+export function getFirstItem<T>(i: Collectionable<T>) {
   return getByIndex(i, 0)
 }
 
-export function getLastItem<T>(i: Collection<T>) {
+export function getLastItem<T>(i: Collectionable<T>) {
   return getByIndex(i, count(i) - 1)
 }
 
@@ -115,7 +117,7 @@ export function addItemMutable<T, U>(i: Array<T>, value: U): Array<T | U>
 export function addItemMutable<T, U>(i: Set<T>, value: U): Set<T | U>
 export function addItemMutable<T, K, U>(i: Map<K, T>, value: U): Map<K | number, T | U>
 export function addItemMutable<T extends object, U>(i: T, value: U): T & { [key: number]: U }
-export function addItemMutable<T>(i: Collection<T>, value: T) {
+export function addItemMutable<T>(i: Collectionable<T>, value: T) {
   if (isUndefined(i)) return
   if (isMap(i)) {
     return i.set(i.size, value)
@@ -139,7 +141,7 @@ export function addItem<T, U>(i: Array<T>, ...values: U[]): Array<T | U>
 export function addItem<T, U>(i: Set<T>, ...values: U[]): Set<T | U>
 export function addItem<T, K, U>(i: Map<K, T>, ...values: U[]): Map<K | number, T | U>
 export function addItem<T extends object, U>(i: T, ...values: U[]): T & { [key: number]: U }
-export function addItem<T>(i: Collection<T>, ...values: T[]) {
+export function addItem<T>(i: Collectionable<T>, ...values: T[]) {
   if (isUndefined(i)) return i
   if (isMap(i)) {
     const newMap = new Map(i)
@@ -174,7 +176,7 @@ export function setItemMutable<T extends object, K extends keyof any, U>(
   key: K,
   value: U | ((v: T[K extends keyof T ? K : keyof T] | undefined) => U),
 ): T & { [key in K]: U }
-export function setItemMutable<T>(i: Collection<T>, key: unknown, value: T | ((v: T | undefined) => T)) {
+export function setItemMutable<T>(i: Collectionable<T>, key: unknown, value: T | ((v: T | undefined) => T)) {
   if (isUndefined(i)) return
   if (isMap(i)) {
     const newMap = i
@@ -209,7 +211,7 @@ export function setItem<T extends object, K extends keyof any, U>(
   key: K,
   value: U | ((v: T[K extends keyof T ? K : keyof T] | undefined) => U),
 ): T & { [key in K]: U }
-export function setItem<T>(i: Collection<T>, key: unknown, value: T | ((v: T | undefined) => T)) {
+export function setItem<T>(i: Collectionable<T>, key: unknown, value: T | ((v: T | undefined) => T)) {
   if (isUndefined(i)) return i
   if (isMap(i)) {
     const newMap = new Map(i)
@@ -238,7 +240,7 @@ export function deleteItemMutable<T>(i: Array<T>, key: number): Array<T>
 export function deleteItemMutable<T>(i: Set<T>, key: number): Set<T>
 export function deleteItemMutable<T, K>(i: Map<K, T>, key: K): Map<K, T>
 export function deleteItemMutable<T extends object, K extends keyof any>(i: T, key: K): T
-export function deleteItemMutable<T>(i: Collection<T>, key: any) {
+export function deleteItemMutable<T>(i: Collectionable<T>, key: any) {
   if (isUndefined(i)) return
   if (isMap(i)) {
     const newMap = i
@@ -268,7 +270,7 @@ export function deleteItemMutable<T>(i: Collection<T>, key: any) {
 /**
  * get first value of Itemsable
  */
-export function getByIndex(i: Collection, order: number) {
+export function getByIndex(i: Collectionable, order: number) {
   if (isUndefined(i)) return undefined
   const key = isUndefined(i) || isArray(i) || isSet(i) || isIterable(i) ? order : Object.keys(i)[order]
   return get(i, key)
@@ -278,7 +280,7 @@ export function getByIndex(i: Collection, order: number) {
  * like set/map's has, but can use for all Itemsable
  *
  */
-export function hasValue<T>(i: Collection<T>, item: T) {
+export function hasValue<T>(i: Collectionable<T>, item: T) {
   if (isUndefined(i)) return false
   if (isMap(i)) return new Set(i.values()).has(item)
   if (isArray(i)) return i.includes(item)
@@ -301,7 +303,7 @@ export function hasValue<T>(i: Collection<T>, item: T) {
 /**
  * {@link hasValue} is for value, this is for key
  */
-export function has<T>(i: Collection<T>, key: any) {
+export function has<T>(i: Collectionable<T>, key: any) {
   if (isUndefined(i)) return false
   if (isMap(i)) return i.has(key)
   if (isArray(i) && isNumber(key)) return i[key] !== undefined
@@ -317,9 +319,9 @@ export function has<T>(i: Collection<T>, key: any) {
   return i[key] !== undefined
 }
 
-export function turncate<T extends Collection>(i: T, count?: number): T
-export function turncate<T extends Collection>(i: T, range?: [start: number, end?: number]): T
-export function turncate<T extends Collection>(i: T, num?: [start: number, end?: number] | number): T {
+export function turncate<T extends Collectionable>(i: T, count?: number): T
+export function turncate<T extends Collectionable>(i: T, range?: [start: number, end?: number]): T
+export function turncate<T extends Collectionable>(i: T, num?: [start: number, end?: number] | number): T {
   if (num == null) return i
   const range = isArray(num) ? num : [0, num]
   if (isUndefined(i)) return i

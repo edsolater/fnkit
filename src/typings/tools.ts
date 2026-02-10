@@ -1,4 +1,4 @@
-import { Items } from "../collectionMethods"
+import { CollectionableItems } from "../collectionMethods"
 import { MayArray, DeMayArray } from "../mayArray"
 import { AnyFn, Falsy, Primitive } from "./constants"
 
@@ -209,8 +209,8 @@ export type SnakeCase<S extends string> =
 //#endregion
 
 //#region ------------------- keyof / valueof -------------------
-export type Keyof<O> = O extends Items<infer K> ? K : unknown
-export type Valueof<O> = O extends Items<infer V> ? V : unknown
+export type Keyof<O> = O extends CollectionableItems<infer K> ? K : unknown
+export type Valueof<O> = O extends CollectionableItems<infer V> ? V : unknown
 /**
  * extract only string
  */

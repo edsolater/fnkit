@@ -1,10 +1,10 @@
 import { isArray, isIterable, isMap, isObject, isSet, isUndefined } from "../dataType"
-import type { Collection } from "./type"
+import type { Collectionable } from "./type"
 
 /**
  * like array.prototype.slice, but support all collection type
  */
-export function take<T extends Collection>(collection: T, count: number): T {
+export function take<T extends Collectionable>(collection: T, count: number): T {
   if (isUndefined(collection)) return collection
   if (isArray(collection)) return count >= 0 ? (collection.slice(0, count) as T) : ([] as any)
   if (isSet(collection)) {
@@ -45,7 +45,7 @@ export function take<T extends Collection>(collection: T, count: number): T {
 /**
  * convert collection to array
  */
-function toArray<T>(collection: Collection<T>): T[] {
+function toArray<T>(collection: Collectionable<T>): T[] {
   return isArray(collection)
     ? collection
     : isSet(collection)
@@ -59,7 +59,7 @@ function toArray<T>(collection: Collection<T>): T[] {
     : []
 }
 
-function isEmpty<T extends Collection>(collection: T): boolean {
+function isEmpty<T extends Collectionable>(collection: T): boolean {
   return isArray(collection)
     ? collection.length === 0
     : isSet(collection)
@@ -73,6 +73,6 @@ function isEmpty<T extends Collection>(collection: T): boolean {
     : true
 }
 
-function notEmpty<T extends Collection>(collection: T): boolean {
+function notEmpty<T extends Collectionable>(collection: T): boolean {
   return !isEmpty(collection)
 }

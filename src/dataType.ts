@@ -139,6 +139,10 @@ export function isIterable(v: unknown): v is Iterable<unknown> {
   return isObject(v) && typeof v[Symbol.iterator] === "function"
 }
 
+export function isIterator(v: unknown): v is Iterator<unknown> {
+  return isObject(v) && typeof (v as any).next === "function"
+}
+
 export function isAsyncIterable(v: unknown): v is AsyncIterable<unknown> {
   return isObject(v) && typeof v[Symbol.asyncIterator] === "function"
 }
