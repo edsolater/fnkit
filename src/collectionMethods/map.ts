@@ -1,4 +1,4 @@
-import { isArray, isIterable, isMap, isSet } from "../dataType"
+import { isArray, isIterable, isMap, isSet, ProxyKindSymbol } from "../dataType"
 import type { AnyObj } from "../typings"
 import { toIterator } from "./iteratorableUtils"
 
@@ -66,11 +66,14 @@ function mapArray<T, R>(arr: T[], mapper: (value: T, index: number) => R): R[] {
 
   let cached: R[] | null = null
   const compute = () => {
-    if (!cached) cached = arr.map(mapper)
+    if (!cached) {
+      cached = arr.map(mapper)
+      cached[ProxyKindSymbol] = "Array"
+    }
     return cached
   }
 
-  return new Proxy([] as R[], {
+  const proxy = new Proxy([] as R[], {
     get(target, prop) {
       return Reflect.get(compute(), prop)
     },
@@ -87,6 +90,7 @@ function mapArray<T, R>(arr: T[], mapper: (value: T, index: number) => R): R[] {
       return Reflect.getPrototypeOf(compute())
     },
   })
+  return proxy
 }
 
 /**
@@ -107,6 +111,7 @@ function mapSet<T, R>(set: Set<T>, mapper: (value: T, index: number) => R): Set<
   const compute = () => {
     if (!cached) {
       cached = new Set<R>()
+      cached[ProxyKindSymbol] = "Set"
       let index = 0
       for (const v of set) {
         cached.add(mapper(v, index++))
@@ -152,6 +157,7 @@ function mapMap<K, V, R>(map: Map<K, V>, mapper: (value: V, key: K) => R): Map<K
   const compute = () => {
     if (!cached) {
       cached = new Map<K, R>()
+      cached[ProxyKindSymbol] = "Map"
       for (const [k, v] of map) {
         cached.set(k, mapper(v, k))
       }
@@ -197,6 +203,7 @@ function mapObject<T extends AnyObj, R>(obj: T, mapper: (value: any, key: string
   const compute = () => {
     if (!cached) {
       cached = {}
+      
       for (const k in obj) {
         cached[k] = mapper(obj[k], k)
       }

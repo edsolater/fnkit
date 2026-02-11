@@ -1,4 +1,4 @@
-import { isArray, isObjectLike, isObjectLiteral, isPromise } from "../dataType"
+import { isArray, isObject, isObjectLike, isObjectLiteral, isPromise } from "../dataType"
 import type { AnyObj } from "../typings"
 /**
  * won't create a new object
@@ -158,7 +158,7 @@ export async function asyncMutatableChangeObjectWithRules(
         } else {
           setByPath({ obj: newObject, path: path, value: newValue })
         }
-      } 
+      }
     }
   })
   return Promise.all(promises).then(() => newObject)

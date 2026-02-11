@@ -1,7 +1,6 @@
 import { isArray, isObject, isObjectLike, isString } from "./dataType"
-import { AnyObj } from "./typings/constants"
-import { MayArray } from "./mayArray"
 import { toPrimitiveValue } from "./toPrimitiveValue"
+import { AnyObj } from "./typings/constants"
 
 /**
  * very rude, just checking keys
@@ -25,12 +24,46 @@ export function isPartOf(toJudge: AnyObj, whole: AnyObj, options?: { ignoreValue
   })
 }
 
-export function hasProperty<T, K extends keyof T | (string & {}) | symbol>(obj: T, key: MayArray<K>): boolean {
-  return (
-    isObject(obj) && (isArray(key) ? key.every((objKey) => Reflect.has(obj as any, objKey)) : Reflect.has(obj, key))
-  )
+/** 类型可能是多个的并集，提取其中的对象。 */
+type PickObjType<O> = O extends AnyObj ? { [K in keyof O]: O[K] } : never
+type RequireObjProperty<O, K extends keyof O> = O & { [P in K]-?: O[P] }
+/**
+ *
+ * @param resource 可能是对象，可能不是。
+ * @param key 可能是数组，数组表示能一下子查多个。
+ * @returns
+ */
+export function hasProperty<O, K extends keyof PickObjType<O>>(
+  resource: O,
+  key: K | K[],
+): resource is RequireObjProperty<PickObjType<O>, K> {
+  if (Array.isArray(key)) {
+    return isObject(resource) && key.every((p) => Reflect.has(resource, p))
+  }
+  return isObject(resource) && Reflect.has(resource, key)
 }
 
+/** 检测多个属性是否都存在。
+ * 如果传入多个属性，则一一匹配
+ */
+export function isProperty<O, K extends keyof PickObjType<O>>(
+  resource: O,
+  keys: K[],
+  values: unknown[],
+): resource is RequireObjProperty<PickObjType<O>, K>
+export function isProperty<O, K extends keyof PickObjType<O>>(
+  resource: O,
+  key: K,
+  value: unknown,
+): resource is RequireObjProperty<PickObjType<O>, K>
+export function isProperty(resource, key, value) {
+  if (Array.isArray(key)) {
+    return (
+      isObject(resource) && key.every((k, idx) => Reflect.has(resource, k) && resource[k] === (value as unknown[])[idx])
+    )
+  }
+  return isObject(resource) && Reflect.has(resource, key) && resource[key] === value
+}
 /**
  * 检测两个值（一般复杂对象字面量）（内部只包括基本值、数组、对象字面量）是否值相同
  * @param val1 一个复合值

@@ -1,0 +1,1 @@
+- 惰性，Collection。它可以Collection.of(xxx).map(...).filter(...)，瞬间返回一个惰性计算的新collection。
