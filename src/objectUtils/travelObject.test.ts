@@ -1,5 +1,5 @@
 import { expect, test } from "vitest"
-import { asyncMutatableChangeObjectWithRules, getByPath, travelObject } from "./travelObject"
+import { asyncMutatableChangeObjectWithRules, getByPath, toCamelCaseObject, travelObject } from "./travelObject"
 
 test("basic usage", () => {
   const obj = { a: "a", b: "b", c: { d: "d" } }
@@ -37,4 +37,12 @@ test("asyncChangeObjectWithRules example", () => {
   ]).then((obj) => {
     return expect(obj).toEqual({ propertyA: { hello: "yes" }, propertyB: { a: { with: "hi" } } })
   })
+})
+
+test("toCamelCaseObject basic usage", () => {
+  expect(
+    toCamelCaseObject({
+      user_info: { create_at: 123 },
+    }),
+  ).toEqual({ userInfo: { createAt: 123 } })
 })

@@ -1,4 +1,5 @@
-import { isArray, isObject, isObjectLike, isObjectLiteral, isPromise } from "../dataType"
+import { toCamelCase } from "../changeCase"
+import { isArray, isObject, isObjectLike, isObjectLiteral, isPromise, isString } from "../dataType"
 import type { AnyObj } from "../typings"
 /**
  * won't create a new object
@@ -141,15 +142,15 @@ export function hasByPath(obj: object, path: (keyof any)[]): boolean {
 }
 
 /**
- * async version of {@link mutatableChangeObjectWithRules}
+ * async version of {@link createObjectWithRules}
  */
 export async function asyncMutatableChangeObjectWithRules(
-  obj: AnyObj,
+  resourceObject: AnyObj,
   rules: [match: (data: any) => boolean, replaceTo: (data: any) => any | Promise<any>][],
 ): Promise<AnyObj> {
   const promises: Promise<any>[] = []
-  const newObject = obj
-  travelObject(newObject, ({ value, path }) => {
+  const newObject = {}
+  travelObject(resourceObject, ({ value, path }) => {
     for (const [match, replaceTo] of rules) {
       if (match(value)) {
         const newValue = replaceTo(value)
@@ -168,12 +169,12 @@ export async function asyncMutatableChangeObjectWithRules(
  *
  * sync version of {@link asyncMutatableChangeObjectWithRules}
  */
-export function mutatableChangeObjectWithRules(
-  obj: AnyObj,
+export function createObjectWithRules(
+  resourceObject: AnyObj,
   rules: [match: (data: any) => boolean, rule: (data: any) => any][],
 ): AnyObj {
   const newObject = {}
-  travelObject(obj, ({ value, path }) => {
+  travelObject(resourceObject, ({ value, path }) => {
     for (const [match, rule] of rules) {
       if (match(value)) {
         const newValue = rule(value)
@@ -184,4 +185,18 @@ export function mutatableChangeObjectWithRules(
     }
   })
   return newObject
+}
+
+/**
+ * @example
+ * toCamelCaseObject({
+ *   "user_info":{"create_at":123}
+ * }) // => {userInfo: {createAt:123}}
+ */
+export function toCamelCaseObject(oldObj: AnyObj): AnyObj {
+  const newObj: AnyObj = {}
+  travelObject(oldObj, ({ key, value, path, canDeepWalk }) => {
+    if (!canDeepWalk) setByPath({ obj: newObj, path: path.map((k) => (isString(k) ? toCamelCase(k) : k)), value: value })
+  })
+  return newObj
 }
