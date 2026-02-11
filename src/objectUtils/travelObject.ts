@@ -1,25 +1,25 @@
 import { toCamelCase } from "../changeCase"
 import { isArray, isObject, isObjectLike, isObjectLiteral, isPromise, isString } from "../dataType"
 import type { AnyObj } from "../typings"
+
+type ObjectTravelStepInfo = {
+  key: keyof any
+  /** path include self */
+  path: (keyof any)[]
+  /** path execpt self */
+  parentPath: (keyof any)[]
+  value: any
+  /** when value is object or array, it's canDeepWalk */
+  canDeepWalk: boolean
+  /** only useful when canDeepWalk is true */
+  needDeepWalk(needTo: boolean): void
+}
+
 /**
  * won't create a new object
  * only walk through string enumtable object key (not symbol)
  */
-export function travelObject(
-  obj: object,
-  onTravelValue: (info: {
-    key: keyof any
-    /** path include self */
-    path: (keyof any)[]
-    /** path execpt self */
-    parentPath: (keyof any)[]
-    value: any
-    /** when value is object or array, it's canDeepWalk */
-    canDeepWalk: boolean
-    /** only useful when canDeepWalk is true */
-    needDeepWalk(needTo: boolean): void
-  }) => void,
-) {
+export function travelObject(obj: object, onTravelValue: (info: ObjectTravelStepInfo) => void) {
   function walk(obj: object, parentKeyPaths: (keyof any)[] = []) {
     Object.entries(obj).forEach(([key, value]) => {
       const canDeepWalk = isObjectLiteral(value) || isArray(value) // by default, only objectLiteral|array can deep walk
@@ -168,19 +168,25 @@ export async function asyncMutatableChangeObjectWithRules(
 /**
  *
  * sync version of {@link asyncMutatableChangeObjectWithRules}
+ * 其实就是换值。
  */
 export function createObjectWithRules(
   resourceObject: AnyObj,
-  rules: [match: (data: any) => boolean, rule: (data: any) => any][],
+  rules: [
+    match: (step: Omit<ObjectTravelStepInfo, "needDeepWalk" | "canDeepWalk">) => boolean,
+    rule: (step: Omit<ObjectTravelStepInfo, "needDeepWalk" | "canDeepWalk">) => any,
+  ][],
 ): AnyObj {
   const newObject = {}
-  travelObject(resourceObject, ({ value, path }) => {
-    for (const [match, rule] of rules) {
-      if (match(value)) {
-        const newValue = rule(value)
-        setByPath({ obj: newObject, path: path, value: newValue })
-      } else {
-        setByPath({ obj: newObject, path: path, value })
+  travelObject(resourceObject, (info) => {
+    if (!info.canDeepWalk) {
+      for (const [match, rule] of rules) {
+        if (match(info)) {
+          const newValue = rule(info)
+          setByPath({ obj: newObject, path: info.path, value: newValue })
+        } else {
+          setByPath({ obj: newObject, path: info.path, value: info.value })
+        }
       }
     }
   })
@@ -188,6 +194,7 @@ export function createObjectWithRules(
 }
 
 /**
+ *
  * @example
  * toCamelCaseObject({
  *   "user_info":{"create_at":123}
@@ -195,8 +202,9 @@ export function createObjectWithRules(
  */
 export function toCamelCaseObject(oldObj: AnyObj): AnyObj {
   const newObj: AnyObj = {}
-  travelObject(oldObj, ({ key, value, path, canDeepWalk }) => {
-    if (!canDeepWalk) setByPath({ obj: newObj, path: path.map((k) => (isString(k) ? toCamelCase(k) : k)), value: value })
+  travelObject(oldObj, ({ value, path, canDeepWalk }) => {
+    if (!canDeepWalk)
+      setByPath({ obj: newObj, path: path.map((k) => (isString(k) ? toCamelCase(k) : k)), value: value })
   })
   return newObj
 }
