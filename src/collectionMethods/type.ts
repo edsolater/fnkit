@@ -1,4 +1,4 @@
-import type { Entriable } from "./iteratorableItemAndEntry"
+import type { Entriable, Itemable } from "./iteratorableItemAndEntry"
 import type { Iteratorable } from "./iteratorableUtils"
 
 // Entry 类型已废弃，请使用 itemAndEntry.ts 中的 Entry 类或 Entriable 类型
@@ -74,7 +74,7 @@ export type GetNewCollection<OldCollection extends Collection, NewValue, NewKey 
 export type CollectionItems<V = any> = 
   | V[]
   | Set<V>
-  | Iteratorable<V>  // Item 流
+  | Iteratorable<Itemable<V>>  // Item 流
 
 /**
  * CollectionEntries：键值对集合

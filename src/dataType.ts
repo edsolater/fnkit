@@ -1,9 +1,6 @@
-import { has, type MayEnum } from "."
+import { type MayEnum } from "."
 import { AnyArr, AnyFn, Primitive, type AnyObj } from "./typings/constants"
-import { hasProperty, isProperty } from "./compare"
 
-/** 为了使用惰性求值，需要开启适度的proxy伪装。 */
-export const ProxyKindSymbol = Symbol.for("proxy-kind-mock")
 
 /**
  * @requires {@link getObjType `getObjType()`}
@@ -47,15 +44,14 @@ export function getType(v: unknown): string {
 export const getObjType = (
   obj: unknown,
 ): MayEnum<"Array" | "Object" | "Set" | "Map" | "WeakSet" | "WeakMap" | "Date" | "DateObj"> => {
-  if (hasProperty(obj, ProxyKindSymbol)) return obj[ProxyKindSymbol]
   const typeRawString = Object.prototype.toString.call(obj)
   const typeString = typeRawString.match(/object (?<t>\w+)/)?.groups?.["t"]
   //@ts-ignore force
   return typeString
 }
 
-export function isArray(v: unknown): v is AnyArr {
-  return Array.isArray(v) || isProperty(v, ProxyKindSymbol, "Array")
+export function isArray(v: unknown, canProxy = false): v is AnyArr {
+  return Array.isArray(v)
 }
 
 export function isMeanfulArray(v: unknown): v is AnyArr {
@@ -63,23 +59,23 @@ export function isMeanfulArray(v: unknown): v is AnyArr {
 }
 
 export function isFunction(v: unknown): v is AnyFn {
-  return typeof v === "function" || isProperty(v, ProxyKindSymbol, "Function")
+  return typeof v === "function"
 }
 
 export function isSet(v: unknown): v is Set<unknown> {
-  return v instanceof Set || isProperty(v, ProxyKindSymbol, "Set")
+  return v instanceof Set
 }
 
 export function isMap(v: unknown): v is Map<unknown, unknown> {
-  return v instanceof Map || isProperty(v, ProxyKindSymbol, "Map")
+  return v instanceof Map
 }
 
 export function isWeakSet(v: unknown): v is WeakSet<any> {
-  return v instanceof WeakSet || isProperty(v, ProxyKindSymbol, "WeakSet")
+  return v instanceof WeakSet
 }
 
 export function isWeakMap(v: unknown): v is WeakMap<any, unknown> {
-  return v instanceof WeakMap  || isProperty(v, ProxyKindSymbol, "WeakMap")
+  return v instanceof WeakMap
 }
 
 /**
@@ -87,13 +83,11 @@ export function isWeakMap(v: unknown): v is WeakMap<any, unknown> {
  * v may both be object or array
  */
 export function isObject(v: unknown): v is object {
-  return (!(v === null) && typeof v === "object") 
+  return !(v === null) && typeof v === "object"
 }
 
 export function isObjectLiteral(v: unknown): v is object {
-  return (
-    (isObject(v) && Object.getPrototypeOf(v) === Object.prototype) 
-  )
+  return isObject(v) && Object.getPrototypeOf(v) === Object.prototype
 }
 
 export function isUndefined(v: unknown): v is undefined {

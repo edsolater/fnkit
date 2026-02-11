@@ -1,76 +1,72 @@
-import { isUndefined, isMap, isIterable, isArray, isSet, isNumber, isObject, isString, getType } from "../dataType"
+import { forEach, getIteratorInnerKey, getIteratorInnerValue, type Keyof, type ValueOf } from ".."
+import { getType, isArray, isIterable, isMap, isNumber, isObject, isSet, isString, isUndefined } from "../dataType"
 import { cloneObject } from "../objectUtils/objectUtils"
 import { shrinkFn } from "../wrapper"
-import { Collection, type GetCollectionKey, type GetCollectionValue } from "./type"
+import { isIterableOrIterator } from "./iteratorableUtils"
+import { toCollectionIterator } from "./iterableCollectionUtils"
 import { pick } from "./pick"
-import { isIterableOrIterator, toCollectionIterator } from "./iteratorableUtils"
-import { ifPattern } from "../ifPattern"
+import { Collection, type GetCollectionKey, type GetCollectionValue } from "./type"
 
-// /** accept all may iterable data type */
-// export function toList<T>(i: Collection<T>) {
-//   if (isUndefined(i)) return []
-//   if (isMap(i)) return Array.from(i.values())
-//   if (isIterable(i)) return Array.from(i)
-//   return Object.values(i)
-// }
+/** accept all may iterable data type */
+export function toList<T = any>(i: T): Array<ValueOf<T>> {
+  if (isUndefined(i)) return []
+  if (isArray(i)) return i
+  if (isSet(i)) return i.values().toArray() as Array<ValueOf<T>>
+  if (isMap(i)) return i.values().toArray() as Array<ValueOf<T>>
+  if (isIterableOrIterator(i)) {
+    const iterator = toCollectionIterator(i)
+    const valueIterator = iterator.map((item) => getIteratorInnerValue(item))
+    return valueIterator.toArray() as Array<ValueOf<T>>
+  }
+  if (isObject(i)) return Object.values(i)
+  throw new Error(`toList: unsupported collection type: ${getType(i)}`)
+}
 
-// export function toMap<T>(i: Collection<T>, key?: (item: T) => any) {
-//   if (isUndefined(i)) return new Map()
-//   if (isMap(i)) return i
-//   if (isArray(i)) return new Map(i.map((item) => [key?.(item) ?? item, item]))
-//   if (isSet(i)) return new Map([...i.values()].map((item) => [key?.(item) ?? item, item]))
-//   if (isIterable(i)) {
-//     const newMap = new Map()
-//     for (const item of i) {
-//       newMap.set(key?.(item) ?? item, item)
-//     }
-//     return newMap
-//   }
-//   return new Map(Object.entries(i))
-// }
+export function toMap<T extends Collection>(i: T, key?: (item: ValueOf<T>, key: Keyof<T>) => any) {
+  if (isUndefined(i)) return new Map()
+  if (isMap(i)) return i
+  if (isArray(i)) return new Map(i.map((item, index) => [key?.(item, index as Keyof<T>) ?? item, item]))
+  if (isSet(i))
+    return new Map([...i.values()].map((item, index) => [key?.(item as ValueOf<T>, index as Keyof<T>) ?? item, item]))
+  if (isIterableOrIterator(i)) {
+    const iterator = toCollectionIterator(i)
+    const entryIterator = iterator.map((item) => [getIteratorInnerKey(item), getIteratorInnerValue(item)] as const)
+    return new Map(entryIterator)
+  }
+  if (isObject(i)) return new Map(Object.entries(i))
 
-// export function toSet<T>(i: Collection<T>) {
-//   if (isUndefined(i)) return new Set()
-//   if (isSet(i)) return i
-//   if (isArray(i)) return new Set(i)
-//   if (isIterable(i)) return new Set([...i])
-//   return new Set(Object.values(i))
-// }
+  throw new Error(`toMap: unsupported collection type: ${getType(i)}`)
+}
 
-// export function toRecord<T, K extends keyof any>(i: Collection<T>, key: (item: T, key: unknown) => K): Record<K, T> {
-//   if (isUndefined(i)) return {} as Record<K, T>
-//   if (isMap(i)) {
-//     const result = {} as Record<keyof any, T>
-//     for (const [k, v] of i.entries()) {
-//       result[key(v, k)] = v
-//     }
-//     return result
-//   }
-//   if (isArray(i)) {
-//     const result = {} as Record<keyof any, T>
-//     for (const [k, v] of i.entries()) {
-//       result[key(v, k)] = v
-//     }
-//     return result
-//   }
-//   if (isSet(i)) {
-//     const result = {} as Record<keyof any, T>
-//     let index = 0
-//     for (const item of i.values()) {
-//       result[key(item, index++)] = item
-//     }
-//     return result
-//   }
-//   if (isIterable(i)) {
-//     const result = {} as Record<keyof any, T>
-//     let index = 0
-//     for (const item of i) {
-//       result[key(item, index++)] = item
-//     }
-//     return result
-//   }
-//   return i
-// }
+export function toSet<T>(i: Collection<T>) {
+  if (isUndefined(i)) return new Set()
+  if (isSet(i)) return i
+  if (isArray(i)) return new Set(i)
+  if (isIterableOrIterator(i)) {
+    const iterator = toCollectionIterator(i)
+    const valueIterator = iterator.map((item) => getIteratorInnerValue(item))
+    return new Set(valueIterator)
+  }
+  if (isObject(i)) return new Set(Object.values(i))
+  throw new Error(`toSet: unsupported collection type: ${getType(i)}`)
+}
+
+export function toRecord<T extends Collection, K extends keyof any>(
+  collection: T,
+  key: (item: ValueOf<T>, key: Keyof<T>) => K,
+): Record<K, ValueOf<T>> {
+  if (isUndefined(collection)) return {} as Record<K, ValueOf<T>>
+  if (isMap(collection) || isSet(collection) || isArray(collection) || isIterable(collection)) {
+    const result = {} as Record<K, ValueOf<T>>
+    forEach(collection, (v, k) => {
+      // @ts-ignore
+      result[key(v, k)] = v
+    })
+    return result
+  }
+  if (isObject(collection)) return collection as Record<K, ValueOf<T>>
+  throw new Error(`toRecord: unsupported collection type: ${getType(collection)}`)
+}
 
 export function count(i: Collection) {
   if (isMap(i) || isSet(i)) return i.size

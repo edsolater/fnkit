@@ -1,4 +1,4 @@
-import { isArray, isIterable, isMap, isSet, ProxyKindSymbol } from "../dataType"
+import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj } from "../typings"
 import { toIterator } from "./iteratorableUtils"
 
@@ -68,7 +68,6 @@ function mapArray<T, R>(arr: T[], mapper: (value: T, index: number) => R): R[] {
   const compute = () => {
     if (!cached) {
       cached = arr.map(mapper)
-      cached[ProxyKindSymbol] = "Array"
     }
     return cached
   }
@@ -111,7 +110,6 @@ function mapSet<T, R>(set: Set<T>, mapper: (value: T, index: number) => R): Set<
   const compute = () => {
     if (!cached) {
       cached = new Set<R>()
-      cached[ProxyKindSymbol] = "Set"
       let index = 0
       for (const v of set) {
         cached.add(mapper(v, index++))
@@ -157,7 +155,6 @@ function mapMap<K, V, R>(map: Map<K, V>, mapper: (value: V, key: K) => R): Map<K
   const compute = () => {
     if (!cached) {
       cached = new Map<K, R>()
-      cached[ProxyKindSymbol] = "Map"
       for (const [k, v] of map) {
         cached.set(k, mapper(v, k))
       }

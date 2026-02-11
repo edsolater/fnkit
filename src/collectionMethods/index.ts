@@ -1,5 +1,3 @@
-export * from "./type"
-export * from "./iteratorableItemAndEntry" // Item 和 Entriable 体系
 export * from "./concat"
 export * from "./drop"
 export * from "./every"
@@ -8,13 +6,14 @@ export * from "./find"
 export * from "./forEach"
 export * from "./groupBy"
 export * from "./insert"
+export * from "./iterableCollectionUtils"
+export * from "./iteratorableItemAndEntry" // Item 和 Entriable 体系
 export * from "./map"
 export * from "./reduce"
-// TODO isolate flatMap() (2022-06-10)
-export * from "./shakeNil"
-// TODO: changeCollectionType: (oldCollection, targetType: 'array' | 'object' | 'set' | 'map') => newCollection
+export * from "./type"
+export * from "./shakeNil" 
+export * from "./itemMethods" 
+export * from "./iteratorableUtils"
 export * from "./omit"
 export * from "./pick"
-export * from "./itemMethods"
 export * from "./take"
-export * from "./iteratorableUtils"

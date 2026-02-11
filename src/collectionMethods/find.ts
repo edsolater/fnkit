@@ -1,19 +1,15 @@
+import { isArray, isIterable, isMap, isSet } from "../dataType";
+import type { AnyObj } from "../typings";
 import {
-  Entry,
   getIteratorInnerKey,
   getIteratorInnerValue,
-  isEntriable,
-  isItemable,
-  Item,
   type Entriable,
   type EntriableKey,
   type EntriableValue,
   type Itemable,
-  type ItemableValue,
-} from "./iteratorableItemAndEntry"
-import { toIterator } from "./iteratorableUtils"
-import { isArray, isExist, isIterable, isMap, isSet } from "../dataType"
-import type { AnyObj } from "../typings"
+  type ItemableValue
+} from "./iteratorableItemAndEntry";
+import { toIterator } from "./iteratorableUtils";
 
 /**
  * 查找第一个匹配的元素，短路求值（不需要惰性）

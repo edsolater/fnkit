@@ -3,8 +3,10 @@
  * Complete definition system for Item and Entriable
  */
 
-import { assert } from "console"
 import { isArray, isObject } from "../dataType"
+
+// 列出这个属性，使ts引擎不能把看着像 Item 的识别成 Item。
+export const IS_INSTANCE = Symbol.for("is-instance")
 
 //#region ------------------- Item -------------------
 
@@ -20,8 +22,13 @@ import { isArray, isObject } from "../dataType"
  * Item.of(['a', 'b']) // Item<string[]> - 数组本身作为值
  * Item.of([1, 2]) // Item<[number, number]> - 二元组也被视为单值
  */
-export class Item<V> {
-  constructor(public readonly value: V) {}
+export class Item<V = any> {
+  // 列出这个属性，使ts引擎不能把看着像 Item 的识别成 Item。
+  [IS_INSTANCE] = true
+  value: V
+  constructor(value: V) {
+    this.value = value
+  }
 
   /**
    * 创建 Item 实例
@@ -83,9 +90,9 @@ export type Entriable<V = any, K = any> =
  * Entry 类：键值对的类表示
  * Entry class: class representation of key-value pair
  */
-export class Entry<V, K> {
-  kind = "Entry"
-  
+export class Entry<V = any, K = any> {
+  [IS_INSTANCE] = true
+
   value: V
   key: K
 
@@ -93,7 +100,6 @@ export class Entry<V, K> {
     this.value = value
     this.key = key
   }
-
 
   /**
    * 创建 Entry 实例
@@ -138,6 +144,8 @@ export type EntriableKey<T> = T extends Entriable<any, infer K> ? K : never
 /**
  * 从 Entriable 提取 key
  * Extract key from Entriable
+ *
+ * 总和在 {@link getIteratorInnerKey}
  */
 function getEntriableKey<K>(entry: Entriable<any, K>): K {
   if (isEntry(entry)) return entry.key

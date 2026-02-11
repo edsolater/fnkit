@@ -38,20 +38,3 @@ export function toIterator<T>(target: Iterator<T> | Iterable<T> | IterableIterat
   
   throw new Error(`toIterator: unsupported target type: ${getType(target)}`)
 }
-
-/** auto-detect whether it should use {@link toIterableValue} or {@link toIterableEntries}
- * @example
- * toIterable([1, 2]) // [1, 2]
- * toIterable({ a: 1, b: 2 }) // [['a', 1], ['b', 2]]
- */
-export function toCollectionIterator<C extends Collection>(
-  collection: C,
-): IteratorObject<[GetCollectionValue<C> | GetCollectionKey<C>]> {
-  // 先检查具体类型，再检查 Iterable（因为 Map/Set/Array 都是 Iterable）
-  if (isArray(collection)) return collection.values().map((v, idx) => [v, idx]) as any
-  if (isSet(collection)) return collection.values().map((v, idx) => [v, idx]) as any
-  if (isMap(collection)) return collection.entries().map(([k, v]) => [v, k]) as any
-  if (isObject(collection)) return Object.entries(collection).values().map(([k, v]) => [v, k]) as any
-  if (isIterable(collection)) return collection as any
-  throw new Error(`toCollectionIterator: unsupported collection type: ${typeof collection}`)
-}
