@@ -1,4 +1,4 @@
-import { flap, unifyItem } from "../collectionMethods"
+import { unifyItem } from "../collectionMethods"
 import { isObjectLike, isFunction, isObject } from "../dataType"
 import { AnyObj } from "../typings/constants"
 import { SKeyof, ValueOf } from "../typings/tools"

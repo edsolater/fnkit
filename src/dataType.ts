@@ -50,7 +50,7 @@ export const getObjType = (
   return typeString
 }
 
-export function isArray(v: unknown, canProxy = false): v is AnyArr {
+export function isArray(v: unknown): v is AnyArr {
   return Array.isArray(v)
 }
 

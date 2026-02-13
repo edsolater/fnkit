@@ -1,4 +1,4 @@
-import { setTimeoutWithSecondes, type TimeRange } from "./timeTools"
+import { setTimeoutWithSecondes, type TimeLabel } from "./timeTools"
 import type { Int } from "./typings"
 import { shrinkFn } from "./wrapper"
 
@@ -37,7 +37,7 @@ export function autoRetry<F extends (payloads: RetriableTaskFnPayloads) => Promi
      * @example
      * (retryCount) => retryCount * 3 // action will be re-invoke after next 3 seconds in first time , 6 seconds in second time , 9 seconds in third time
      */
-    retryFrequency?: TimeRange | ((retryCount: Int<1>) => TimeRange)
+    retryFrequency?: TimeLabel | ((retryCount: Int<1>) => TimeLabel)
 
     /**
      * maxRetryCount will back to zero , if action has success

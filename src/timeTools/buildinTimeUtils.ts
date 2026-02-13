@@ -1,12 +1,12 @@
-import { assert, getIteratorInnerValue, shrinkFn, type MayFn } from ".."
+import { assert, getValue, shrinkFn, type MayFn } from ".."
 import { isObject, isUndefined } from "../dataType"
 import { asyncInvoke } from "../functionManagers"
-import { type TimeRange, parseTimeRangeToMilliseconds, parseTimeRangeToSeconds, isTimeRange } from "./parseDuration"
+import { isTimeRange, parseTimeRange, parseTimeRangeToMilliseconds, type TimeLabel } from "./parseDuration"
 
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeRange | undefined): number {
+export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeLabel | undefined): number {
   // @ts-ignore
   return globalThis.setInterval(fn, interval ? parseTimeRangeToMilliseconds(interval) : undefined)
 }
@@ -15,14 +15,14 @@ export type IntervalTaskFunction = (utils: {
   cancel: () => void
   /** start from 0 */
   loopIndex: number
-  changeInterval: (newInterval: MayFn<TimeRange, [oldIntervalSeconds: number]>) => void
+  changeInterval: (newInterval: MayFn<TimeLabel, [oldIntervalSeconds: number]>) => void
   forceRunNextLoop: () => void
 }) => void | Promise<void> | any | Promise<any>
 
 export type SetIntervalOptions = {
   /** if you want run immediately after delay. both set `delay` and `immediate` */
-  delay?: TimeRange
-  interval?: TimeRange
+  delay?: TimeLabel
+  interval?: TimeLabel
   immediate?: boolean
   /** if set this, don't auto-run，相反，控制权交给返回的 Controller  */
   haveManuallyController?: boolean
@@ -55,7 +55,7 @@ export type SetIntervalController = {
   forceRunNextLoop(): void
 }
 
-export type SetIntervalVerboseOptions = SetIntervalOptions | TimeRange
+export type SetIntervalVerboseOptions = SetIntervalOptions | TimeLabel
 /**
  * build-in globalThis.setInterval is not human-friendly
  * @param taskFn function to run (run in future, event immediately, it will run in  micro task)
@@ -81,15 +81,15 @@ export function setInterval(
   // --- 配置参数 ---
   const options = {
     ...(isObject(verboseOption) ? verboseOption : {}),
-    interval: parseTimeRangeToSeconds(
+    interval: parseTimeRange(
       isUndefined(verboseOption) ? 1 : isTimeRange(verboseOption) ? verboseOption : (verboseOption.interval ?? 1),
     ),
-    whenTwoTaskConflict: getIteratorInnerValue(verboseOption, "whenTwoTaskConflict", "invoke-income"),
+    whenTwoTaskConflict: getValue(verboseOption, "whenTwoTaskConflict", "invoke-income"),
   }
   let intervalSeconds = options.interval
 
-  function changeIntervalDuration(newInterval: MayFn<TimeRange, [oldIntervalSeconds: number]>) {
-    intervalSeconds = parseTimeRangeToSeconds(shrinkFn(newInterval, [intervalSeconds]))
+  function changeIntervalDuration(newInterval: MayFn<TimeLabel, [oldIntervalSeconds: number]>) {
+    intervalSeconds = parseTimeRange(shrinkFn(newInterval, [intervalSeconds]))
     stopLoop()
     runLoop({ canWithImmediate: false })
   }
@@ -185,7 +185,7 @@ export function setInterval(
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeRange | undefined): number {
+export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeLabel | undefined): number {
   // @ts-ignore
   return globalThis.setTimeout(fn, delay ? parseTimeRangeToMilliseconds(delay) : undefined)
 }
@@ -193,7 +193,7 @@ export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: Tim
 export type TimeoutTaskFunction = (utils: { loopCount: number; cancel: () => void }) => void
 
 export type SetTimeoutOptions = {
-  delay?: TimeRange
+  delay?: TimeLabel
   /** if set this, fn will run immediately, (two times total) */
   immediate?: boolean
   /** if set this, don't auto-run  */
@@ -211,7 +211,7 @@ export type SetTimeoutController = {
  * @param options
  * @returns
  */
-export function setTimeout(taskFn: TimeoutTaskFunction, _options?: SetTimeoutOptions | TimeRange): SetTimeoutController {
+export function setTimeout(taskFn: TimeoutTaskFunction, _options?: SetTimeoutOptions | TimeLabel): SetTimeoutController {
   let loopCount = 0
   let timeId = 0
 

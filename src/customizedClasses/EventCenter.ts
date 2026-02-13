@@ -230,7 +230,7 @@ export function createEventCenter<T extends EventConfig>(options?: EventCenterCr
   const multiOn = ((subscriptionFns, options) =>
     map(
       subscriptionFns,
-      (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn as AnyFn, options),
+      (handlerFn, eventName) => handlerFn && singlyOn(String(eventName), handlerFn as unknown as AnyFn, options),
     )) as EventCenter<T>["multiOn"]
 
   function clear() {
