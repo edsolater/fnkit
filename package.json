@@ -2,17 +2,20 @@
   "name": "@edsolater/fnkit",
   "version": "0.2.14",
   "description": "base function tools",
+  "packageManager": "bun@1.2.0",
   "type": "module",
   "sideEffects": false,
   "exports": {
     ".": {
       "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "types": "./src/index.ts",
       "default": "./dist/index.js"
     }
   },
+  "types": "./dist/index.d.ts",
   "scripts": {
+    "build:debug": "vite build --mode debug",
     "build": "vite build",
     "test": "vitest",
     "type-check": "tsc --noEmit"
@@ -21,15 +24,16 @@
     "type": "git",
     "url": "git+https://github.com/edsolater/fnkit.git"
   },
-  "files": [
-    "dist"
-  ],
-  "author": "edsolater <edsolater@qq.com>",
+  "files": ["dist", "src"],
+  "author": "edsolater <edsolater@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/edsolater/fnkit/issues"
   },
   "homepage": "https://github.com/edsolater/fnkit#readme",
+  "engines": {
+    "bun": ">=1.2.0"
+  },
   "devDependencies": {
     "@types/node": "^24.10.1",
     "typescript": "^5.9.3",

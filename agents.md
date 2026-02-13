@@ -2,6 +2,28 @@
 
 本文档记录 fnkit 项目中与 AI/人类协作相关的开发约定和规范。
 
+## 工具链约定
+
+### Bun 优先（强制）
+
+**强制约定：项目统一使用 Bun，不使用 npm、node、ts-node、pnpm 作为日常开发与执行入口。**
+
+- 依赖安装：使用 `bun install`
+- 脚本执行：使用 `bun run <script>`
+- 直接执行 TS/JS：优先 `bun <file>`
+- 单次命令：优先 `bunx <command>`
+
+### 禁止项
+
+- 禁止使用 `npm install` / `npm run`
+- 禁止使用 `pnpm install` / `pnpm run`
+- 禁止以 `node`、`ts-node` 作为默认执行入口
+
+### 迁移说明
+
+- 发现历史文档或脚本示例仍为 npm/pnpm/node/ts-node 时，应同步改为 Bun 写法
+- AI 生成命令时，默认输出 Bun 命令，不再给出 npm/pnpm 等平行方案
+
 ## 代码注释规范
 
 ### 基本原则
@@ -181,5 +203,5 @@ export class Pattern<T> {
 
 ---
 
-**最后更新：** 2026-02-09  
+**最后更新：** 2026-02-13  
 **维护者：** 项目核心贡献者及 AI 协作者

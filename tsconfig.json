@@ -9,8 +9,12 @@
     "moduleResolution": "node", //可以自动使用文件夹下的 index.ts
     "noImplicitAny": false,
     "strict": true,
-    "noEmit": true,
     "outDir": "dist",
-    "declaration": true // see https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig
-  }
+    "rootDir": "src", // 源码根目录固定为 src，避免映射路径漂移 / Keep source root stable to avoid map path drift
+    "declaration": true, // see https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig
+    "declarationMap": true, // 让 .d.ts 可回跳源码；关闭会降低类型定位体验 / Enables source navigation from declarations
+    "sourceMap": true, // 运行时代码可回溯源码；关闭后堆栈可读性下降 / Keeps runtime artifacts traceable to TS source
+    "emitDeclarationOnly": false // 不能只发声明，还要配合构建产出 JS/map / Not declaration-only; JS/map outputs are also required
+  },
+  "include": ["src"] // 仅编译主源码，范围过大会引入噪音 / Compile only the library source scope
 }
