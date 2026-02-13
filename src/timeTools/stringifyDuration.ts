@@ -1,7 +1,7 @@
 import { isObject } from "../dataType"
 import { shakeTailingZero } from "../numberish/trimZero"
 import { shrinkFn } from "../wrapper"
-import { parseTimeRangeToSeconds, type TimeLabel } from "./parseDuration"
+import { parseTimeLabelToSeconds, type TimeLabel } from "./parseDuration"
 import { parseDuration } from "./parseDuration"
 import { DurationInfo } from "./parseDuration.type"
 
@@ -30,7 +30,7 @@ export function formatDuration(
     shakeMillisecondsTailingZero?: boolean
   },
 ) {
-  const parsedDurationInfo = parseDuration(parseTimeRangeToSeconds(TimeLabel))
+  const parsedDurationInfo = parseDuration(parseTimeLabelToSeconds(TimeLabel))
   const durationInfo = parseDuration(isObject(parsedDurationInfo) ? parsedDurationInfo.full : parsedDurationInfo)
   const autoFormatString = (() => {
     if (rawFormatString) return undefined

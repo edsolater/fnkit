@@ -94,7 +94,7 @@ export type TimeUnit =
   | "M"
   | "Y"
 
-export function isTimeRange(time: any): time is TimeLabel {
+export function isTimeLabel(time: any): time is TimeLabel {
   if (isNumber(time)) return true
   if (!isString(time)) return false
   const trimmed = time.trim()
@@ -103,15 +103,15 @@ export function isTimeRange(time: any): time is TimeLabel {
   )
 }
 /** to milliseconds */
-export function parseTimeRangeToMilliseconds(time: TimeLabel) {
-  return parseTimeRange(time) * 1000
+export function parseTimeLabelToMilliseconds(time: TimeLabel) {
+  return parseTimeLabel(time) * 1000
 }
-/** @deprecated 使用命名友好的 {@link parseTimeRange} */
-export function parseTimeRangeToSeconds(time: TimeLabel) {
-  return parseTimeRange(time)
+/** @deprecated 使用命名友好的 {@link parseTimeLabel} */
+export function parseTimeLabelToSeconds(time: TimeLabel) {
+  return parseTimeLabel(time)
 }
 
-export function parseTimeRange(time: TimeLabel) {
+export function parseTimeLabel(time: TimeLabel) {
   if (isNumber(time)) return time
 
   const trimmed = time.trim()

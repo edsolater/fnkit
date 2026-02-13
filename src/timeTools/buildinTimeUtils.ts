@@ -1,14 +1,14 @@
 import { assert, getValue, shrinkFn, type MayFn } from ".."
 import { isObject, isUndefined } from "../dataType"
 import { asyncInvoke } from "../functionManagers"
-import { isTimeRange, parseTimeRange, parseTimeRangeToMilliseconds, type TimeLabel } from "./parseDuration"
+import { isTimeLabel, parseTimeLabel, parseTimeLabelToMilliseconds, type TimeLabel } from "./parseDuration"
 
 /**
  * build-in milliseconds is not human-friendly
  */
 export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeLabel | undefined): number {
   // @ts-ignore
-  return globalThis.setInterval(fn, interval ? parseTimeRangeToMilliseconds(interval) : undefined)
+  return globalThis.setInterval(fn, interval ? parseTimeLabelToMilliseconds(interval) : undefined)
 }
 
 export type IntervalTaskFunction = (utils: {
@@ -81,15 +81,15 @@ export function setInterval(
   // --- 配置参数 ---
   const options = {
     ...(isObject(verboseOption) ? verboseOption : {}),
-    interval: parseTimeRange(
-      isUndefined(verboseOption) ? 1 : isTimeRange(verboseOption) ? verboseOption : (verboseOption.interval ?? 1),
+    interval: parseTimeLabel(
+      isUndefined(verboseOption) ? 1 : isTimeLabel(verboseOption) ? verboseOption : (verboseOption.interval ?? 1),
     ),
     whenTwoTaskConflict: getValue(verboseOption, "whenTwoTaskConflict", "invoke-income"),
   }
   let intervalSeconds = options.interval
 
   function changeIntervalDuration(newInterval: MayFn<TimeLabel, [oldIntervalSeconds: number]>) {
-    intervalSeconds = parseTimeRange(shrinkFn(newInterval, [intervalSeconds]))
+    intervalSeconds = parseTimeLabel(shrinkFn(newInterval, [intervalSeconds]))
     stopLoop()
     runLoop({ canWithImmediate: false })
   }
@@ -187,7 +187,7 @@ export function setInterval(
  */
 export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeLabel | undefined): number {
   // @ts-ignore
-  return globalThis.setTimeout(fn, delay ? parseTimeRangeToMilliseconds(delay) : undefined)
+  return globalThis.setTimeout(fn, delay ? parseTimeLabelToMilliseconds(delay) : undefined)
 }
 
 export type TimeoutTaskFunction = (utils: { loopCount: number; cancel: () => void }) => void
@@ -215,7 +215,7 @@ export function setTimeout(taskFn: TimeoutTaskFunction, _options?: SetTimeoutOpt
   let loopCount = 0
   let timeId = 0
 
-  const options: SetTimeoutOptions = isTimeRange(_options) ? { delay: _options } : (_options ?? {})
+  const options: SetTimeoutOptions = isTimeLabel(_options) ? { delay: _options } : (_options ?? {})
   // core
   const runCore = () => asyncInvoke(() => taskFn({ loopCount: loopCount++, cancel }))
 
