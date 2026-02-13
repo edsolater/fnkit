@@ -1,5 +1,6 @@
 import { expect, test } from "vitest"
-import { asyncMutatableChangeObjectWithRules, getByPath, toCamelCaseObject, travelObject } from "./travelObject"
+import { asyncMutatableChangeObjectWithRules, toCamelCaseObject, travelObject } from "./travelObject"
+import { getByPath } from "./propertyUtils"
 
 test("basic usage", () => {
   const obj = { a: "a", b: "b", c: { d: "d" } }

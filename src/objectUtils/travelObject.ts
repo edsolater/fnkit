@@ -1,6 +1,7 @@
 import { toCamelCase } from "../changeCase"
-import { isArray, isObject, isObjectLike, isObjectLiteral, isPromise, isString } from "../dataType"
+import { isArray, isObject, isObjectLiteral, isPromise, isString } from "../dataType"
 import type { AnyObj } from "../typings"
+import { setByPath } from "./propertyUtils"
 
 type ObjectTravelStepInfo = {
   key: keyof any
@@ -16,6 +17,7 @@ type ObjectTravelStepInfo = {
 }
 
 /**
+ * 【底层工具】已暴露能力为优雅，而不是。面向于接收。外界的。（如需面向外界的工具函数使用）
  * won't create a new object
  * only walk through string enumtable object key (not symbol)
  */
@@ -43,102 +45,21 @@ export function travelObject(obj: object, onTravelValue: (info: ObjectTravelStep
   walk(obj)
 }
 
-/**
- *
- * return first non-objectlike value
- * @param obj must be a objectlike value
- * @param path ['a','b','c']
- * @returns obj?.a?.b?.c
- */
-export function getByPath(obj: object, path: (keyof any)[]): any {
-  let current = obj
-  for (const pathItem of path) {
-    current = Reflect.get(current, pathItem)
-    if (!isObjectLike(current)) break
-  }
-  return current
+// TODO: 还没有实现。应该要跟immer结合。
+export function immutablyChangeObject(
+  oirginalObject: AnyObj,
+  changeFn: (value: any, path: (keyof any)[]) => any,
+): AnyObj {
+  const newObject = {}
+  travelObject(oirginalObject, ({ value, path }) => {})
+  return newObject
 }
 
-/**
- *
- * mutate object by path
- * if  path is not reachable, this will create a new literal object. see example for detail
- * @param obj
- * @param path
- * @param value
- * @returns
- * @example
- * const obj = {a:{b:{c:1}}}
- * setByPath(obj,['a','b','c'],2) // obj.a.b.c === 2
- * setByPath(obj,['a','newKey','d'],2) // obj --> {a: {b: {c: 1}, newKey: {d: 2}}}
- */
-export function setByPath({
-  obj,
-  path,
-  value,
-  mergeRule = () => value,
-}: {
-  obj: object
-  path: (keyof any)[]
-  value: any
-  mergeRule?: (prev: any, input: any) => any
-}): boolean {
-  if (path.length === 0) return false
-  if (path.length === 1) {
-    const key = path[0]
-    //TODO: this can use immer.produce to handle Reflect change
-    return Reflect.set(obj, key, value)
-  } else {
-    try {
-      forceSet({ obj, path, value, mergeRule })
-      return true
-    } catch {
-      return false
-    }
-  }
-}
-
-/**
- *
- * even not reachable will be ok
- * used in {@link setByPath}
- */
-function forceSet({
-  obj,
-  path,
-  value,
-  mergeRule,
-}: {
-  obj: object
-  path: (keyof any)[]
-  value: any
-  mergeRule: (prev: any, input: any) => any
-}): object {
-  if (!isObjectLike(obj)) return obj
-  if (path.length === 0) return obj
-  if (path.length === 1) {
-    const key = path[0]
-    const prevValue = Reflect.get(obj, key)
-    const mergedValue = mergeRule(prevValue, value)
-    //TODO: this can use immer.produce to handle Reflect change
-    Reflect.set(obj, key, mergedValue)
-    return obj
-  }
-  const [currentKey, ...restPath] = path
-  if (currentKey in obj) {
-    return forceSet({ obj: Reflect.get(obj, currentKey), path: restPath, value, mergeRule })
-  } else {
-    Reflect.set(obj, currentKey, forceSet({ obj: {}, path: restPath, value, mergeRule }))
-    return obj
-  }
-}
-
-export function hasByPath(obj: object, path: (keyof any)[]): boolean {
-  const lastKey = path.pop()
-  if (!lastKey) return false
-  const targetObj = getByPath(obj, path)
-  if (!isObjectLike(targetObj)) return false
-  return Reflect.has(targetObj, lastKey)
+// TODO: 也还没有实现。应该要跟immer结合。
+export function lazyDo<T>(base: T, doSomething: (draft: T) => void): T
+export function lazyDo<T, U>(base: T, doSomething: (draft: T) => U): U
+export function lazyDo<T>(base: T, doSomething: (draft: T) => void): T {
+  throw new Error("lazyDo is not implemented yet, you can use immer.produce instead")
 }
 
 /**
@@ -203,6 +124,10 @@ export function createObjectWithRules(
 export function toCamelCaseObject(oldObj: AnyObj): AnyObj {
   const newObj: AnyObj = {}
   travelObject(oldObj, ({ value, path, canDeepWalk }) => {
+    if (isArray(value)) {
+      // 手动创建，不然自动创建一定是空对象。
+      setByPath({ obj: newObj, path: path.map((k) => (isString(k) ? toCamelCase(k) : k)), value: [] })
+    }
     if (!canDeepWalk)
       setByPath({ obj: newObj, path: path.map((k) => (isString(k) ? toCamelCase(k) : k)), value: value })
   })

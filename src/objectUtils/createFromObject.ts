@@ -1,5 +1,6 @@
 import { isArray } from "../dataType"
-import { setByPath, travelObject } from "./travelObject"
+import { travelObject } from "./travelObject"
+import { setByPath } from "./propertyUtils"
 
 /**
  * only walk through string enumtable object key (not symbol)
