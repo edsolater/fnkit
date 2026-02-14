@@ -112,13 +112,6 @@ export function changeObject(obj: AnyObj, rules: ChangeRule[]): AnyObj {
   return obj
 }
 
-// TODO: 也还没有实现。应该要跟immer结合。
-export function lazyDo<T>(base: T, doSomething: (draft: T) => void): T
-export function lazyDo<T, U>(base: T, doSomething: (draft: T) => U): U
-export function lazyDo<T>(base: T, doSomething: (draft: T) => void): T {
-  throw new Error("lazyDo is not implemented yet, you can use immer.produce instead")
-}
-
 /**
  * async version of {@link createObjectWithRules}
  */
