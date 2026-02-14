@@ -1,7 +1,7 @@
 import { toCamelCase } from "../changeCase"
-import { isArray, isObject, isObjectLiteral, isPromise, isString } from "../dataType"
+import { isArray, isObjectLiteral, isPrimitive, isPromise } from "../dataType"
 import type { AnyObj } from "../typings"
-import { setByPath } from "./propertyUtils"
+import { getByPath, setByPath } from "./propertyUtils"
 
 type ObjectTravelStepInfo = {
   key: keyof any
@@ -17,7 +17,10 @@ type ObjectTravelStepInfo = {
 }
 
 /**
- * 【底层工具】已暴露能力为优雅，而不是。面向于接收。外界的。（如需面向外界的工具函数使用）
+ * 【底层工具】已暴露能力为优雅，而不是。面向于接收。外界的。（如需声明式的工具函数，请使用 {@link changeObject}）
+ * ！！！ 该函数只遍历可枚举属性
+ *
+ *
  * won't create a new object
  * only walk through string enumtable object key (not symbol)
  */
@@ -45,14 +48,68 @@ export function travelObject(obj: object, onTravelValue: (info: ObjectTravelStep
   walk(obj)
 }
 
-// TODO: 还没有实现。应该要跟immer结合。
-export function immutablyChangeObject(
-  oirginalObject: AnyObj,
-  changeFn: (value: any, path: (keyof any)[]) => any,
-): AnyObj {
-  const newObject = {}
-  travelObject(oirginalObject, ({ value, path }) => {})
-  return newObject
+type ChangeRule = {
+  when: (eachStepContext: Omit<ObjectTravelStepInfo, "needDeepWalk" | "canDeepWalk">) => boolean
+  do?: (
+    context: Omit<ObjectTravelStepInfo, "needDeepWalk" | "canDeepWalk"> & {
+      replaceKey: <NewKey>(replaceFn: (key: any) => NewKey) => void
+    },
+  ) => void
+}
+
+/**
+ * 遍历整个对象，
+ * 声明式地替换满足条件的 entry 的 key 或 value
+ * @param obj
+ * @param rules
+ * @returns
+ */
+export function changeObject(obj: AnyObj, rules: ChangeRule[]): AnyObj {
+  const pendingMutations: (() => void)[] = []
+
+  travelObject(obj, (context) => {
+    for (const rule of rules) {
+      if (rule.when(context)) {
+        // if (rule.replaceValue) {
+        //   const newValue = rule.replaceValue(value)
+        //   setByPath({ obj: draft, path, value: newValue })
+        // }
+        // if (rule.replaceKey) {
+        //   const newKey = rule.replaceKey(key)
+        //   if (newKey !== key) {
+        //     const parent = path.slice(0, -1).reduce((acc, key) => acc[key], draft)
+        //     parent[newKey] = parent[key]
+        //     delete parent[key]
+        //   }
+        // }
+        // if (rule.needDeepWalk) {
+        //   needDeepWalk(rule.needDeepWalk(value))
+        // }
+        rule.do?.({
+          ...context,
+          replaceKey: (replaceFn) => {
+            const newKey = replaceFn(context.key)
+            const currentKey = context.key
+
+            // 获取目标的引用，而不是key地址。因为key会被改，但引用不变。
+            const parentObj = context.parentPath.length === 0 ? obj : getByPath(obj, context.parentPath)
+
+            // 房命名kid实际操作。
+            const rename = () => {
+              parentObj[newKey] = parentObj[currentKey]
+              delete parentObj[currentKey]
+            }
+
+            pendingMutations.push(rename)
+          },
+        })
+      }
+    }
+  })
+
+  pendingMutations.forEach((mutation) => mutation())
+
+  return obj
 }
 
 // TODO: 也还没有实现。应该要跟immer结合。
@@ -88,48 +145,16 @@ export async function asyncMutatableChangeObjectWithRules(
 
 /**
  *
- * sync version of {@link asyncMutatableChangeObjectWithRules}
- * 其实就是换值。
- */
-export function createObjectWithRules(
-  resourceObject: AnyObj,
-  rules: [
-    match: (step: Omit<ObjectTravelStepInfo, "needDeepWalk" | "canDeepWalk">) => boolean,
-    rule: (step: Omit<ObjectTravelStepInfo, "needDeepWalk" | "canDeepWalk">) => any,
-  ][],
-): AnyObj {
-  const newObject = {}
-  travelObject(resourceObject, (info) => {
-    if (!info.canDeepWalk) {
-      for (const [match, rule] of rules) {
-        if (match(info)) {
-          const newValue = rule(info)
-          setByPath({ obj: newObject, path: info.path, value: newValue })
-        } else {
-          setByPath({ obj: newObject, path: info.path, value: info.value })
-        }
-      }
-    }
-  })
-  return newObject
-}
-
-/**
- *
  * @example
  * toCamelCaseObject({
  *   "user_info":{"create_at":123}
  * }) // => {userInfo: {createAt:123}}
  */
 export function toCamelCaseObject(oldObj: AnyObj): AnyObj {
-  const newObj: AnyObj = {}
-  travelObject(oldObj, ({ value, path, canDeepWalk }) => {
-    if (isArray(value)) {
-      // 手动创建，不然自动创建一定是空对象。
-      setByPath({ obj: newObj, path: path.map((k) => (isString(k) ? toCamelCase(k) : k)), value: [] })
-    }
-    if (!canDeepWalk)
-      setByPath({ obj: newObj, path: path.map((k) => (isString(k) ? toCamelCase(k) : k)), value: value })
-  })
-  return newObj
+  return changeObject(oldObj, [
+    {
+      when: ({ key }) => isPrimitive(key),
+      do: ({ replaceKey }) => replaceKey((key) => toCamelCase(String(key))),
+    },
+  ])
 }
