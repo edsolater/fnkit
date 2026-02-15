@@ -1,5 +1,5 @@
-import { shrinkFn, type MayFn, type NilKeys } from "."
-import { isPromise, isString } from "./dataType"
+import { shrinkFn, type MayFn } from "."
+import { isPromise } from "./dataType"
 
 export function assert(condition: any, callback?: () => void): asserts condition
 export function assert(condition: any, msg?: string, callback?: (msg: string) => void): asserts condition
@@ -50,7 +50,7 @@ export function assertVariable<T>(
  *
  * 如果未写catchFunction或者catchFunction返回了非T，则最终返回 T | undefined。相当于尝试了任务，但是尝试失败了，于是会返回undefined。
  *
- * Tries to execute a function and catches any errors that occur. 
+ * Tries to execute a function and catches any errors that occur.
  * @param coreTask The function to try executing.
  * @param catchFunction Optional function to handle errors.
  */

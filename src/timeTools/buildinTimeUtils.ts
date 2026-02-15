@@ -70,6 +70,7 @@ export function setInterval(
   let loopIndex = 0
   let intervalTimeId = 0
   let initDelayTimeoutId = 0
+  let nextTaskId = 0
   const taskRecorder: Map<
     string | number,
     {
@@ -111,10 +112,10 @@ export function setInterval(
       if (hasRunningTask) {
         // 进入冲突时的逻辑
         const whenConflict = options.whenTwoTaskConflict
-        // 等待上一个任务完成后再执行本次任务
-        const pastTaskId = thisLoopIndex - 1
-        const prevTaskResultPromise = taskRecorder.get(pastTaskId)?.resultPromise
-        assert(prevTaskResultPromise, "Thus isTaskRunning is true but no previous task found. this should not happen. ")
+        // 等待当前正在运行的任务完成后再执行本次任务
+        const runningTaskRecord = taskRecorder.values().find((record) => record.hasAborted === false)
+        assert(runningTaskRecord, "Thus isTaskRunning is true but no previous task found. this should not happen. ")
+        const prevTaskResultPromise = runningTaskRecord.resultPromise
 
         if (whenConflict === "skip-income") {
           return prevTaskResultPromise
@@ -123,15 +124,12 @@ export function setInterval(
         } else if (whenConflict === "cancel-prev-and-invoke-income") {
           // TODO 还未写这个的逻辑，待继续
           // 取消上一个任务
-          const pastTaskRecord = taskRecorder.get(pastTaskId)
-          if (pastTaskRecord) {
-            pastTaskRecord.hasAborted = true
-          }
+          runningTaskRecord.hasAborted = true
           return execInputedTask()
         }
       } else {
         // 进入未冲突时的逻辑
-        const taskId = thisLoopIndex // 生成一个用于标识当前任务的ID
+        const taskId = nextTaskId++ // 生成一个用于标识当前任务的ID
         const resultPromise = Promise.resolve(
           taskFn({
             loopIndex: thisLoopIndex,
@@ -154,7 +152,7 @@ export function setInterval(
         if ((innerOptions.canWithImmediate && options?.immediate) || innerOptions.forceImmediate) eachLoopFn()
         intervalTimeId = setIntervalWithSecondes(eachLoopFn, intervalSeconds)
       }
-  
+
       // 直接触发/延迟触发
       if (innerOptions.forceImmediate || options?.delay) {
         startIntervalLoop()
@@ -211,7 +209,10 @@ export type SetTimeoutController = {
  * @param options
  * @returns
  */
-export function setTimeout(taskFn: TimeoutTaskFunction, _options?: SetTimeoutOptions | TimeLabel): SetTimeoutController {
+export function setTimeout(
+  taskFn: TimeoutTaskFunction,
+  _options?: SetTimeoutOptions | TimeLabel,
+): SetTimeoutController {
   let loopCount = 0
   let timeId = 0
 
