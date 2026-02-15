@@ -1,9 +1,9 @@
 /**
  * ! AI写的， 还没有完全审查完lazyDo的实现
  */
-import { isFunction, isObject } from ".."
+import { isArray, isFunction, isObject } from ".."
 import type { AnyObj } from "../typings"
-import { computeOnce } from "./computeOnce"
+import { computeOnceManually } from "./computeOnce"
 
 type DeferredOperation =
   | { kind: "set"; path: PropertyKey[]; value: any }
@@ -227,76 +227,92 @@ function createDraft(base: any, operations: DeferredOperation[]) {
 
 /**
  * 更改对象，但是不执行：返回一个 Proxy，推迟到“使用”返回值时才执行 doSomething 并产出新对象。
+ * Lazily apply changes and return a Proxy that materializes only when observed or interacted with
  *
- * - 当你第一次读取属性 / in / Object.keys / 调用原型方法时，会触发 runEffect
- * - doSomething 在 runEffect 内部运行，拿到的是 draftProxy（只收集写入，不改 base）
+ * - 第一次读取属性 / in / Object.keys / 原型相关操作时，才会执行 doSomething
+ * - doSomething 拿到 draftProxy（只收集写入，不改 base），执行结果会一次性同步到代理目标对象
+ *
+ * @param base - 原始对象 / Base object
+ * @param doSomething - 延迟执行的变更逻辑 / Deferred mutation logic
  */
 export function lazyDo<O extends AnyObj>(base: O, doSomething: (draft: O) => void): O
 export function lazyDo<O extends AnyObj, U>(base: O, doSomething: (draft: O) => U): U
 export function lazyDo(base: AnyObj, doSomething: (draft: AnyObj) => any) {
   const operations: DeferredOperation[] = []
 
-  const lazyResult = computeOnce(() => {
-    const draft = createDraft(base, operations)
-    const resultOrUndefined = doSomething(draft)
-
-    // 如果用户返回了一个“新根对象”，你可以选择：
-    // A) 忽略 operations，直接用 returnedValue
-    // B) 对 returnedValue 再 applyOperations（通常没必要）
-    // 这里选择：如果 returnedValue 是对象就直接用 returnedValue，否则用 applyOperations(base, operations)
-    return isObjectOrFunction(resultOrUndefined) ? resultOrUndefined : applyOperations(base, operations)
-  })
+  /**
+   * 一次性执行 doSomething，并把最终对象形状写入 proxyShell
+   * Execute doSomething once, then sync the final object shape into proxyShell
+   */
+  const lazyResult = computeOnceManually(
+    () => {
+      const draft = createDraft(base, operations)
+      const returnedValue = doSomething(draft)
+      return isObjectOrFunction(returnedValue) ? returnedValue : applyOperations(base, operations)
+    },
+    isArray(base) ? [] : {},
+  )
 
   const handler: ProxyHandler<any> = {
     get(_target, propertyKey, _receiver) {
-      const effectResult = lazyResult.value
-      const propertyValue = Reflect.get(effectResult, propertyKey, effectResult)
-      return isFunction(propertyValue) ? propertyValue.bind(effectResult) : propertyValue
+      lazyResult.runEffectIfNeeded()
+      const propertyValue = Reflect.get(lazyResult.value, propertyKey, lazyResult.value)
+      return isFunction(propertyValue) ? propertyValue.bind(lazyResult.value) : propertyValue
     },
 
     set(_target, propertyKey, value) {
-      const effectResult = lazyResult.value
-      return Reflect.set(effectResult, propertyKey, value, effectResult)
+      lazyResult.runEffectIfNeeded()
+      return Reflect.set(lazyResult.value, propertyKey, value, lazyResult.value)
     },
 
     has(_target, propertyKey) {
-      const effectResult = lazyResult.value
-      return Reflect.has(effectResult, propertyKey)
+      lazyResult.runEffectIfNeeded()
+      return Reflect.has(lazyResult.value, propertyKey)
     },
 
     ownKeys() {
-      const effectResult = lazyResult.value
-      return Reflect.ownKeys(effectResult)
+      lazyResult.runEffectIfNeeded()
+      return Reflect.ownKeys(lazyResult.value)
     },
 
     getOwnPropertyDescriptor(_target, propertyKey) {
-      const effectResult = lazyResult.value
-      return Object.getOwnPropertyDescriptor(effectResult, propertyKey)
+      lazyResult.runEffectIfNeeded()
+      return Object.getOwnPropertyDescriptor(lazyResult.value, propertyKey)
     },
 
     defineProperty(_target, propertyKey, descriptor) {
-      const effectResult = lazyResult.value
-      return Reflect.defineProperty(effectResult, propertyKey, descriptor)
+      lazyResult.runEffectIfNeeded()
+      return Reflect.defineProperty(lazyResult.value, propertyKey, descriptor)
     },
 
     deleteProperty(_target, propertyKey) {
-      const effectResult = lazyResult.value
-      return Reflect.deleteProperty(effectResult, propertyKey)
+      lazyResult.runEffectIfNeeded()
+      return Reflect.deleteProperty(lazyResult.value, propertyKey)
     },
 
     getPrototypeOf() {
-      const effectResult = lazyResult.value
-      return Reflect.getPrototypeOf(effectResult)
+      lazyResult.runEffectIfNeeded()
+      return Reflect.getPrototypeOf(lazyResult.value)
     },
 
     setPrototypeOf(_target, newPrototype) {
-      const effectResult = lazyResult.value
-      return Reflect.setPrototypeOf(effectResult, newPrototype)
+      lazyResult.runEffectIfNeeded()
+      return Reflect.setPrototypeOf(lazyResult.value, newPrototype)
+    },
+
+    preventExtensions() {
+      lazyResult.runEffectIfNeeded()
+      return Reflect.preventExtensions(lazyResult.value)
+    },
+
+    isExtensible() {
+      lazyResult.runEffectIfNeeded()
+      return Reflect.isExtensible(lazyResult.value)
     },
   }
 
   // 注意：如果 doSomething 返回的是 primitive（number/string/boolean），Proxy 没法包它。
   // 这里仍然返回 Proxy（类型层面强转），在运行时需要用户“以对象方式使用”才能触发。
   // 真要支持 primitive 的懒值，需要 LazyBox + Symbol.toPrimitive（可以后续加）。
-  return new Proxy(base as any, handler) as any
+  return new Proxy(lazyResult.value, handler) as any
 }

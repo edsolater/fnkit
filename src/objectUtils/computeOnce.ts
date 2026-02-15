@@ -1,3 +1,5 @@
+import { isObject } from ".."
+
 /**
  * OnceRef：一次性计算的引用
  * - 第一次读取 value：执行 fn() 并缓存返回值
@@ -6,6 +8,69 @@
  */
 export type OnceRef<T> = {
   readonly value: T
+}
+
+/**
+ * ControlledOnceRef：受控一次性计算的引用
+ * - 读取 value 不会触发计算
+ * - 未执行前 value 为 undefined
+ * Controlled once-computed value reference
+ * - Reading value does not trigger execution
+ * - value is undefined before execution
+ */
+export type ControlledOnceRef<T> = {
+  readonly value: T | undefined
+}
+
+/**
+ * OnceController：一次性计算控制器
+ * One-time computation controller
+ */
+export type OnceController<T> = {
+  readonly computed: boolean
+  readonly value: T
+  runEffectIfNeeded(): T
+}
+
+/**
+ * 手动computeOnce
+ * 读取value也不会自动执行， 除非显示地调用其runEffect方法。 适合需要更细粒度控制的场景。
+ */
+export function computeOnceManually<T>(fn: () => T, init?: any): OnceController<T> {
+  let computed = false
+  let value: T = init as T
+
+  const innerState: OnceController<T> = {
+    get computed() {
+      return computed
+    },
+    get value() {
+      return value
+    },
+    runEffectIfNeeded(): T {
+      if (!computed) {
+        const finalObject = fn()
+        computed = true
+        if (isObject(finalObject) && isObject(value)) {
+          // 如果都是对象， 那么就保留 cached 的引用， 只更新它的内容。 这样外界持有的引用就不会失效了。
+          const finalPrototype = Reflect.getPrototypeOf(finalObject)
+          const finalDescriptors = Object.getOwnPropertyDescriptors(finalObject)
+
+          Reflect.setPrototypeOf(value, finalPrototype)
+          Object.defineProperties(value, finalDescriptors)
+
+          if (!Object.isExtensible(finalObject)) {
+            Reflect.preventExtensions(value)
+          }
+        } else {
+          value = finalObject
+        }
+      }
+      return value
+    },
+  }
+
+  return innerState
 }
 
 /**
@@ -18,16 +83,12 @@ export type OnceRef<T> = {
  * ⚠️ 建议 fn 无参：因为这是“只缓存一次”的语义，参数会被天然忽略。
  */
 export function computeOnce<T>(fn: () => T): OnceRef<T> {
-  let hasValue = false
-  let cached!: T
+  const controller = computeOnceManually(fn)
 
-  return Object.freeze({
+  return {
     get value(): T {
-      if (!hasValue) {
-        cached = fn()
-        hasValue = true
-      }
-      return cached
+      controller.runEffectIfNeeded()
+      return controller.value as T
     },
-  })
+  }
 }
