@@ -1,6 +1,6 @@
 /**
  * FP utils : IIFE
  */
-export function iife(fn: () => void) {
-  fn()
+export function iife<T>(fn: () => T): T {
+  return fn()
 }
