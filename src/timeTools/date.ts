@@ -32,7 +32,14 @@ export function configDateZone(zone: Zone) {
 export class Date {
   zone: Zone
   jsDate: JSDate
+  /** 秒级别的时间戳有小数部分，代表毫秒 */
   timestamp: number
+  getTimestamp(options?: {
+    /** 是否包含毫秒部分，默认为 false */
+    includeMilliseconds?: boolean
+  }): number {
+    return options?.includeMilliseconds ? this.timestamp : Math.round(this.timestamp)
+  }
 
   /** 一般不用， 使用static from */
   constructor(jsDate: JSDate, timestamp: number, zone: Zone = dateZone) {
@@ -225,8 +232,19 @@ export function getTime(value?: DateParam) {
   return createDate(value).timestamp
 }
 
-export function getTimestamp(value?: DateParam): number {
-  return createDate(value).timestamp
+/**
+ * 获取秒级时间戳，包含小数部分（毫秒）.
+ * 与 {@link toTimestamp} 的区别在于它可能包含小数部分，代表毫秒
+ */
+export function getTimestamp(value?: DateParam, options?: Parameters<Date['getTimestamp']>[0]): number {
+  return createDate(value).getTimestamp({includeMilliseconds: true, ...options})
+}
+
+/**
+ * 与 {@link getTimestamp} 的区别在于它返回整数
+ */
+export function toTimestamp(date: DateParam,options?:Parameters<Date['getTimestamp']>[0]): number {
+  return createDate(date).getTimestamp(options)
 }
 /**
  * 这个是整数
@@ -277,4 +295,3 @@ export function parseDate(dateParam?: DateParam, zone?: Zone): DateInfoFull {
   const date = Date.from(dateParam, zone)
   return date.getDateInfo()
 }
-
