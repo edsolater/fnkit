@@ -5,3 +5,5 @@ export * from "./MessageChip"
 export * from "./CoordinatePointsChart"
 
 export * from "./InfiniteObject"
+
+export * from "./SignalBadge"
