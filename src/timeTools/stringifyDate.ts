@@ -1,4 +1,5 @@
-import { getISO, createDate, createCurrentDate, type DateParam } from "./date"
+import { isObject, isString, type PartRequired } from ".."
+import { createCurrentDate, createDate, getISO, type DateParam, type Zone } from "./date"
 import { getYear } from "./dateOperations"
 import { TimeStampVerbose } from "./parseDuration.type"
 
@@ -89,6 +90,14 @@ export const mapToChineseMonth = (monthNumber: number) => chineseMonthNames[(mon
 export const mapToAmPmHour = (hourNumber: number): { hour: number; flag: string } =>
   hourNumber > 12 ? { hour: hourNumber - 12, flag: "PM" } : { hour: hourNumber, flag: "AM" }
 
+   
+export type FormatDateOptions = {
+  zone?: Zone
+  /** default is 'YYYY-MM-DD HH:mm:ss' */
+  formatString?: string
+  /** default is 'en' */
+  weekNameStyle?: "en" | "zh-cn"
+}
 /**
  * date format string list:
  *
@@ -114,14 +123,35 @@ export const mapToAmPmHour = (hourNumber: number): { hour: number; flag: string 
  * @example
  * formatDate('2020-08-24 18:54', 'YYYY-MM-DD HH:mm:ss') // 2020-08-24 18:54:00
  */
+
 export function formatDate(
   inputDate: DateParam,
-  formatString = "YYYY-MM-DD HH:mm:ss",
-  options?: { /** default is 'en' */ weekNameStyle?: "en" | "zh-cn" },
+  formatString?: string,
+  options?: FormatDateOptions,
+) 
+export function formatDate(
+  inputDate: DateParam,
+  options?: FormatDateOptions,
+) 
+export function formatDate(
+  inputDate: DateParam,
+  formatString?: string | FormatDateOptions,
+  inputOptions?: FormatDateOptions,
 ) {
-  const date = createDate(inputDate)
+  const options = (() => {
+    const defaultFormatString = "YYYY-MM-DD HH:mm:ss"
+    if (isObject(formatString)) {
+      return {formatString: defaultFormatString, ...formatString , ...inputOptions} 
+    }else if (isString(formatString)) {
+      return { formatString, ...inputOptions} 
+    } else {
+      return { formatString: defaultFormatString }
+    }
+  })() satisfies PartRequired<FormatDateOptions, "formatString">
 
-  return formatString
+  const date = createDate(inputDate, options.zone)
+
+  return options.formatString
     .replace("YYYY", `${getYear(date)}`)
     .replace("YY", `${date.year}`.slice(2))
     .replace("MM", `${date.month}`.padStart(2, "0"))
@@ -188,7 +218,12 @@ export function extractDate(dateString: string, options?: { year?: boolean }) {
 export function extractTime(dateString: string, options?: { milliseconds?: boolean }) {
   return formatDate(dateString, options?.milliseconds ? "HH:mm:ss" : "HH:mm")
 }
-
+ 
+/** 快速表达：时间戳 -> 日期字符串 
+ * 内部调用 {@link formatDate} */
+export function toDateString(timestamp: TimeStampVerbose, options?: FormatDateOptions) {
+  return formatDate(timestamp, options)
+}
 /**
  *
  * @example
