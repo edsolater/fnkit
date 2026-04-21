@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "module": "esnext", //如果过于新，typescript就不会转换 export * as ns 的语法了
-    "target": "ES2022",
+    "target": "ESNext", // 完全不考虑兼容性，按最新语义输出 / No compatibility concerns; emit with latest semantics
     "lib": ["ESNext", "ESNext.Iterator"],
+    "types": ["node"], // 显式引入 Node 全局类型（含 console 等）/ Explicitly include Node globals (e.g. console)
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node", //可以自动使用文件夹下的 index.ts
+    "moduleResolution": "bundler", // 使用 Bundler 解析以匹配 Vite；避免 node10 弃用 / Bundler resolution for Vite; avoids deprecated node10
     "noImplicitAny": false,
     "strict": true,
     "outDir": "dist",

@@ -1,4 +1,4 @@
-import { shrinkFn, type MayFn } from "."
+import { invoke, shrinkFn, type MayFn } from "."
 import { isPromise } from "./dataType"
 
 export function assert(condition: any, callback?: () => void): asserts condition
@@ -87,13 +87,16 @@ export function tryCatch<T>(coreTask: () => T, catchFunction?: (err: Error) => N
 /**
  * 类似于assert，出错就终止程序了
  */
-export function tryAssert<T>(tryFunction: () => T, catchFunction?: (err: Error) => void): T {
+export function tryAssert<T>(
+  tryFunction: () => T,
+  catchFunction?: ((err: Error) => void) | string,
+  assertCondition: (err: Error | undefined) => boolean = () => true,
+): T {
   let errObj: Error | undefined = undefined
   const result = tryCatch(tryFunction, (err) => {
     errObj = err
-    catchFunction?.(errObj)
   })
-  assert(errObj == null, errObj)
+  assert(errObj == null && assertCondition(errObj), shrinkFn(catchFunction, [errObj!]) ?? errObj)
   return result as T
 }
 
