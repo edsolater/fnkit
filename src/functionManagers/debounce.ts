@@ -1,4 +1,4 @@
-import { setTimeoutWithSecondes } from "../timeTools/buildinTimeUtils"
+import { setTimeoutWithSecondes } from "../timeTools/buildin/setTimeout"
 import { createCurrentTimestamp } from "../timeTools/date"
 
 const defaultDebouneDelay = 400

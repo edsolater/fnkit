@@ -7,7 +7,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "bundler", // 使用 Bundler 解析以匹配 Vite；避免 node10 弃用 / Bundler resolution for Vite; avoids deprecated node10
+    "moduleResolution": "bundler", // 使用 Bundler 解析；避免 node10 弃用 / Bundler resolution; avoids deprecated node10
     "noImplicitAny": false,
     "strict": true,
     "outDir": "dist",

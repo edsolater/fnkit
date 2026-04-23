@@ -6,8 +6,10 @@
 
 ```bash
 bun install
-bun run build:debug
 bun run build
+
+# Optional: Remove stale dist outputs (when files were deleted/renamed)
+bun run clean
 bun run test
 bun run type-check
 ```

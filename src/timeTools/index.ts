@@ -1,4 +1,5 @@
-export * from "./buildinTimeUtils"
+export * from "./buildin/setInterval"
+export * from "./buildin/setTimeout"
 export * from "./date"
 export * from "./parseDuration"
 export * from "./parseDuration.type"
