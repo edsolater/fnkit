@@ -12,7 +12,7 @@ function clearTimeout(timeoutId: number) {
   globalThis.clearTimeout(timeoutId)
 }
 
-export type TimeoutTaskFunction = (utils: { loopCount: number; cancel: () => void }) => void
+export type TimeoutTaskFunction<R> = (utils: { loopCount: number; cancel: () => void }) => R
 
 export type SetTimeoutOptions = {
   delay?: TimeLabel
@@ -23,8 +23,13 @@ export type SetTimeoutOptions = {
   /** 需要手动触发，使用调用SetTimeoutController.start  */
   haveManuallyController?: boolean
 }
+export type SetTimeoutController<R> = {
+  /** 获取定时器任务的结果,同步版使用{@link getCurrentResult}方法 */
+  result: Promise<R>
 
-export type SetTimeoutController = {
+  /** 同步获取定时器任务的结果，异步版使用{@link result}属性 */
+  getCurrentResult(): R | undefined
+
   /** 取消定时器 */
   cancel(): void
 
@@ -38,16 +43,27 @@ export type SetTimeoutController = {
  * @returns
  */
 
-export function setTimeout(
-  taskFn: TimeoutTaskFunction,
+export function setTimeout<R>(
+  taskFn: TimeoutTaskFunction<R>,
   rawOptions?: SetTimeoutOptions | TimeLabel,
-): SetTimeoutController {
+): SetTimeoutController<R> {
   let loopCount = 0
   let timeId = 0
+  let syncedResult: R | undefined = undefined
+  const { promise: resultPromise, resolve, reject } = Promise.withResolvers<R>()
 
   const options: SetTimeoutOptions = isTimeLabel(rawOptions) ? { delay: rawOptions } : (rawOptions ?? {})
   // core
-  const runCore = () => asyncInvoke(() => taskFn({ loopCount: loopCount++, cancel }))
+  const runCore = () => {
+    const taskResult = asyncInvoke(() => taskFn({ loopCount: loopCount++, cancel }))
+    taskResult
+      .then((result) => {
+        syncedResult = result
+        resolve(result)
+      })
+      .catch(reject)
+    return taskResult
+  }
 
   function start() {
     if (options?.immediate) runCore()
@@ -61,5 +77,5 @@ export function setTimeout(
   if (!options?.haveManuallyController) {
     start()
   }
-  return { cancel, start }
+  return { cancel, start, result: resultPromise, getCurrentResult: () => syncedResult }
 }
