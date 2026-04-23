@@ -1,5 +1,5 @@
 import { isFunction } from "./dataType"
-import { setTimeoutWithSecondes } from "./timeTools"
+import { runBuildinSetTimeoutWithSecondes } from "./timeTools"
 
 export function createTimeoutMap<K, V>({ maxAge }: { maxAge: number }) {
   const innerMap = new Map<K, V>()
@@ -11,7 +11,7 @@ export function createTimeoutMap<K, V>({ maxAge }: { maxAge: number }) {
       clearTimeout(timeoutId)
     }
 
-    const newAutoDeleteTimeoutId = setTimeoutWithSecondes(() => {
+    const newAutoDeleteTimeoutId = runBuildinSetTimeoutWithSecondes(() => {
       innerMap.delete(key)
       timeoutMap.delete(key)
     }, maxAge)

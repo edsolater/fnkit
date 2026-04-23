@@ -4,25 +4,32 @@ import { type TimeLabel, parseTimeLabelToMilliseconds, isTimeLabel } from "../pa
 /**
  * build-in milliseconds is not human-friendly
  */
-
-export function setTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeLabel | undefined): number {
+export function runBuildinSetTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeLabel | undefined): number {
   // @ts-ignore
   return globalThis.setTimeout(fn, delay ? parseTimeLabelToMilliseconds(delay) : undefined)
+}
+function clearTimeout(timeoutId: number) {
+  globalThis.clearTimeout(timeoutId)
 }
 
 export type TimeoutTaskFunction = (utils: { loopCount: number; cancel: () => void }) => void
 
 export type SetTimeoutOptions = {
   delay?: TimeLabel
-  /** if set this, fn will run immediately, (two times total) */
+
+  /** 立刻执行一次函数，但同时也会倒计时。应用在需要一开始就立刻执行一次的场景*/
   immediate?: boolean
-  /** if set this, don't auto-run  */
+
+  /** 需要手动触发，使用调用SetTimeoutController.start  */
   haveManuallyController?: boolean
 }
 
 export type SetTimeoutController = {
+  /** 取消定时器 */
   cancel(): void
-  run(): void
+
+  /** 当还有options?.haveManuallyController时，start方法是手动触发倒计时 */
+  start(): void
 }
 /**
  * build-in globalThis.setTimeout is not human-friendly
@@ -42,9 +49,9 @@ export function setTimeout(
   // core
   const runCore = () => asyncInvoke(() => taskFn({ loopCount: loopCount++, cancel }))
 
-  function run() {
+  function start() {
     if (options?.immediate) runCore()
-    timeId = setTimeoutWithSecondes(runCore, options?.delay)
+    timeId = runBuildinSetTimeoutWithSecondes(runCore, options?.delay)
   }
 
   function cancel() {
@@ -52,7 +59,7 @@ export function setTimeout(
   }
 
   if (!options?.haveManuallyController) {
-    run()
+    start()
   }
-  return { cancel, run }
+  return { cancel, start }
 }

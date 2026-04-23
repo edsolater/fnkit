@@ -1,4 +1,4 @@
-import { setTimeoutWithSecondes } from "../timeTools/buildin/setTimeout"
+import { runBuildinSetTimeoutWithSecondes } from "../timeTools/buildin/setTimeout"
 import { createCurrentTimestamp } from "../timeTools/date"
 
 const defaultDebouneDelay = 400
@@ -61,7 +61,7 @@ export function throttle<F extends (...args: any[]) => void>(
     if (remainDelayTime <= 0) {
       invokeFn()
     } else {
-      currentTimeoutId = setTimeoutWithSecondes(invokeFn, remainDelayTime)
+      currentTimeoutId = runBuildinSetTimeoutWithSecondes(invokeFn, remainDelayTime)
     }
 
     prevDurationTimestamp = currentTimestamp

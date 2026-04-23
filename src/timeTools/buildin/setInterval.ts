@@ -1,7 +1,7 @@
 import { assert, getValue, shrinkFn, type MayFn } from "../.."
 import { isObject, isUndefined } from "../../dataType"
 import { isTimeLabel, parseTimeLabel, parseTimeLabelToMilliseconds, type TimeLabel } from "../parseDuration"
-import { setTimeoutWithSecondes } from "./setTimeout"
+import { runBuildinSetTimeoutWithSecondes } from "./setTimeout"
 
 /**
  * build-in milliseconds is not human-friendly
@@ -157,7 +157,7 @@ export function setInterval(
       if (innerOptions.forceImmediate || options?.delay) {
         startIntervalLoop()
       } else {
-        initDelayTimeoutId = setTimeoutWithSecondes(() => {
+        initDelayTimeoutId = runBuildinSetTimeoutWithSecondes(() => {
           startIntervalLoop()
         }, options.delay)
       }
