@@ -1,5 +1,5 @@
 export type TimeStampVerbose = TimeStamp | TimeStampString | Date
-export type TimeStamp = number // (ms)
+export type TimeStamp = number // (s)
 
 export type TimeStampString = string
 
