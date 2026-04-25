@@ -1,4 +1,4 @@
-import { isFunction } from "./dataType"
+import { bindThisIfFunction } from "./bindThisIfFunction"
 import { runBuildinSetTimeoutWithSecondes } from "./timeTools"
 
 export function createTimeoutMap<K, V>({ maxAge }: { maxAge: number }) {
@@ -28,7 +28,7 @@ export function createTimeoutMap<K, V>({ maxAge }: { maxAge: number }) {
         }
       } else {
         const result = target[key]
-        return isFunction(result) ? result.bind(target) : result
+        return bindThisIfFunction(result, target)
       }
     },
   })

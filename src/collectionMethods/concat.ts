@@ -1,3 +1,4 @@
+import { bindThisIfFunction } from "../bindThisIfFunction"
 import { isArray, isIterable } from "../dataType"
 import { AnyObj } from "../typings"
 
@@ -64,8 +65,7 @@ export function concat(collection, collection2) {
     return new Proxy([] as any[], {
       get(target, prop) {
         const value = Reflect.get(compute(), prop)
-        if (typeof value === 'function') return value.bind(compute())
-        return value
+        return bindThisIfFunction(value, compute())
       },
       has(target, prop) { return Reflect.has(compute(), prop) },
       ownKeys(target) { return Reflect.ownKeys(compute()) },

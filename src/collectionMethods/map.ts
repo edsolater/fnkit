@@ -1,3 +1,4 @@
+import { bindThisIfFunction } from "../bindThisIfFunction"
 import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj } from "../typings"
 import { toIterator } from "./iteratorableUtils"
@@ -121,10 +122,7 @@ function mapSet<T, R>(set: Set<T>, mapper: (value: T, index: number) => R): Set<
   return new Proxy(new Set<R>(), {
     get(target, prop) {
       const value = Reflect.get(compute(), prop)
-      if (typeof value === "function") {
-        return value.bind(compute())
-      }
-      return value
+      return bindThisIfFunction(value, compute())
     },
     has(target, prop) {
       return Reflect.has(compute(), prop)
@@ -165,10 +163,7 @@ function mapMap<K, V, R>(map: Map<K, V>, mapper: (value: V, key: K) => R): Map<K
   return new Proxy(new Map<K, R>(), {
     get(target, prop) {
       const value = Reflect.get(compute(), prop)
-      if (typeof value === "function") {
-        return value.bind(compute())
-      }
-      return value
+      return bindThisIfFunction(value, compute())
     },
     has(target, prop) {
       return Reflect.has(compute(), prop)

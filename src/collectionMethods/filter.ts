@@ -1,3 +1,4 @@
+import { bindThisIfFunction } from "../bindThisIfFunction"
 import { isArray, isIterable, isMap, isSet } from "../dataType"
 import type { AnyObj, Keyof, ValueOf } from "../typings"
 import { getIteratorInnerKey, getIteratorInnerValue } from "./iteratorableItemAndEntry"
@@ -128,12 +129,7 @@ function filterSet<T>(set: Set<T>, predicate: (value: T, index: number) => boole
   return new Proxy(new Set<T>(), {
     get(target, prop) {
       const value = Reflect.get(compute(), prop)
-      // 绑定方法的 this 到真实 Set
-      // Bind method's this to real Set
-      if (typeof value === "function") {
-        return value.bind(compute())
-      }
-      return value
+      return bindThisIfFunction(value, compute())
     },
     has(target, prop) {
       return Reflect.has(compute(), prop)
@@ -178,12 +174,7 @@ function filterMap<K, V>(map: Map<K, V>, predicate: (value: V, key: K) => boolea
   return new Proxy(new Map<K, V>(), {
     get(target, prop) {
       const value = Reflect.get(compute(), prop)
-      // 绑定方法的 this 到真实 Map
-      // Bind method's this to real Map
-      if (typeof value === "function") {
-        return value.bind(compute())
-      }
-      return value
+      return bindThisIfFunction(value, compute())
     },
     has(target, prop) {
       return Reflect.has(compute(), prop)

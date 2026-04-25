@@ -2,6 +2,7 @@
  * ! AI写的， 还没有完全审查完lazyDo的实现
  */
 import { isArray, isFunction, isObject } from ".."
+import { bindThisIfFunction } from "../bindThisIfFunction"
 import type { AnyObj } from "../typings"
 import { computeOnceManually } from "./computeOnce"
 
@@ -257,7 +258,7 @@ export function lazyDo(base: AnyObj, doSomething: (draft: AnyObj) => any) {
     get(_target, propertyKey, _receiver) {
       lazyResult.runEffectIfNeeded()
       const propertyValue = Reflect.get(lazyResult.value, propertyKey, lazyResult.value)
-      return isFunction(propertyValue) ? propertyValue.bind(lazyResult.value) : propertyValue
+      return bindThisIfFunction(propertyValue, lazyResult.value)
     },
 
     set(_target, propertyKey, value) {

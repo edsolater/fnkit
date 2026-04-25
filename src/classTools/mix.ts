@@ -1,3 +1,4 @@
+import { bindThisIfFunction } from "../bindThisIfFunction"
 import type { AnyClass } from "../typings/constants"
 import type { Intersect, MapInvoke, ToInstance } from "../typings/recursiveTools"
 
@@ -79,11 +80,7 @@ export function mixClasses<const Classes extends AnyClass[]>(...bases: Classes):
       if (staticMemberMap.has(key)) {
         const sourceClass = staticMemberMap.get(key)!
         const value = sourceClass[key]
-        // 静态方法需要绑定到原始类，确保 this 指向正确
-        if (typeof value === "function") {
-          return value.bind(sourceClass)
-        }
-        return value
+        return bindThisIfFunction(value, sourceClass)
       }
 
       return target[key]

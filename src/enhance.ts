@@ -1,4 +1,4 @@
-import { isFunction } from "./dataType"
+import { bindThisIfFunction } from "./bindThisIfFunction"
 import { runBuildinSetTimeoutWithSecondes } from "./timeTools"
 import { shrinkFn } from "./wrapper"
 
@@ -71,7 +71,7 @@ export function enhanceMap<K, V = any>(originalMap: Map<K, V>, opts?: EnhancedMa
         return update
       } else {
         const originalValue = Reflect.get(target, propertyName, receiver)
-        return isFunction(originalValue) ? originalValue.bind(target) : originalValue
+        return bindThisIfFunction(originalValue, target)
       }
     },
   })
