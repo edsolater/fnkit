@@ -102,18 +102,32 @@ export function isTimeLabel(time: any): time is TimeLabel {
     trimmed,
   )
 }
-/** to milliseconds */
+/** to milliseconds
+ * @deprecated 使用命名友好的 {@link toMilliseconds} 
+ */
 export function parseTimeLabelToMilliseconds(time: TimeLabel) {
   return parseTimeLabel(time) * 1000
 }
-/** @deprecated 使用命名友好的 {@link parseTimeLabel} */
+
+/** 转换成毫秒 */
+export function toMilliseconds(time: TimeLabel) {
+  return parseTimeLabel(time)* 1000
+}
+
+/** @deprecated 使用命名友好的 {@link parseTimeLabel} 或 {@link toSeconds} */
 export function parseTimeLabelToSeconds(time: TimeLabel) {
   return parseTimeLabel(time)
 }
 
+/** 转换成秒，与 {@link parseTimeLabelToSeconds} 相同，但表达代表的语义主体不同 */
+export function toSeconds(time: TimeLabel) {
+  return parseTimeLabel(time)
+}
+
+
+/** 转换成秒，与 {@link toSeconds} 相同，但表达代表的语义主体不同 */
 export function parseTimeLabel(time: TimeLabel) {
   if (isNumber(time)) return time
-
   const trimmed = time.trim()
   const matched =
     /^(-?\d+(?:\.\d+)?)\s*(milliseconds|seconds|minutes|hours|days|millisecond|second|minute|hour|day|ms|s|m|h|H|d|D|W|M|Y)$/.exec(
