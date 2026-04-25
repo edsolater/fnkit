@@ -1,4 +1,5 @@
 export * from "./buildin/setInterval"
+export * from "./buildin/requestIdleCallback"
 export * from "./buildin/setTimeout"
 export * from "./date"
 export * from "./parseDuration"
