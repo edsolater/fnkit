@@ -25,8 +25,22 @@ export function mayMap<T, R>(may: T[] | T | undefined, cb: (v: T, idx: number) =
   }
 }
 
+/** 使得 {@link MayArray} 具有**可和并性** */
+export function mergeMayArray<T>(...mays: MayArray<T>[]): MayArray<T> {
+  if (mays.length <= 1) return mays[0]
+  return mays.flat() as MayArray<T>
+}
+
+/**
+ * 转换成数组，如果已经是数组则不用转换
+ */
+export function toArray<T>(v: MayArray<T>): T[] {
+  return isArray(v) ? v : [v]
+}
+
 /**
  * if it not an array, wrap it
+ * @deprecated 语义不够明确，建议使用 {@link toArray}，其中to
  */
 export function arrify<T>(v: MayArray<T>): [T]
 export function arrify<T>(v: T): T extends AnyArr ? T : [T]

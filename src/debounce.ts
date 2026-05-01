@@ -43,7 +43,7 @@ function requestAnimationFrame(fn: AnyFn) {
 }
 
 /**
- *
+ * 防抖，只是一段时间后执行最后一次
  * @requires {@link createCurrentTimestamp `createCurrentTimestamp()`}
  */
 export function debounce<F extends (...args: any[]) => void>(
