@@ -1,6 +1,6 @@
 import { CollectionItems, type Entriable, type Itemable, type Iteratorable } from "../collectionMethods"
 import { MayArray, DeMayArray } from "../mayArray"
-import { AnyFn, Falsy, Primitive } from "./constants"
+import { AnyFn, Falsy, Primitive } from "./baseTypes"
 
 export type DeArray<T> = T extends Array<infer U> ? U : T
 

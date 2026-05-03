@@ -1,4 +1,4 @@
-import { Primitive } from "../typings/constants"
+import { Primitive } from "../typings/baseTypes"
 import type { RPNItem } from "./numberExpression"
 
 export type StringNumber = string

@@ -1,5 +1,5 @@
 import { isPrimitive } from "./dataType"
-import { Primitive } from "./typings/constants"
+import { Primitive } from "./typings/baseTypes"
 
 // const inArrayCache = new WeakMap()
 // export function toPrimitiveValue(value: any): Primitive {

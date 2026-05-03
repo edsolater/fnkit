@@ -1,5 +1,5 @@
 import { isFunction } from "./dataType"
-import type { AnyFn } from "./typings/constants"
+import type { AnyFn } from "./typings/baseTypes"
 /**
  * merge without access, you can config transformer for detail control
  * @example

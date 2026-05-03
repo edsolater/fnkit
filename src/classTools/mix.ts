@@ -1,5 +1,5 @@
 import { bindThisIfFunction } from "../bindThisIfFunction"
-import type { AnyClass } from "../typings/constants"
+import type { AnyClass } from "../typings/baseTypes"
 import type { Intersect, MapInvoke, ToInstance } from "../typings/recursiveTools"
 
 // 混合类的类型：静态成员 + 构造函数

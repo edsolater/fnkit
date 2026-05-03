@@ -1,5 +1,5 @@
 import { isArray, isIterable, isMap, isSet } from "../dataType"
-import type { AnyObj } from "../typings/constants"
+import type { AnyObj } from "../typings/baseTypes"
 import { getIteratorInnerKey, getIteratorInnerValue } from "./iteratorableItemAndEntry"
 import { toIterator, type Iteratorable } from "./iteratorableUtils"
 

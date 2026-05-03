@@ -1,6 +1,6 @@
 import { isArray, isObject, isObjectLike, isString } from "./dataType"
 import { toPrimitiveValue } from "./toPrimitiveValue"
-import { AnyObj } from "./typings/constants"
+import { AnyObj } from "./typings/baseTypes"
 
 /**
  * very rude, just checking keys

@@ -1,10 +1,5 @@
 import { type MayEnum } from "."
-import { AnyArr, AnyFn, Primitive, type AnyObj } from "./typings/constants"
-
-/**
- * 可被明确string化的
- */
-export type Stringable = any
+import { AnyArr, AnyFn, Primitive, type AnyObj } from "./typings/baseTypes"
 
 /**
  * @requires {@link getObjType `getObjType()`}

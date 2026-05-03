@@ -1,5 +1,5 @@
 import { isObject, isObjectLike } from "./dataType"
-import { AnyArr, AnyFn, type AnyObj } from "./typings/constants"
+import { AnyArr, AnyFn, type AnyObj } from "./typings/baseTypes"
 
 /**
  * attach a param to the function.return the function's copy.

@@ -1,4 +1,4 @@
-import { AnyFn } from "./typings/constants"
+import { AnyFn } from "./typings/baseTypes"
 
 /**
  * @todo it's type intelligense is not very smart for parameters

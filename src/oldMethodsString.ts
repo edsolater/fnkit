@@ -1,5 +1,5 @@
 import { isJSON, isObject } from "./dataType"
-import { ID } from "./typings/constants"
+import { ID } from "./typings/baseTypes"
 
 /**
  * 组合字符串们（n^3 复杂度）（不保证顺序）
