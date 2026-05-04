@@ -30,6 +30,7 @@ export * from "./FPTools/ensure"
 export * from "./FPTools/loop"
 export * from "./FPTools/Task"
 export * from "./FPTools/when"
+export * from "./FPTools/instanceUtils"
 export * from "./functionManagers"
 export * from "./ifPattern" // FP style pattern matching
 export * from "./iife"
