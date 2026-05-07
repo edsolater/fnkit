@@ -12,7 +12,7 @@ function clearTimeout(timeoutId: number) {
   globalThis.clearTimeout(timeoutId)
 }
 
-export type TimeoutTaskFunction<R> = (utils: { loopCount: number; cancel: () => void }) => R
+export type TimeoutTaskFunction<R = any> = (utils: { loopCount: number; cancel: () => void }) => R
 
 export type SetTimeoutOptions = {
   delay?: TimeLabel
@@ -78,4 +78,9 @@ export function setTimeout<R>(
     start()
   }
   return { cancel, start, result: resultPromise, getCurrentResult: () => syncedResult }
+}
+
+/** @deprecated 这里只是兼容老代码， 建议直接使用 {@link setTimeout} */
+export function setTimeoutWithSecondes<R>(taskFn: TimeoutTaskFunction<R>, delay?: TimeLabel) {
+  return runBuildinSetTimeoutWithSecondes(taskFn, delay)
 }
