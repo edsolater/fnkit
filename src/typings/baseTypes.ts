@@ -1,4 +1,5 @@
 export type Primitive = boolean | number | string | bigint | symbol | null | undefined
+export type PresentPrimitive = NonNullable<Primitive>
 export type AnyValue = Primitive | AnyArr | AnyRecord | AnyFn | AnyClass | AnyMap | AnySet
 export type Nullish = undefined | null
 export type Falsy = Nullish | false | 0 | ""
