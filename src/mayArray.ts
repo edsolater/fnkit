@@ -1,4 +1,4 @@
-import { isArray } from "./dataType"
+import { isArray, isUndefined } from "./dataType"
 import type { AnyArr, MayDeepArray } from "./typings"
 
 export type MayArray<T> = T | Array<T>
@@ -34,8 +34,8 @@ export function mergeMayArray<T>(...mays: MayArray<T>[]): MayArray<T> {
 /**
  * 转换成数组，如果已经是数组则不用转换
  */
-export function toArray<T>(v: MayArray<T>): T[] {
-  return isArray(v) ? v : [v]
+export function toArray<T>(...vs: (MayArray<T> | undefined)[]): T[] {
+  return vs.flatMap((v) => (isArray(v) ? v : isUndefined(v) ? [] : [v]))
 }
 
 /**
