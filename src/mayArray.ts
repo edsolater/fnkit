@@ -32,10 +32,24 @@ export function mergeMayArray<T>(...mays: MayArray<T>[]): MayArray<T> {
 }
 
 /**
- * 转换成数组，如果已经是数组则不用转换
+ * 转换成数组，一定会创建一个新数组，
+ * 为了减少写防御性代码的机会，仅输出有值项。
  */
-export function toArray<T>(...vs: (MayArray<T> | undefined)[]): T[] {
-  return vs.flatMap((v) => (isArray(v) ? v : isUndefined(v) ? [] : [v]))
+export function toArray<T>(...vs: (MayArray<T | undefined> | undefined)[]): T[] {
+  const newList = [] as T[]
+  for (const v of vs) {
+    if (!v) continue
+    if (isArray(v)) {
+      for (const item of v) {
+        if (!isUndefined(item)) {
+          newList.push(item)
+        }
+      }
+    } else {
+      newList.push(v)
+    }
+  }
+  return newList
 }
 
 /**
