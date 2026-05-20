@@ -57,6 +57,15 @@ export function isMeanfulArray(v: unknown): v is AnyArr {
   return isArray(v) && v.length > 0
 }
 
+/**
+ * JS 里一个值能不能这样调用：
+ *
+ * value()
+ *
+ * 取决于它内部有没有 [[Call]]。
+ * 只有函数（包括普通函数、类、Generator 函数、Async 函数）有 [[Call]]，所以 isFunction 也会把类当函数。
+ * 哪怕是对象，但是有了[[Call]]也可以说是一个函数。
+ */
 export function isFunction(v: unknown): v is AnyFn {
   return typeof v === "function"
 }
