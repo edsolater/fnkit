@@ -146,6 +146,10 @@ export function isString(v: unknown): v is string {
   return typeof v === "string"
 }
 
+export function isAnyKey(v: unknown): v is string | number | symbol {
+  return isString(v) || isNumber(v) || isSymbol(v)
+}
+
 export function isIterable(v: unknown): v is Iterable<unknown> {
   return isObject(v) && typeof v[Symbol.iterator] === "function"
 }
