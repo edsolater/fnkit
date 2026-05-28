@@ -1,9 +1,10 @@
 import { isFunction } from "./dataType"
+import { getKeySet, getKeys } from "./mergeObject";
 import type { AnyFn } from "./typings/baseTypes"
 /**
- * merge without access, you can config transformer for detail control
- * @example
- * mergeObjectsWithConfigs([{a: 3, b: 2}, {a: 1, b: 3}], (key, v1, v2) => (key === 'a') ? [v1, v2] : v2) // {a: [3,1], b: 3}
+ * {@link shallowMergeObjectWithConfig} 的曾用名，实际上，这个命名不够直观
+ * 因为它作为“工具”的“工具” 
+ * @deprecated 尽量使用 {@link shallowMergeObjectWithConfig}
  */
 export function mergeObjectsWithConfigs<T extends object | Function>(
   objs: T[],
@@ -18,7 +19,7 @@ export function mergeObjectsWithConfigs<T extends object | Function>(
   // ------ 内部方法 -----
   function _getKeys() {
     if (!_keySet) {
-      _keySet = getKeySet(...objs)
+      _keySet = getKeySet(objs)
     }
     return _keySet
   }
@@ -71,7 +72,7 @@ export function mergeObjects<T extends object>(...objs: T[]): T {
   // ------ 内部方法 -----
   function _getKeys() {
     if (!keySet) {
-      keySet = getKeySet(...objs)
+      keySet = getKeySet(objs)
     }
     return keySet
   }
@@ -149,7 +150,7 @@ export function createEmptyObjectByOlds<
 >(...objs: [T, U, V, W]): { [key in keyof T | keyof U | keyof V | keyof W]: undefined }
 export function createEmptyObjectByOlds(...objs: (object | undefined)[]): object
 export function createEmptyObjectByOlds(...objs: (object | undefined)[]): any {
-  return objs.length > 0 ? createEmptyObject(getKeys(...objs)) : {}
+  return objs.length > 0 ? createEmptyObject(getKeys(objs)) : {}
 }
 
 /**
@@ -165,7 +166,7 @@ export function createEmptyObject(keys: (string | symbol)[]) {
   return result
 }
 
-function getValueByConfig<T extends object>(
+export function getValueByConfig<T extends object>(
   objs: T[],
   key: string | symbol,
   valueMatchRule: (payloads: { key: string | symbol; valueA: any; valueB: any }) => any,
@@ -179,30 +180,4 @@ function getValueByConfig<T extends object>(
   return valueA
 }
 
-export function getKeys<T extends object | undefined>(...objs: T[]) {
-  if (objs.length <= 1) {
-    const obj = objs[0]
-    return obj ? Reflect.ownKeys(obj) : []
-  }
 
-  const result = new Set<string | symbol>()
-  for (const obj of objs) {
-    if (!obj) continue
-    Reflect.ownKeys(obj).forEach((k) => result.add(k))
-  }
-  return Array.from(result)
-}
-
-export function getKeySet<T extends object | undefined>(...objs: T[]): Set<string | symbol> {
-  if (objs.length <= 1) {
-    const obj = objs[0]
-    return obj ? new Set(Reflect.ownKeys(obj)) : new Set()
-  }
-
-  const result = new Set<string | symbol>()
-  for (const obj of objs) {
-    if (!obj) continue
-    Reflect.ownKeys(obj).forEach((k) => result.add(k))
-  }
-  return result
-}

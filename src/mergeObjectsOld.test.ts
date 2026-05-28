@@ -1,10 +1,11 @@
 import { expect, test } from "vitest"
 import { isSymbol } from "./dataType"
-import { getKeys, mergeObjectsWithConfigs } from "./mergeObjects"
+import { getKeys } from "./mergeObject"
+import { mergeObjectsWithConfigs } from "./mergeObjectsOld"
 
 const symbol = Symbol("s")
-test("test fn function:mergeObjectsWithConfigs", () => {
-  expect(getKeys({ a: 3, b: 4 }, { a: 5, b: 6, c: 7 })).toEqual(["a", "b", "c"])
+test("旧版对象合并接口继续兼容 valueA 和 valueB 回调", () => {
+  expect(getKeys([{ a: 3, b: 4 }, { a: 5, b: 6, c: 7 }])).toEqual(["a", "b", "c"])
 
   expect(
     mergeObjectsWithConfigs([

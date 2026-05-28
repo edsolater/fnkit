@@ -1,5 +1,5 @@
 import { isObject } from "./dataType"
-import { mergeObjects } from "./mergeObjects"
+import { mergeObjects } from "./mergeObjectsOld"
 import type { AnyFn } from "./typings"
 
 /** it's just original function with magic `config` property , means user can invoke it as usually */
