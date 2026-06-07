@@ -36,13 +36,10 @@ export function shrinkFn<T>(mayValue: T, params?: MayParameters<T>): MayReturn<T
   return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue as Exclude<T, AnyFn>
 }
 
-// @ts-expect-error 懒得弄 params的类型问题
-export function result<T>(mayValue: undefined, ...params?: MayParameters<T>): undefined
-// @ts-expect-error 懒得弄 params的类型问题
-export function result<T>(mayValue: T, ...params?: MayParameters<T>): MayReturn<T>
-// @ts-expect-error 懒得弄 params的类型问题
-export function result<T>(mayValue: T, ...params?: MayParameters<T>): MayReturn<T> {
-  return isFunction(mayValue) ? mayValue(...(params ?? [])) : mayValue as Exclude<T, AnyFn>
+export function result<T>(mayValue: undefined, ...params: MayParameters<T>): undefined
+export function result<T>(mayValue: T, ...params: MayParameters<T>): MayReturn<T>
+export function result<T>(mayValue: T, ...params: MayParameters<T>): MayReturn<T> {
+  return isFunction(mayValue) ? mayValue(...params) : mayValue as Exclude<T, AnyFn>
 }
 type MayParameters<T> = Parameters<Extract<T, AnyFn>>
 type MayReturn<T> = T extends AnyFn ? ReturnType<T> : T
