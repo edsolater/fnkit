@@ -52,6 +52,23 @@ describe("map()", () => {
 - 错误路径：应抛错时验证错误；不应抛错时验证容错。
 - 回归行为：源码注释、历史测试或旧行为暗示的特殊情况。
 
+## 成功案例：assert 系列测试
+
+新增或补充测试时，优先参考 [`src/oldMethodsMagic.test.ts`](../../src/oldMethodsMagic.test.ts) 中 `assert`、`assertVariable`、`tryAssert` 的写法。
+
+这个案例的关键不是“让测试通过”，而是先从函数逻辑出发，完整表达它应该覆盖的语义面：
+
+- 输入形态：普通值、函数、Promise。
+- 成功路径：truthy、条件函数通过、异步 resolve 通过。
+- 失败路径：falsy、条件函数失败、异步 resolve 失败。
+- 回调语义：验证 callback 是否调用，以及 payload 是否正确。
+- 错误传播：条件函数抛错、Promise reject、任务抛非 Error 值。
+- 重载语义：有 message、无 message、第二参数为 callback、message 为函数。
+
+测试文件里应该用简短注释写明“已覆盖什么”和“哪些低优先级边界没有展开”。这样后续维护者能知道测试缺口是有意识留下的，而不是遗漏。
+
+如果按函数逻辑写出的测试无法通过，不要先削弱测试；先判断是测试理解错了，还是实现没有满足函数应有语义。涉及公开 API 行为变化时，在批次汇报中交给使用者或更强模型判断。
+
 ## 测试分类建议
 
 ### collection

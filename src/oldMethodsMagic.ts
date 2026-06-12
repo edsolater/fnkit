@@ -1,24 +1,74 @@
-import { invoke, shrinkFn, type MayFn } from "."
-import { isPromise } from "./dataType"
+import { shrinkFn, type AnyValue, type MayFn, type MayPromise } from ".";
+import { isPromise } from "./dataType";
 
-export function assert(condition: any, callback?: () => void): asserts condition
-export function assert(condition: any, msg?: string, callback?: (msg: string) => void): asserts condition
-export function assert(condition: any, arg0?: string | (() => void), arg1?: (msg: string) => void): asserts condition {
-  const msg = typeof arg0 === "string" ? arg0 : undefined
+/**
+ * 断言一个值或条件函数的结果为 truthy，否则抛出错误。
+ *
+ * 同步条件可作为 TypeScript 断言使用；异步条件会返回 Promise，并在 resolve 后判断结果。
+ *
+ * @example
+ * assert(user, "user 不能为空")
+ *
+ * @example
+ * await assert(fetchReady(), "服务尚未就绪")
+ */
+export function assert<T extends AnyValue>(
+  condition: MayFn<Promise<T>>,
+  callback?: (payload: { value: T }) => MayPromise<void>,
+): Promise<void>
+export function assert<T extends AnyValue>(
+  condition: MayFn<Promise<T>>,
+  message?: string,
+  callback?: (payload: { value: T; message: string }) => MayPromise<void>,
+): Promise<void>
+
+export function assert<T extends AnyValue>(
+  condition: MayFn<T>,
+  callback?: (payload: { value: T }) => void,
+): asserts condition
+export function assert<T extends AnyValue>(
+  condition: MayFn<T>,
+  message?: string,
+  callback?: (payload: { value: T; message: string }) => void,
+): asserts condition
+
+
+
+export function assert(condition, arg0?, arg1?): any {
+  const message = typeof arg0 === "string" ? arg0 : undefined
   const callback = typeof arg0 === "function" ? arg0 : typeof arg1 === "function" ? arg1 : undefined
-  if (!condition) {
-    // @ts-ignore
-    callback?.(msg)
-    throw new Error(msg)
+  const conditionValue = shrinkFn(condition)
+
+  // ---------- 异步部分 ----------
+  if (isPromise(conditionValue)) {
+    return conditionValue.then(async (resolvedValue) => {
+      if (!resolvedValue) {
+        await callback?.({ value: resolvedValue, message: message })
+        throw new Error(message)
+      }
+    })
+  }
+
+  // ---------- 同步部分 ----------
+  if (!conditionValue) {
+    callback?.({ value: conditionValue, message: message })
+    throw new Error(message)
   }
 }
 
-export const neww = Reflect.construct
-
 /**
- * a useful method to assert variable
- * @param variable
- * @param options message and when
+ * 按默认 truthy 规则或自定义条件断言变量。
+ *
+ * 断言失败时会把消息和变量输出到 `console.log`，再由 {@link assert} 抛错。
+ *
+ * @param variable 要检查的变量。
+ * @param options 可传入失败消息，或自定义判断函数与失败消息。
+ *
+ * @example
+ * assertVariable(name, "name 不能为空")
+ *
+ * @example
+ * assertVariable(age, (value) => value >= 18, (value) => `年龄过小：${value}`)
  */
 export function assertVariable<T>(
   variable: T,
@@ -85,7 +135,12 @@ export function tryCatch<T>(coreTask: () => T, catchFunction?: (err: Error) => N
 }
 
 /**
- * 类似于assert，出错就终止程序了
+ * 执行任务并断言任务没有失败，失败时抛出错误。
+ *
+ * `tryFunction` 成功时返回任务结果；任务抛错时沿用 {@link tryCatch} 的当前行为。
+ *
+ * @example
+ * const value = tryAssert(() => JSON.parse(text), "JSON 解析失败")
  */
 export function tryAssert<T>(
   tryFunction: () => T,
