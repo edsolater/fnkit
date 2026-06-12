@@ -9,14 +9,14 @@
 当前优先级：
 
 1. 补齐公开 API 的测试。
-2. 在补测试时同步提取 raw reference 原信息。
-3. 后续再从 raw reference 中提炼最终 `reference.md`。
+2. 在补测试时顺手发现源码 JSDoc/TSDoc 缺口，但默认不处理。
+3. 后续再从测试和源码注释中提炼最终 `reference.md`。
 
 执行节奏约束：
 
 - 不能一次性修改大量文件或大量测试。
 - 每个批次最多处理 1 个源码文件、5 个强相关公开函数或 20 个新增/修改测试用例。
-- 每批次完成后必须运行相关测试，更新 raw reference，并向使用者汇报。
+- 每批次完成后必须运行相关测试，并向使用者汇报。
 - 使用者确认继续后，才进入下一批次。
 
 具体批次开始、执行、验证、汇报和恢复流程见 [`docs/plans/batch-execution-protocol.md`](./batch-execution-protocol.md)。
@@ -25,7 +25,8 @@
 
 - `README.md` 只做项目入口，不承载完整函数索引。
 - `reference.md` 是最终扁平函数索引，不按当前目录结构做语义分组。
-- `docs/reference-raw/*.md` 是测试阶段沉淀的原始资料，不是最终索引。
+- 默认不写额外 reference 说明文档；函数说明优先写在源码 JSDoc/TSDoc。
+- 如果需要统计哪些 JSDoc/TSDoc 待补，只更新 `docs/jsdocs.md` 总表。
 - 目录路径只表示源码位置，不表示函数归属。
 - 函数语义以函数本身为单位描述；未来可以迁移到 namespace，但不依赖当前目录结构。
 - 函数的精确定义以源码签名和 JSDoc/TSDoc 为准。
@@ -38,8 +39,8 @@
 | --- | --- | --- |
 | 入口 | `README.md` | 告诉使用者和 AI 去看 `reference.md`。 |
 | 索引 | `reference.md` | 扁平列出公开函数：函数名、形状、用途、标签、源码链接。 |
-| 原始资料 | `docs/reference-raw/*.md` | 在写测试时记录源码和测试确认过的行为。 |
 | 精确定义 | `src/**/*.ts` JSDoc/TSDoc | 写参数语义、返回值、边界条件、示例、函数间 `{@link}` 关系。 |
+| 说明清单 | `docs/jsdocs.md` | 只统计哪些源码说明待补，不写详细函数解释。 |
 | 测试 | `src/**/*.test.ts` | 验证公开行为、边界条件、类型意图和回归风险。 |
 
 ## reference.md 格式
@@ -61,25 +62,15 @@
 | [`add`](./src/numberish/operations.ts) | `Numberish, Numberish -> Numberish` | 精度友好地执行加法。 | `numberish` `math` `exact` |
 ```
 
-## raw reference 格式
+## JSDoc 记录规则
 
-raw reference 存放在 `docs/reference-raw/`，用于记录测试阶段收集到的原始信息。
+默认不新增额外 reference 文档。
 
-它应该比 `reference.md` 更详细，可以包含：
+绝大多数函数说明应放在源码 JSDoc/TSDoc 中，因为它离实现最近，也最容易被 AI 和维护者同时看到。
 
-- 源码链接和测试链接。
-- 轻量输入输出形状。
-- 当前行为。
-- 参数语义。
-- 返回值形状。
-- 边界行为。
-- 测试覆盖项。
-- 注释和实现冲突。
-- 待确认问题。
+如果执行模型发现 JSDoc/TSDoc 不足，只在批次汇报中说明；需要落盘统计时，统一写入 `docs/jsdocs.md` 总表。
 
-详细模板见 [`docs/reference-raw/README.md`](../reference-raw/README.md)。
-
-如果执行模型遇到无法判断的问题，记录到 [`docs/reference-raw/unresolved-questions.md`](../reference-raw/unresolved-questions.md)。
+不要创建 `*.reference.md`。如果某个函数真的需要长篇说明，由使用者单独提出。
 
 ## 标签策略
 
@@ -110,7 +101,7 @@ raw reference 存放在 `docs/reference-raw/`，用于记录测试阶段收集�
 - 描述性内容使用简体中文。
 - `{@link}`、函数名、参数名、类型名等代码结构保持英文。
 - 注释需要清楚、自然、优雅；生硬直译、无信息量或过时注释应在对应批次内修正。
-- 如果注释和实现冲突，先记录到 raw reference 的待确认问题，不由执行模型自行定论。
+- 如果注释和实现冲突，先在批次汇报中列出，不由执行模型自行定论。
 
 必写内容：
 
@@ -197,19 +188,19 @@ export function formatDate(...)
 - `src/index.ts` 可达的公开运行时 API 全部出现在清单中。
 - 清单能区分“无需测试的类型导出”和“必须测试的运行时导出”。
 
-### 阶段 2：补测试并同步提取 raw reference
+### 阶段 2：补测试并同步检查说明
 
 产物：
 
 - 新增或补充 `src/**/*.test.ts`。
-- 新增或补充 `docs/reference-raw/*.md`。
-- 将语义不清、疑似 bug、注释冲突记录到 `docs/reference-raw/unresolved-questions.md`。
+- 必要时补充或修正同批次源码 JSDoc/TSDoc。
+- 将语义不清、疑似 bug、注释冲突记录到批次汇报中。
 
 执行规则：
 
 1. 每批只处理 1 个源文件或 2 到 5 个强相关函数。
 2. 先用测试确认当前行为。
-3. 再把行为、形状、参数语义、边界和测试覆盖记录到 raw reference。
+3. 再判断是否需要在批次汇报中提示 JSDoc/TSDoc 缺口。
 4. 不在本阶段大规模改 `reference.md`。
 5. 每批最多新增或修改 20 个测试用例。
 6. 每批完成后停止，等待使用者确认继续。
@@ -217,8 +208,7 @@ export function formatDate(...)
 验收：
 
 - 本批次新增测试通过。
-- 本批次涉及的公开函数有 raw reference 记录。
-- 不确定问题已记录，未被执行模型擅自定论。
+- 不确定问题已在汇报中列出，未被执行模型擅自定论。
 
 详细执行指南见 [`docs/plans/codex-spark-test-and-raw-reference-guide.md`](./codex-spark-test-and-raw-reference-guide.md)。
 
@@ -239,11 +229,11 @@ export function formatDate(...)
 - 标签不代替用途，只用于搜索。
 - 不出现目录归属式标题。
 
-### 阶段 4：从 raw reference 批量补 reference
+### 阶段 4：从测试与源码说明批量补 reference
 
 执行顺序：
 
-1. 优先使用已测试且 raw reference 完整的函数。
+1. 优先使用已测试且源码 JSDoc/TSDoc 足够明确的函数。
 2. 再补核心高频工具：collection、numberish、timeTools、objectUtils、functionManagers。
 3. 最后补旧方法、低频结构、内部兼容导出。
 
@@ -325,7 +315,6 @@ scripts/audit-test-coverage.ts
 整体完成需要同时满足：
 
 - `README.md` 明确指向 `reference.md`。
-- `docs/reference-raw/` 已沉淀公开 API 的原始行为资料。
 - `reference.md` 覆盖所有公开运行时 API。
 - `reference.md` 使用扁平索引，不按目录做语义分组。
 - 每个公开运行时 API 有源码 JSDoc/TSDoc 或足够明确的近邻说明。

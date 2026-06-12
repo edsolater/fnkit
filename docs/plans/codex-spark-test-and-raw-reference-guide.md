@@ -1,19 +1,19 @@
-# Codex Spark 测试与 raw reference 执行指南
+# Codex Spark 测试执行指南
 
 ## 适用模型
 
 本文档面向较轻量的执行模型，例如 `5.3 Codex Spark`。
 
-执行模型的职责是按清晰规则推进测试和资料收集，不负责做大范围架构判断。
+执行模型的职责是按清晰规则推进测试，不负责做大范围架构判断。
 
 ## 当前阶段目标
 
 当前阶段只做两件事：
 
 1. 补齐公开 API 的单元测试。
-2. 在写测试时顺手提取 raw reference 原信息并落盘。
+2. 在写测试时顺手发现源码 JSDoc/TSDoc 缺口，但默认只在汇报中说明。
 
-不要在这个阶段大规模重写 `reference.md`。`reference.md` 是后续从 raw reference 中再提炼出来的最终索引。
+不要在这个阶段大规模重写 `reference.md`。`reference.md` 是后续从测试和源码说明中再提炼出来的最终索引。
 
 执行前必须阅读并遵守 [`batch-execution-protocol.md`](./batch-execution-protocol.md)。该协议定义每个批次如何开始、如何执行、如何验证、如何汇报，以及何时必须停下来等待使用者确认。
 
@@ -41,8 +41,8 @@
 3. 为每个函数判断测试缺口。
 4. 编写或补充测试。
 5. 运行相关测试。
-6. 更新对应 raw reference 文档。
-7. 如果遇到语义不清、注释冲突、实现疑似 bug，记录到 `docs/reference-raw/unresolved-questions.md`。
+6. 必要时在汇报中说明源码 JSDoc/TSDoc 缺口。
+7. 如果遇到语义不清、注释冲突、实现疑似 bug，在批次汇报中列出，等待使用者或更强模型判断。
 8. 最后运行必要验证命令。
 
 ## 写测试时的语言规则
@@ -76,25 +76,19 @@
 
 1. 运行相关测试。
 2. 必要时运行 `bun run type-check`。
-3. 更新 raw reference。
+3. 必要时说明是否发现源码 JSDoc/TSDoc 缺口。
 4. 总结本批次完成项、验证结果、遗留问题。
 5. 等使用者明确要求“继续”后再开始下一批。
 
 不要自动连续执行多个批次。即使还有明显剩余工作，也要先停下来汇报。
 
-## raw reference 记录规则
+## reference 说明规则
 
-raw reference 是原始资料，不是最终索引。
+默认不新增额外 reference 文档，也不要为了套格式强行写说明文件。
 
-它应该记录：
+函数说明优先写在源码 JSDoc/TSDoc 中。如果需要统计哪些说明待补，统一写入 `docs/jsdocs.md` 总表。
 
-- 源码和测试确认过的行为。
-- 输入输出形状。
-- 参数语义。
-- 返回值语义。
-- 边界条件。
-- 测试覆盖项。
-- 发现的问题。
+执行模型不要自行创建说明文档。如果觉得 JSDoc/TSDoc 不够承载，应在汇报中提出，由使用者决定。
 
 不要为了让描述更漂亮而省略不确定点。
 
@@ -111,12 +105,6 @@ raw reference 是原始资料，不是最终索引。
 - 需要决定是否保留 bug 作为兼容行为。
 - 类型定义与运行时行为冲突。
 - 需要新增依赖或改变测试框架配置。
-
-记录到：
-
-```txt
-docs/reference-raw/unresolved-questions.md
-```
 
 记录格式：
 
@@ -138,7 +126,7 @@ docs/reference-raw/unresolved-questions.md
 当前阶段允许：
 
 - 新增或补充 `*.test.ts`。
-- 新增或补充 `docs/reference-raw/*.md`。
+- 使用者明确要求时，更新 `docs/jsdocs.md`。
 - 更新计划文档中的执行状态。
 - 为了让测试可读，少量调整测试辅助代码。
 
@@ -168,7 +156,7 @@ docs/reference-raw/unresolved-questions.md
 - 为了改注释而扩大当前批次范围。
 - 修改源码行为来匹配注释，除非用户明确要求。
 
-如果注释和实现冲突，记录到 `docs/reference-raw/unresolved-questions.md`，不要自行决定哪一个代表真实语义。
+如果注释和实现冲突，在批次汇报中列出，不要自行决定哪一个代表真实语义。
 
 ## 验证命令
 
@@ -201,12 +189,12 @@ bun run build
 ```md
 完成：
 - 新增/补充了哪些测试。
-- 更新了哪些 raw reference。
+- 是否发现了源码 JSDoc/TSDoc 缺口。
 
 验证：
 - 运行了哪些命令。
 - 结果如何。
 
 遗留：
-- unresolved 文档新增了哪些问题。
+- 有哪些需要使用者或更强模型判断的问题。
 ```

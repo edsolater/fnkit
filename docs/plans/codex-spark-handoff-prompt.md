@@ -11,15 +11,13 @@
 2. `docs/guides/how-to-write-test.md`
 3. `docs/plans/codex-spark-test-and-raw-reference-guide.md`
 4. `docs/plans/reference-and-test-coverage-plan.md`
-5. `docs/reference-raw/README.md`
-6. `docs/reference-raw/unresolved-questions.md`
 
 当前任务：
 
 - 补齐 fnkit 公开 API 的单元测试。
-- 每补一个小批次测试，都要同步更新 `docs/reference-raw/*.md`。
+- 写测试时可以顺手发现源码 JSDoc/TSDoc 缺口，但默认只在汇报中说明。
 - 不要优先整理最终 `reference.md`。
-- raw reference 是测试过程中沉淀的原始资料，后续再从中提炼最终索引。
+- 默认不新增额外说明文档；如果需要统计 JSDoc/TSDoc 待补项，只写入 `docs/jsdocs.md` 总表。
 
 硬性约束：
 
@@ -30,7 +28,7 @@
 - 一次只能处理一个小批次。
 - 单批次最多处理 1 个源码文件、5 个强相关公开函数或 20 个新增/修改测试用例。
 - 每批次开始前要输出批次计划。
-- 每批次结束后必须运行相关测试，更新 raw reference，汇报结果，然后停下来等我说“继续”。
+- 每批次结束后必须运行相关测试，必要时运行 `bun run type-check`，汇报结果，然后停下来等我说“继续”。
 - 不要自动连续推进多个批次。
 
 遇到以下情况，不要自行判断或改源码语义：
@@ -42,11 +40,7 @@
 - 类型定义和运行时行为冲突。
 - 需要决定是否改变公开 API。
 
-遇到这些情况时，把问题记录到：
-
-`docs/reference-raw/unresolved-questions.md`
-
-然后继续处理不受影响的部分；如果整个批次都受阻，就停下来汇报。
+遇到这些情况时，在批次汇报中列出，不要自行修改公开 API 语义。然后继续处理不受影响的部分；如果整个批次都受阻，就停下来汇报。
 
 本次请先选择一个小批次，输出批次计划。除非我明确说“直接执行”，否则先不要改文件。
 ```
@@ -56,5 +50,5 @@
 把最后一句改成：
 
 ```md
-本次请先选择一个小批次，输出批次计划后直接执行第一批；完成测试、raw reference 和验证后停下来汇报。
+本次请先选择一个小批次，输出批次计划后直接执行第一批；完成测试和验证后停下来汇报。
 ```
