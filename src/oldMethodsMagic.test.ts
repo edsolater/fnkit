@@ -16,6 +16,13 @@ describe("assert", () => {
     expect(() => assert(true, "不应该抛错")).not.toThrow()
   })
 
+  test("普通对象、数组、Map、Set 都可以直接作为同步断言值", () => {
+    expect(() => assert({ ok: true }, "对象不应该抛错")).not.toThrow()
+    expect(() => assert([1], "数组不应该抛错")).not.toThrow()
+    expect(() => assert(new Map([["ok", true]]), "Map 不应该抛错")).not.toThrow()
+    expect(() => assert(new Set([1]), "Set 不应该抛错")).not.toThrow()
+  })
+
   test("同步条件函数返回真时不抛错", () => {
     expect(() => assert(() => 1, "不应该抛错")).not.toThrow()
   })

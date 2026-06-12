@@ -1,38 +1,51 @@
-import { shrinkFn, type AnyValue, type MayFn, type MayPromise } from ".";
+import { shrinkFn, type MayFn, type MayPromise } from ".";
 import { isPromise } from "./dataType";
 
+type AssertSyncValue<T> = T extends (...args: any[]) => any ? never : T extends Promise<any> ? never : T
+type AssertSyncCondition<T> = () => AssertSyncValue<T>
+type AssertAsyncCondition<T> = Promise<T> | (() => Promise<T>)
+
 /**
- * 断言一个值或条件函数的结果为 truthy，否则抛出错误。
+ * 断言普通值、条件函数结果或异步条件结果为 truthy，否则抛出错误。
  *
- * 同步条件可作为 TypeScript 断言使用；异步条件会返回 Promise，并在 resolve 后判断结果。
+ * 普通值分支用于断言“非函数、非 Promise”的值；函数会被当作条件函数执行，Promise 会被当作异步条件等待。
  *
  * @example
  * assert(user, "user 不能为空")
  *
  * @example
+ * assert(() => user.isReady, "user 尚未就绪")
+ *
+ * @example
  * await assert(fetchReady(), "服务尚未就绪")
  */
-export function assert<T extends AnyValue>(
-  condition: MayFn<Promise<T>>,
-  callback?: (payload: { value: T }) => MayPromise<void>,
-): Promise<void>
-export function assert<T extends AnyValue>(
-  condition: MayFn<Promise<T>>,
-  message?: string,
-  callback?: (payload: { value: T; message: string }) => MayPromise<void>,
-): Promise<void>
-
-export function assert<T extends AnyValue>(
-  condition: MayFn<T>,
+export function assert<T>(
+  condition: AssertSyncValue<T>,
   callback?: (payload: { value: T }) => void,
 ): asserts condition
-export function assert<T extends AnyValue>(
-  condition: MayFn<T>,
+export function assert<T>(
+  condition: AssertSyncValue<T>,
   message?: string,
   callback?: (payload: { value: T; message: string }) => void,
 ): asserts condition
-
-
+export function assert<T>(
+  condition: AssertSyncCondition<T>,
+  callback?: (payload: { value: T }) => void,
+): asserts condition
+export function assert<T>(
+  condition: AssertSyncCondition<T>,
+  message?: string,
+  callback?: (payload: { value: T; message: string }) => void,
+): asserts condition
+export function assert<T>(
+  condition: AssertAsyncCondition<T>,
+  callback?: (payload: { value: T }) => MayPromise<void>,
+): Promise<void>
+export function assert<T>(
+  condition: AssertAsyncCondition<T>,
+  message?: string,
+  callback?: (payload: { value: T; message: string }) => MayPromise<void>,
+): Promise<void>
 
 export function assert(condition, arg0?, arg1?): any {
   const message = typeof arg0 === "string" ? arg0 : undefined
