@@ -7,8 +7,8 @@ import { toCollectionIterator } from "./iterableCollectionUtils"
 import { pick } from "./pick"
 import { Collection, type GetCollectionKey, type GetCollectionValue } from "./type"
 
-type ValueMapper<T extends Collection, R> = (item: ValueOf<T>, key: Keyof<T>) => R
-type KeyMapper<T extends Collection, K> = (item: ValueOf<T>, key: Keyof<T>) => K
+type ValueMapper<T extends Collection, R> = (value: ValueOf<T>, key: Keyof<T>) => R
+type KeyMapper<T extends Collection, K> = (value: ValueOf<T>, key: Keyof<T>) => K
 
 function mapCollectionValue<T extends Collection, R>(
   value: ValueOf<T>,
