@@ -1,7 +1,7 @@
 import { isObject } from "../dataType"
 import { shakeTailingZero } from "../numberish/trimZero"
 import { shrinkFn } from "../wrapper"
-import { parseTimeLabelToSeconds, type TimeLabel } from "./parseDuration"
+import { parseTimeLabelToSeconds, type TimeUnitValue } from "./parseDuration"
 import { parseDuration } from "./parseDuration"
 import { DurationInfo } from "./parseDuration.type"
 
@@ -24,7 +24,7 @@ import { DurationInfo } from "./parseDuration.type"
  * formatDate(6.5) // '6 Seconds 500 Milliseconds'
  */
 export function formatDuration(
-  TimeLabel: TimeLabel,
+  TimeLabel: TimeUnitValue,
   rawFormatString?: string | ((durationInfo: DurationInfo) => string),
   options?: {
     shakeMillisecondsTailingZero?: boolean

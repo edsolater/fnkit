@@ -1,12 +1,12 @@
 import { assert, getValue, shrinkFn, type MayFn } from "../.."
 import { isObject, isUndefined } from "../../dataType"
-import { isTimeLabel, parseTimeLabel, parseTimeLabelToMilliseconds, type TimeLabel } from "../parseDuration"
+import { isTimeLabel, parseTimeLabel, parseTimeLabelToMilliseconds, type TimeUnitValue } from "../parseDuration"
 import { runBuildinSetTimeoutWithSecondes } from "./setTimeout"
 
 /**
  * build-in milliseconds is not human-friendly
  */
-export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeLabel | undefined): number {
+export function setIntervalWithSecondes(fn: (...args: any[]) => void, interval?: TimeUnitValue | undefined): number {
   // @ts-ignore
   return globalThis.setInterval(fn, interval ? parseTimeLabelToMilliseconds(interval) : undefined)
 }
@@ -15,14 +15,14 @@ export type IntervalTaskFunction = (utils: {
   cancel: () => void
   /** start from 0 */
   loopIndex: number
-  changeInterval: (newInterval: MayFn<TimeLabel, [oldIntervalSeconds: number]>) => void
+  changeInterval: (newInterval: MayFn<TimeUnitValue, [oldIntervalSeconds: number]>) => void
   forceRunNextLoop: () => void
 }) => void | Promise<void> | any | Promise<any>
 
 export type SetIntervalOptions = {
   /** if you want run immediately after delay. both set `delay` and `immediate` */
-  delay?: TimeLabel
-  interval?: TimeLabel
+  delay?: TimeUnitValue
+  interval?: TimeUnitValue
   immediate?: boolean
   /** if set this, don't auto-run，相反，控制权交给返回的 Controller  */
   haveManuallyController?: boolean
@@ -55,7 +55,7 @@ export type SetIntervalController = {
   forceRunNextLoop(): void
 }
 
-export type SetIntervalVerboseOptions = SetIntervalOptions | TimeLabel
+export type SetIntervalVerboseOptions = SetIntervalOptions | TimeUnitValue
 /**
  * build-in globalThis.setInterval is not human-friendly
  * @param taskFn function to run (run in future, event immediately, it will run in  micro task)
@@ -89,7 +89,7 @@ export function setInterval(
   }
   let intervalSeconds = options.interval
 
-  function changeIntervalDuration(newInterval: MayFn<TimeLabel, [oldIntervalSeconds: number]>) {
+  function changeIntervalDuration(newInterval: MayFn<TimeUnitValue, [oldIntervalSeconds: number]>) {
     intervalSeconds = parseTimeLabel(shrinkFn(newInterval, [intervalSeconds]))
     stopLoop()
     runLoop({ canWithImmediate: false })

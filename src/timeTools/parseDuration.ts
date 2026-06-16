@@ -70,7 +70,11 @@ export function isDurationInfo(value: any): value is DurationInfo {
   )
 }
 /** use seconds not milliseconds */
-export type TimeLabel = number /* s */ | `${number}${TimeUnit}` | `${number} ${TimeUnit}`
+export type TimeUnitValue = number /* s */ | `${number}${TimeUnit}` | `${number} ${TimeUnit}`
+
+/** @deprecated 使用命名友好的 {@link TimeUnitValue}，类型可读可想象目的 */
+export type TimeLabel = TimeUnitValue
+
 
 export type TimeUnit =
   | "milliseconds"
@@ -94,7 +98,7 @@ export type TimeUnit =
   | "M"
   | "Y"
 
-export function isTimeLabel(time: any): time is TimeLabel {
+export function isTimeLabel(time: any): time is TimeUnitValue {
   if (isNumber(time)) return true
   if (!isString(time)) return false
   const trimmed = time.trim()
@@ -105,28 +109,28 @@ export function isTimeLabel(time: any): time is TimeLabel {
 /** to milliseconds
  * @deprecated 使用命名友好的 {@link toMilliseconds} 
  */
-export function parseTimeLabelToMilliseconds(time: TimeLabel) {
+export function parseTimeLabelToMilliseconds(time: TimeUnitValue) {
   return parseTimeLabel(time) * 1000
 }
 
 /** 转换成毫秒 */
-export function toMilliseconds(time: TimeLabel) {
+export function toMilliseconds(time: TimeUnitValue) {
   return parseTimeLabel(time)* 1000
 }
 
 /** @deprecated 使用命名友好的 {@link parseTimeLabel} 或 {@link toSeconds} */
-export function parseTimeLabelToSeconds(time: TimeLabel) {
+export function parseTimeLabelToSeconds(time: TimeUnitValue) {
   return parseTimeLabel(time)
 }
 
 /** 转换成秒，与 {@link parseTimeLabelToSeconds} 相同，但表达代表的语义主体不同 */
-export function toSeconds(time: TimeLabel) {
+export function toSeconds(time: TimeUnitValue) {
   return parseTimeLabel(time)
 }
 
 
 /** 转换成秒，与 {@link toSeconds} 相同，但表达代表的语义主体不同 */
-export function parseTimeLabel(time: TimeLabel) {
+export function parseTimeLabel(time: TimeUnitValue) {
   if (isNumber(time)) return time
   const trimmed = time.trim()
   const matched =

@@ -1,10 +1,10 @@
 import { asyncInvoke } from "../../functionManagers"
-import { type TimeLabel, parseTimeLabelToMilliseconds, isTimeLabel } from "../parseDuration"
+import { type TimeUnitValue, parseTimeLabelToMilliseconds, isTimeLabel } from "../parseDuration"
 
 /**
  * build-in milliseconds is not human-friendly
  */
-export function runBuildinSetTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeLabel | undefined): number {
+export function runBuildinSetTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeUnitValue | undefined): number {
   // @ts-ignore
   return globalThis.setTimeout(fn, delay ? parseTimeLabelToMilliseconds(delay) : undefined)
 }
@@ -15,7 +15,7 @@ function clearTimeout(timeoutId: number) {
 export type TimeoutTaskFunction<R = any> = (utils: { loopCount: number; cancel: () => void }) => R
 
 export type SetTimeoutOptions = {
-  delay?: TimeLabel
+  delay?: TimeUnitValue
 
   /** 立刻执行一次函数，但同时也会倒计时。应用在需要一开始就立刻执行一次的场景*/
   immediate?: boolean
@@ -45,7 +45,7 @@ export type SetTimeoutController<R> = {
 
 export function setTimeout<R>(
   taskFn: TimeoutTaskFunction<R>,
-  rawOptions?: SetTimeoutOptions | TimeLabel,
+  rawOptions?: SetTimeoutOptions | TimeUnitValue,
 ): SetTimeoutController<R> {
   let loopCount = 0
   let timeId = 0
@@ -81,6 +81,6 @@ export function setTimeout<R>(
 }
 
 /** @deprecated 这里只是兼容老代码， 建议直接使用 {@link setTimeout} */
-export function setTimeoutWithSecondes<R>(taskFn: TimeoutTaskFunction<R>, delay?: TimeLabel) {
+export function setTimeoutWithSecondes<R>(taskFn: TimeoutTaskFunction<R>, delay?: TimeUnitValue) {
   return runBuildinSetTimeoutWithSecondes(taskFn, delay)
 }
