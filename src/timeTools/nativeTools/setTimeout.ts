@@ -88,11 +88,11 @@ export function setTimeoutWithSeconds<R>(taskFn: TimeoutTaskFunction<R>, delay?:
   return runClientSetTimeoutWithSeconds(taskFn, delay)
 }
 
-/** 
- * 等待
+/**
+ * 等待一段时间，单位是数字秒或时间标签（如 "2s", "1m"）
  */
-export function sleep(delay: TimeUnitValue): Promise<void> {
+export function sleep(delay?: TimeUnitValue | undefined): Promise<void> {
   return new Promise((resolve) => {
-    runClientSetTimeoutWithSeconds(resolve, delay)
+    runClientSetTimeoutWithSeconds(resolve, delay ?? 0)
   })
 }
