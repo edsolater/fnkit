@@ -2,7 +2,7 @@ export * from "./asyncCompose"
 export * from "./asyncPipe"
 export * from "./bindThisIfFunction"
 export * from "./bindParams" // FP style get function faster
-export * from "./buildinStructureTools"
+export * from "./nativeStructureTools"
 export * from "./cache"
 export * from "./cacheFunction"
 export * from "./callbackManager"

@@ -1,4 +1,4 @@
-import { runBuildinSetTimeoutWithSecondes } from "./timeTools"
+import { runClientSetTimeoutWithSeconds } from "./timeTools"
 import { createCurrentTimestamp } from "./timeTools/date"
 import type { AnyFn } from "./typings"
 
@@ -24,7 +24,7 @@ export function throttle(
     let timoutId: any | undefined = undefined
     return function throttled(...args: any[]) {
       if (timoutId) clearTimeout(timoutId)
-      timoutId = runBuildinSetTimeoutWithSecondes(() => {
+      timoutId = runClientSetTimeoutWithSeconds(() => {
         timoutId = undefined
         fn(...args)
       }, options?.delay ?? 0.4)
@@ -58,7 +58,7 @@ export function debounce<F extends (...args: any[]) => void>(
       if (timeoutId) {
         clearTimeout(timeoutId)
       }
-      timeoutId = runBuildinSetTimeoutWithSecondes(() => {
+      timeoutId = runClientSetTimeoutWithSeconds(() => {
         const returnedValue = fn(...args) as ReturnType<F>
         resolve(returnedValue)
       }, options?.delay ?? 0.4)

@@ -1,4 +1,4 @@
-import { MayFn, runBuildinSetTimeoutWithSecondes, shrinkToValue, wrapePromise } from ".."
+import { MayFn, runClientSetTimeoutWithSeconds, shrinkToValue, wrapePromise } from ".."
 
 const defaultExpireTime = 0.2 //(s)
 const expireMessage = "task is too long"
@@ -98,7 +98,7 @@ export default function mayFail<T>(
   } = {},
 ): Promise<T> {
   return new Promise((resolve, reject) => {
-    const timeoutId = runBuildinSetTimeoutWithSecondes(() => {
+    const timeoutId = runClientSetTimeoutWithSeconds(() => {
       options.onExpire?.()
       options.fallbackValue != null
         ? resolve(options.fallbackValue)

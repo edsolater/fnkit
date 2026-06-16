@@ -1,4 +1,4 @@
-import { insertAt } from "../buildinStructureTools/arrayTools"
+import { insertAt } from "../nativeStructureTools/arrayTools"
 
 type Point = {
   x: number

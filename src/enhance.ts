@@ -1,5 +1,5 @@
 import { bindThisIfFunction } from "./bindThisIfFunction"
-import { runBuildinSetTimeoutWithSecondes } from "./timeTools"
+import { runClientSetTimeoutWithSeconds } from "./timeTools"
 import { shrinkFn } from "./wrapper"
 
 type EnhancedMapSetOptions = {
@@ -37,7 +37,7 @@ export function enhanceMap<K, V = any>(originalMap: Map<K, V>, opts?: EnhancedMa
           opts.onSet(shrinkedValue, key, target)
         }
         if (options?.freshTime) {
-          runBuildinSetTimeoutWithSecondes(() => {
+          runClientSetTimeoutWithSeconds(() => {
             target.delete(key)
           }, options.freshTime)
         }

@@ -4,7 +4,10 @@ import { type TimeUnitValue, parseTimeLabelToMilliseconds, isTimeLabel } from ".
 /**
  * build-in milliseconds is not human-friendly
  */
-export function runBuildinSetTimeoutWithSecondes(fn: (...args: any[]) => void, delay?: TimeUnitValue | undefined): number {
+export function runClientSetTimeoutWithSeconds(
+  fn: (...args: any[]) => void,
+  delay?: TimeUnitValue | undefined,
+): number {
   // @ts-ignore
   return globalThis.setTimeout(fn, delay ? parseTimeLabelToMilliseconds(delay) : undefined)
 }
@@ -67,7 +70,7 @@ export function setTimeout<R>(
 
   function start() {
     if (options?.immediate) runCore()
-    timeId = runBuildinSetTimeoutWithSecondes(runCore, options?.delay)
+    timeId = runClientSetTimeoutWithSeconds(runCore, options?.delay)
   }
 
   function cancel() {
@@ -81,6 +84,15 @@ export function setTimeout<R>(
 }
 
 /** @deprecated 这里只是兼容老代码， 建议直接使用 {@link setTimeout} */
-export function setTimeoutWithSecondes<R>(taskFn: TimeoutTaskFunction<R>, delay?: TimeUnitValue) {
-  return runBuildinSetTimeoutWithSecondes(taskFn, delay)
+export function setTimeoutWithSeconds<R>(taskFn: TimeoutTaskFunction<R>, delay?: TimeUnitValue) {
+  return runClientSetTimeoutWithSeconds(taskFn, delay)
+}
+
+/** 
+ * 等待
+ */
+export function sleep(delay: TimeUnitValue): Promise<void> {
+  return new Promise((resolve) => {
+    runClientSetTimeoutWithSeconds(resolve, delay)
+  })
 }

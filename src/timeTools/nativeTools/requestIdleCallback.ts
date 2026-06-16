@@ -14,7 +14,7 @@ type RequestIdleCallbackOptionsLike = {
 /**
  * 浏览器原生的 requestIdleCallback 没有稳定的跨环境支持，这里补一层兼容封装
  */
-export function runBuildinRequestIdleCallback(
+export function runbuiltinRequestIdleCallback(
   fn: (deadline: IdleDeadlineLike) => void,
   options?: RequestIdleCallbackOptionsLike,
 ): number {
@@ -83,7 +83,7 @@ export function requestIdleCallback(
 
   function start() {
     if (options.immediate) runCore(createFallbackIdleDeadline())
-    taskId = runBuildinRequestIdleCallback(runCore, { timeout: options.timeout })
+    taskId = runbuiltinRequestIdleCallback(runCore, { timeout: options.timeout })
   }
 
   function cancel() {

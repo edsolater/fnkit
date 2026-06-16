@@ -1,4 +1,4 @@
-import { runBuildinSetTimeoutWithSecondes, type TimeUnitValue } from "./timeTools"
+import { runClientSetTimeoutWithSeconds, type TimeUnitValue } from "./timeTools"
 import type { Int } from "./typings"
 import { shrinkFn } from "./wrapper"
 
@@ -89,7 +89,7 @@ export function autoRetry<F extends (payloads: RetriableTaskFnPayloads) => Promi
     })
 
     if (nextDelay) {
-      runBuildinSetTimeoutWithSecondes(() => {
+      runClientSetTimeoutWithSeconds(() => {
         tryToRunNextAction()
       }, nextDelay)
     }

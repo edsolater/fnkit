@@ -1,5 +1,5 @@
 import { bindThisIfFunction } from "./bindThisIfFunction"
-import { runBuildinSetTimeoutWithSecondes } from "./timeTools"
+import { runClientSetTimeoutWithSeconds } from "./timeTools"
 
 export function createTimeoutMap<K, V>({ maxAge }: { maxAge: number }) {
   const innerMap = new Map<K, V>()
@@ -11,7 +11,7 @@ export function createTimeoutMap<K, V>({ maxAge }: { maxAge: number }) {
       clearTimeout(timeoutId)
     }
 
-    const newAutoDeleteTimeoutId = runBuildinSetTimeoutWithSecondes(() => {
+    const newAutoDeleteTimeoutId = runClientSetTimeoutWithSeconds(() => {
       innerMap.delete(key)
       timeoutMap.delete(key)
     }, maxAge)
