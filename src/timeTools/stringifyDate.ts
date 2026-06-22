@@ -16,9 +16,9 @@ export function toUTC(timestamp?: TimeStampVerbose) {
 }
 
 export const englishDayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const
-type EnglishDayName = typeof englishDayNames[number]
-export const chineseDayNames= ["周一", "周二", "周三", "周四", "周五", "周六", "周日"] as const
-type ChineseDayName = typeof chineseDayNames[number]
+type EnglishDayName = (typeof englishDayNames)[number]
+export const chineseDayNames = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"] as const
+type ChineseDayName = (typeof chineseDayNames)[number]
 export const englishFullMonthNames: [
   "January",
   "February",
@@ -90,11 +90,10 @@ export const mapToChineseMonth = (monthNumber: number) => chineseMonthNames[(mon
 export const mapToAmPmHour = (hourNumber: number): { hour: number; flag: string } =>
   hourNumber > 12 ? { hour: hourNumber - 12, flag: "PM" } : { hour: hourNumber, flag: "AM" }
 
-   
 export type FormatDateOptions = {
   zone?: Zone
   /** default is 'YYYY-MM-DD HH:mm:ss' */
-  formatString?: string
+  format?: string
   /** default is 'en' */
   weekNameStyle?: "en" | "zh-cn"
 }
@@ -124,34 +123,27 @@ export type FormatDateOptions = {
  * formatDate('2020-08-24 18:54', 'YYYY-MM-DD HH:mm:ss') // 2020-08-24 18:54:00
  */
 
+export function formatDate(inputDate: DateParam, format?: string, options?: FormatDateOptions)
+export function formatDate(inputDate: DateParam, options?: FormatDateOptions)
 export function formatDate(
   inputDate: DateParam,
-  formatString?: string,
-  options?: FormatDateOptions,
-) 
-export function formatDate(
-  inputDate: DateParam,
-  options?: FormatDateOptions,
-) 
-export function formatDate(
-  inputDate: DateParam,
-  formatString?: string | FormatDateOptions,
+  format?: string | FormatDateOptions,
   inputOptions?: FormatDateOptions,
 ) {
   const options = (() => {
     const defaultFormatString = "YYYY-MM-DD HH:mm:ss"
-    if (isObject(formatString)) {
-      return {formatString: defaultFormatString, ...formatString , ...inputOptions} 
-    }else if (isString(formatString)) {
-      return { formatString, ...inputOptions} 
+    if (isObject(format)) {
+      return { format: defaultFormatString, ...format, ...inputOptions }
+    } else if (isString(format)) {
+      return { format, ...inputOptions }
     } else {
-      return { formatString: defaultFormatString }
+      return { format: defaultFormatString }
     }
-  })() satisfies PartRequired<FormatDateOptions, "formatString">
+  })() satisfies PartRequired<FormatDateOptions, "format">
 
   const date = createDate(inputDate, options.zone)
 
-  return options.formatString
+  return options.format
     .replace("YYYY", `${getYear(date)}`)
     .replace("YY", `${date.year}`.slice(2))
     .replace("MM", `${date.month}`.padStart(2, "0"))
@@ -218,8 +210,8 @@ export function extractDate(dateString: string, options?: { year?: boolean }) {
 export function extractTime(dateString: string, options?: { milliseconds?: boolean }) {
   return formatDate(dateString, options?.milliseconds ? "HH:mm:ss" : "HH:mm")
 }
- 
-/** 快速表达：时间戳 -> 日期字符串 
+
+/** 快速表达：时间戳 -> 日期字符串
  * 内部调用 {@link formatDate} */
 export function toDateString(timestamp: TimeStampVerbose, options?: FormatDateOptions) {
   return formatDate(timestamp, options)
