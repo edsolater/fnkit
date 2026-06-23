@@ -1,95 +1,114 @@
-import type { MayPromise } from "./typings"
+export type RunTask<Input = undefined, Output = unknown> = (input: Input) => Output | PromiseLike<Output>
 
-type Task<Result, Prev = any> = (utils: {
-  prev: Prev extends void ? any : Prev // richer this type with `NoInfer<>`(https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/#the-noinfer-utility-type)
-  next(v?: any): Promise<any> // richer this type with `NoInfer<>`(https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/#the-noinfer-utility-type)
-}) => Result | Promise<Result> | void | Promise<void>
-
-/**
- * if result is void | Promise void, runTasks should wait until `next()` is invoked (maybe in a callback)
- * `return`'s priority is higher than `next()`
- * @example
- * 
-const async4 = new Promise<number>((res) => {
-  setTimeout(() => {
-    res(4)
-  }, 100)
-})
-
-runTasks(
-  () => async4,
-  ({ prev, next }) => {
-    console.log("start task 1", prev) // expect 4
-    next(prev + 2)
-  },
-  ({ prev, next }) => {
-    console.log("start task 2: ", prev) // expect 6
-    setTimeout(() => {
-      next(prev + 3)
-    }, 1000)
-    return 3
-  },
-  ({ prev: v }) => {
-    console.log("v: ", v) // expect to be 3
-  },
-)
-
- */
-export async function runTasks<V1>(...tasks: [Task<V1, undefined>]): Promise<V1>
-export async function runTasks<V1, V2>(...tasks: [Task<V1, undefined>, Task<V2, V1>]): Promise<V2>
-export async function runTasks<V1, V2, V3>(...tasks: [Task<V1, undefined>, Task<V2, V1>, Task<V3, V2>]): Promise<V3>
-export async function runTasks<V1, V2, V3, V4>(
-  ...tasks: [Task<V1, undefined>, Task<V2, V1>, Task<V3, V2>, Task<V4, V3>]
-): Promise<V4>
-export async function runTasks<V1, V2, V3, V4, V5>(
-  ...tasks: [Task<V1, undefined>, Task<V2, V1>, Task<V3, V2>, Task<V4, V3>, Task<V5, V4>]
-): Promise<V5>
-export async function runTasks<V>(...tasks: Task<V>[]): Promise<V> {
-  let resolve
-  let reject
-  const finalResult = new Promise<V>((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-
-  let prev: any = undefined
-  let ongoingTaskIndex = { idx: 0 } // to avoid closure trap
-
-  async function setPrevTaskResult(result: MayPromise<any>, idx: number) {
-    prev = await result
-    // check if need to set finalResult also
-    if (idx === tasks.length - 1) {
-      resolve(prev)
-    }
-  }
-
-  for (let i = 0; i < tasks.length; i++) {
-    const task = tasks[i]
-    ongoingTaskIndex.idx = i
-    const returnedResult = await task({
-      prev,
-      next: async (value: any) => {
-        const v = await value
-        if (i === ongoingTaskIndex.idx) {
-          await setPrevTaskResult(v, i + 1)
-        }
-      },
-    })
-
-    if (returnedResult !== undefined || i === tasks.length - 1) {
-      await setPrevTaskResult(returnedResult, i)
-    }
-  }
-  return finalResult
+export type RunTasksOptions = {
+  /**
+   * sequential 会按数组顺序逐个执行；后一项 task 会收到前一项 task 的 resolved 结果。
+   * parallel 会先同步调用全部 task，再等待全部结果。
+   *
+   * @default "sequential"
+   */
+  mode?: "sequential" | "parallel"
 }
 
-// function handleCallback<T, P = any>(task: (v, utils: { next(value?: any): void }) => void) {
-//   return (prev: P) =>
-//     new Promise<T>((res) => {
-//       task(prev, {
-//         next(value) {
-//           res(value)
-//         },
-//       })
-//     })
-// }
+type SequentialOptions = { mode?: "sequential" }
+type ParallelOptions = { mode: "parallel" }
+
+/** 执行单个 task，并统一返回 Promise。 */
+export async function runTask<Output>(task: RunTask<undefined, Output>): Promise<Awaited<Output>>
+export async function runTask<Input, Output>(task: RunTask<Input, Output>, input: Input): Promise<Awaited<Output>>
+export async function runTask<Input, Output>(task: RunTask<Input, Output>, input?: Input): Promise<Awaited<Output>> {
+  return await task(input as Input)
+}
+
+/**
+ * 执行一组 task，默认按数组顺序串行执行。
+ *
+ * 串行模式下，后一项 task 会收到前一项 task 的 resolved 结果。
+ *
+ * @example
+ * const [id, user, label] = await runTasks([
+ *   () => 1,
+ *   (id) => fetchUser(id),
+ *   (user) => user.name,
+ * ])
+ *
+ * @example
+ * const [user, profile] = await runTasks(
+ *   [
+ *     () => fetchUser(),
+ *     () => fetchProfile(),
+ *   ],
+ *   { mode: "parallel" },
+ * )
+ */
+export function runTasks<V1>(
+  tasks: readonly [RunTask<undefined, V1>],
+  options?: SequentialOptions,
+): Promise<[Awaited<V1>]>
+export function runTasks<V1, V2>(
+  tasks: readonly [RunTask<undefined, V1>, RunTask<Awaited<V1>, V2>],
+  options?: SequentialOptions,
+): Promise<[Awaited<V1>, Awaited<V2>]>
+export function runTasks<V1, V2, V3>(
+  tasks: readonly [RunTask<undefined, V1>, RunTask<Awaited<V1>, V2>, RunTask<Awaited<V2>, V3>],
+  options?: SequentialOptions,
+): Promise<[Awaited<V1>, Awaited<V2>, Awaited<V3>]>
+export function runTasks<V1, V2, V3, V4>(
+  tasks: readonly [
+    RunTask<undefined, V1>,
+    RunTask<Awaited<V1>, V2>,
+    RunTask<Awaited<V2>, V3>,
+    RunTask<Awaited<V3>, V4>,
+  ],
+  options?: SequentialOptions,
+): Promise<[Awaited<V1>, Awaited<V2>, Awaited<V3>, Awaited<V4>]>
+export function runTasks<V1, V2, V3, V4, V5>(
+  tasks: readonly [
+    RunTask<undefined, V1>,
+    RunTask<Awaited<V1>, V2>,
+    RunTask<Awaited<V2>, V3>,
+    RunTask<Awaited<V3>, V4>,
+    RunTask<Awaited<V4>, V5>,
+  ],
+  options?: SequentialOptions,
+): Promise<[Awaited<V1>, Awaited<V2>, Awaited<V3>, Awaited<V4>, Awaited<V5>]>
+export function runTasks<V1, V2, V3, V4, V5, V6>(
+  tasks: readonly [
+    RunTask<undefined, V1>,
+    RunTask<Awaited<V1>, V2>,
+    RunTask<Awaited<V2>, V3>,
+    RunTask<Awaited<V3>, V4>,
+    RunTask<Awaited<V4>, V5>,
+    RunTask<Awaited<V5>, V6>,
+  ],
+  options?: SequentialOptions,
+): Promise<[Awaited<V1>, Awaited<V2>, Awaited<V3>, Awaited<V4>, Awaited<V5>, Awaited<V6>]>
+export function runTasks<const Tasks extends readonly (() => any)[]>(
+  tasks: Tasks,
+  options: ParallelOptions,
+): Promise<{ -readonly [Index in keyof Tasks]: Awaited<ReturnType<Tasks[Index]>> }>
+export function runTasks<const Tasks extends readonly RunTask<any, any>[]>(
+  tasks: Tasks,
+  options?: RunTasksOptions,
+): Promise<{ -readonly [Index in keyof Tasks]: Awaited<ReturnType<Tasks[Index]>> }>
+export async function runTasks(
+  tasks: readonly ((...args: any[]) => any)[],
+  options: RunTasksOptions = {},
+): Promise<any> {
+  const mode = options.mode ?? "sequential"
+
+  if (mode === "parallel") {
+    return Promise.all(tasks.map((task) => runTask(task)))
+  }
+
+  const results: unknown[] = []
+  let prev: unknown = undefined
+
+  for (const task of tasks) {
+    const result = await runTask(task, prev)
+    results.push(result)
+    prev = result
+  }
+
+  return results
+}

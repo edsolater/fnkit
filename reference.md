@@ -35,6 +35,8 @@
 | [`filter`](./src/collectionMethods/filter.ts) | Array / Set / Map / Object / Iterable | 统一过滤集合内容。 | `lazy` |
 | [`pipe`](./src/pipe.ts) | 值和函数列表 | 按顺序把值传入多个函数。 | `pipeline` `typed` |
 | [`compose`](./src/compose.ts) | 函数列表 | 把多个函数组合成一个新函数。 | `pipeline` `typed` |
+| [`runTask`](./src/runTasks.ts) | 单个 task | 执行单个同步或异步任务，并统一返回 Promise。 | `pipeline` `typed` |
+| [`runTasks`](./src/runTasks.ts) | task 数组 | 按串行或并行模式执行一组任务，默认串行。 | `pipeline` `typed` |
 | [`formatDate`](./src/timeTools/stringifyDate.ts) | 日期值 | 按格式字符串输出日期文本。 | `format` |
 | [`toDateString`](./src/timeTools/stringifyDate.ts) | 时间戳 | 快速转成日期时间字符串。 | `format` `alias` |
 | [`parseDuration`](./src/timeTools/parseDuration.ts) | 秒数 duration | 拆成天、时、分、秒、毫秒结构。 | `parse` |
