@@ -17,5 +17,6 @@
     "sourceMap": true, // 运行时代码可回溯源码；关闭后堆栈可读性下降 / Keeps runtime artifacts traceable to TS source
     "emitDeclarationOnly": false // 不能只发声明，还要配合构建产出 JS/map / Not declaration-only; JS/map outputs are also required
   },
-  "include": ["src"] // 仅编译主源码，范围过大会引入噪音 / Compile only the library source scope
+  "include": ["src"], // 仅编译主源码，范围过大会引入噪音 / Compile only the library source scope
+  "exclude": ["src/**/*.test.ts"]
 }

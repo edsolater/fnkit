@@ -18,7 +18,8 @@
     "clean": "bun -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.json",
     "test": "vitest",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "bun run clean && bun run build"
   },
   "repository": {
     "type": "git",
@@ -34,6 +35,10 @@
     "url": "https://github.com/edsolater/fnkit/issues"
   },
   "homepage": "https://github.com/edsolater/fnkit#readme",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "engines": {
     "bun": ">=1.2.0"
   },
