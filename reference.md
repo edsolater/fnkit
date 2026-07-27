@@ -37,6 +37,10 @@
 | [`compose`](./src/compose.ts) | 函数列表 | 把多个函数组合成一个新函数。 | `pipeline` `typed` |
 | [`runTask`](./src/runTasks.ts) | 单个 task | 执行单个同步或异步任务，并统一返回 Promise。 | `pipeline` `typed` |
 | [`runTasks`](./src/runTasks.ts) | task 数组 | 按串行或并行模式执行一组任务，默认串行。 | `pipeline` `typed` |
+| [`hasProperty`](./src/compare.ts) | 未知值与 PropertyKey | 判断值是否持有一个或多个属性并收窄类型。 | `typed` |
+| [`toObjectProxy`](./src/object-proxy.ts) | Promise 中的对象 | 转成可递归读取、调用和等待的 ObjectProxy。 | `factory` `typed` |
+| [`isObjectProxy`](./src/object-proxy.ts) | 未知值 | 判断值是否实现 ObjectProxy 的 symbol 身份协议。 | `typed` |
+| [`toPromiseFromObjectProxy`](./src/object-proxy.ts) | ObjectProxy | 取得解析当前真实值的原生 Promise。 | `typed` |
 | [`formatDate`](./src/timeTools/stringifyDate.ts) | 日期值 | 按格式字符串输出日期文本。 | `format` |
 | [`toDateString`](./src/timeTools/stringifyDate.ts) | 时间戳 | 快速转成日期时间字符串。 | `format` `alias` |
 | [`parseDuration`](./src/timeTools/parseDuration.ts) | 秒数 duration | 拆成天、时、分、秒、毫秒结构。 | `parse` |

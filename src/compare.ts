@@ -27,20 +27,28 @@ export function isPartOf(toJudge: AnyObj, whole: AnyObj, options?: { ignoreValue
 /** 类型可能是多个的并集，提取其中的对象。 */
 type PickObjType<O> = O extends AnyObj ? { [K in keyof O]: O[K] } : never
 type RequireObjProperty<O, K extends keyof O> = O & { [P in K]-?: O[P] }
+
+/** 一个已经确认持有指定属性的值。 */
+type WithProperty<Value, Key extends PropertyKey> = Value & {
+  [Property in Key]-?: unknown
+}
+
 /**
+ * 判断一个值是否持有一个或多个属性。
  *
- * @param resource 可能是对象，可能不是。
- * @param key 可能是数组，数组表示能一下子查多个。
- * @returns
+ * 普通 object 和 function 都属于可检查对象；基础值直接返回 false。传入多个 key 时，只有全部存在才返回 true。
+ * 属性存在性由 `Reflect.has()` 判断，因此包含对象自身与原型链上的属性。
+ *
+ * 直接依赖同领域的 `isObjectLike()` 识别可持有属性的值，不依赖其他非原生设施。
  */
-export function hasProperty<O, K extends keyof PickObjType<O>>(
-  resource: O,
-  key: K | K[],
-): resource is RequireObjProperty<PickObjType<O>, K> {
+export function hasProperty<Value, Key extends PropertyKey>(
+  resource: Value,
+  key: Key | Key[],
+): resource is WithProperty<Value, Key> {
   if (Array.isArray(key)) {
-    return isObject(resource) && key.every((p) => Reflect.has(resource, p))
+    return isObjectLike(resource) && key.every((property) => Reflect.has(resource, property))
   }
-  return isObject(resource) && Reflect.has(resource, key)
+  return isObjectLike(resource) && Reflect.has(resource, key)
 }
 
 /** 检测多个属性是否都存在。

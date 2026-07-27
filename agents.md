@@ -1,5 +1,5 @@
 # Agents 开发规范
-- 代码规范在项目 [ai-rules](D://mycode/ai-rules) 项目中
+- 代码规范从 [AI Rules README](D:/mycode/ai-rules/README.md) 进入。
 - [reference.md](reference.md) 描述每个文件导出的函数功能
 
 ## 描述性文字语言规范
