@@ -61,6 +61,29 @@ describe("ObjectProxy 类型", () => {
     expectTypeOf(proxy.add(1)).toEqualTypeOf<ObjectProxy<number>>()
     expectTypeOf(proxy.load().count).toEqualTypeOf<ObjectProxy<number>>()
   })
+
+  test("可选根值仍公开非空对象的成员，同时保留真实等待结果", () => {
+    interface Controller {
+      run: (amount: number) => number
+      value: number
+    }
+
+    const proxy = toObjectProxy(
+      Promise.resolve<Controller | undefined>({
+        value: 1,
+        run: (amount) => amount + 1,
+      }),
+    )
+
+    expectTypeOf(proxy).toEqualTypeOf<
+      ObjectProxy<Controller | undefined>
+    >()
+    expectTypeOf(proxy.value).toEqualTypeOf<ObjectProxy<number>>()
+    expectTypeOf(proxy.run(1)).toEqualTypeOf<ObjectProxy<number>>()
+    expectTypeOf<Awaited<typeof proxy>>().toEqualTypeOf<
+      Controller | undefined
+    >()
+  })
 })
 
 describe("ObjectProxy symbol 协议", () => {
@@ -258,6 +281,17 @@ describe("ObjectProxy 传播", () => {
 })
 
 describe("ObjectProxy 错误传播", () => {
+  test("根值可以解析为 undefined，后续操作按 JavaScript 语义自然失败", async () => {
+    const proxy = toObjectProxy<
+      { run: () => void } | undefined
+    >(Promise.resolve(undefined))
+
+    await expect(proxy).resolves.toBeUndefined()
+    await expect(proxy.run()).rejects.toThrow(
+      "Cannot read run from undefined",
+    )
+  })
+
   test("传播源 Promise 的拒绝", async () => {
     const proxy = toObjectProxy(Promise.reject<{ board: { value: number } }>(new Error("controller unavailable")))
 

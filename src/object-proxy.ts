@@ -68,8 +68,8 @@ type ObjectProxyApply<Value> = Value extends (...args: infer Args) => infer Resu
  */
 export type ObjectProxy<Value> = ObjectProxyProtocol<Value> &
   PromiseLike<Resolved<Value>> &
-  ObjectProxyGet<Resolved<Value>> &
-  ObjectProxyApply<Resolved<Value>>
+  ObjectProxyGet<NonNullable<Resolved<Value>>> &
+  ObjectProxyApply<NonNullable<Resolved<Value>>>
 
 /**
  * 为一个未来值创建可递归传播的对象代理。
@@ -141,7 +141,7 @@ function createObjectProxy<Value>(promise: Promise<Value>): ObjectProxy<Value> {
  * 操作都会返回新的 ObjectProxy。源 Promise 的拒绝以及读取、调用期间发生的异常都会
  * 沿对应的代理链继续传播。
  */
-export function toObjectProxy<Value extends object>(promise: Promise<Value>): ObjectProxy<Value> {
+export function toObjectProxy<Value>(promise: Promise<Value>): ObjectProxy<Value> {
   return createObjectProxy(promise)
 }
 
