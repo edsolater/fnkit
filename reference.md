@@ -41,6 +41,14 @@
 | [`toObjectProxy`](./src/object-proxy.ts) | Promise 中的对象 | 转成可递归读取、调用和等待的 ObjectProxy。 | `factory` `typed` |
 | [`isObjectProxy`](./src/object-proxy.ts) | 未知值 | 判断值是否实现 ObjectProxy 的 symbol 身份协议。 | `typed` |
 | [`toPromiseFromObjectProxy`](./src/object-proxy.ts) | ObjectProxy | 取得解析当前真实值的原生 Promise。 | `typed` |
+| [`Neuron.source`](./src/customizedClasses/Neuron/Neuron.ts) | 根数据流节点 | 创建输入输出同型、持有独立 context 的根 Neuron。 | `factory` `pipeline` `typed` |
+| [`Neuron.deriveFrom`](./src/customizedClasses/Neuron/Neuron.ts) | 已有 Neuron 与 mapper | 创建保存转换规则的下游 Neuron，并通过订阅接收上游信号。 | `factory` `pipeline` `typed` |
+| [`Neuron.subscribe`](./src/customizedClasses/Neuron/Neuron.ts) | subscriber FN | 订阅 output，并取得当前 Neuron 一直持有的 context。 | `pipeline` `typed` |
+| [`Neuron.tick`](./src/customizedClasses/Neuron/Neuron.ts) | 一次 input | 让数据流经过当前 Neuron，并在传播结束前推进 context.prev。 | `pipeline` `typed` |
+| [`Neuron.loadPlugin`](./src/customizedClasses/Neuron/Neuron.ts) | Neuron 与插件列表 | 装载可包装公开能力或增强 context 的能力模块。 | `typed` |
+| [`NeuronContext`](./src/customizedClasses/Neuron/Neuron.ts) | 节点上下文 | 跟随 Neuron 一直存在；Neuron 自动更新 prev，插件可以扩展或调整字段。 | `typed` |
+| [`new Subscription`](./src/customizedClasses/Subscription.ts) | 可取消资源 | 创建只执行一次取消动作的生命周期句柄。 | `factory` |
+| [`isNeuron`](./src/customizedClasses/Neuron/utils/isNeuron.ts) | 未知值 | 判断值是否为当前 Neuron 类的实例。 | `typed` |
 | [`formatDate`](./src/timeTools/stringifyDate.ts) | 日期值 | 按格式字符串输出日期文本。 | `format` |
 | [`toDateString`](./src/timeTools/stringifyDate.ts) | 时间戳 | 快速转成日期时间字符串。 | `format` `alias` |
 | [`parseDuration`](./src/timeTools/parseDuration.ts) | 秒数 duration | 拆成天、时、分、秒、毫秒结构。 | `parse` |

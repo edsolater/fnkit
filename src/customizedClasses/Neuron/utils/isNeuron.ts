@@ -1,6 +1,6 @@
-import { isObject } from "../../../dataType"
-import { NeuronCore } from "../NeuronCore"
+import { Neuron } from "../Neuron"
 
-export function isNeuron(data: any): data is NeuronCore<unknown> {
-  return isObject(data) && data["_isNeuron"]
+/** 判断一个值是不是 Neuron；不知道它接受什么 input，所以不能直接拿来 tick。 */
+export function isNeuron(data: unknown): data is Neuron<never, unknown> {
+  return data instanceof Neuron
 }

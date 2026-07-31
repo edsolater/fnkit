@@ -1,29 +1,23 @@
-/**
- * 一次可取消资源的生命周期句柄。
- */
-export interface Subscription {
-  /** 是否已经完成取消；取消逻辑抛出异常时也保持为 true。 */
-  readonly closed: boolean
+/** 表示一次订阅的取消权；unsubscribe 可以重复调用，取消动作只执行一次。 */
+export class Subscription {
+  /** 这次订阅是否已经取消。unsubscribe 会更新它；业务代码可以看，但不要自己写。 */
+  closed = false
 
-  /** 取消资源。重复调用不会再次执行取消逻辑。 */
-  unsubscribe(): void
-}
+  /** 真正解除订阅的动作；unsubscribe 保证它最多执行一次。 */
+  #onUnsubscribe: (subscription: Subscription) => void
 
-/**
- * 把资源的取消逻辑封装为幂等 Subscription。
- *
- * 执行取消逻辑前先关闭 Subscription，避免取消过程中的重入或异常导致重复清理。
- */
-export function createSubscription(info: { onUnsubscribe(): void }): Subscription {
-  const subscription = {
-    closed: false,
-    unsubscribe() {
-      if (subscription.closed) return
-
-      subscription.closed = true
-      info.onUnsubscribe()
-    },
+  /** 保存解除订阅的动作，等 unsubscribe 时再执行。 */
+  constructor(options: {
+    onUnsubscribe(subscription: Subscription): void
+  }) {
+    this.#onUnsubscribe = options.onUnsubscribe
   }
 
-  return subscription
+  /** 取消这次订阅；即使取消动作重入或抛错，之后也不会重复执行。 */
+  unsubscribe = (): void => {
+    if (this.closed) return
+
+    this.closed = true
+    this.#onUnsubscribe(this)
+  }
 }

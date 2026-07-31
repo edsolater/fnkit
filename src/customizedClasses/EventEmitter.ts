@@ -1,4 +1,4 @@
-import { createSubscription, type Subscription } from "./Subscription"
+import { Subscription } from "./Subscription"
 
 type EventMap<Events> = {
   [EventName in keyof Events]: unknown[]
@@ -57,7 +57,7 @@ export class EventEmitter<Events extends EventMap<Events>> {
       throw new TypeError("EventEmitter 的 listener 集合不能是 undefined")
     }
 
-    const subscription = createSubscription({
+    const subscription = new Subscription({
       onUnsubscribe: () => {
         // 取消必须同步移除两个索引，避免留下不可达的注册记录或全局订阅。
         registrations.delete(registration)
