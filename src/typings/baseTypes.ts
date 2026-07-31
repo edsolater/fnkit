@@ -20,7 +20,7 @@ export type Float<Min = number, Max = number> = number
 export type Src = string
 export type Url = string
 export type Href = string
-export type ID = string | number
+export type ID = string | number | bigint
 export type IDNumber = number
 export type SessionID = ID
 
@@ -39,4 +39,3 @@ export type AnyClass<T = any> = new (...args: any[]) => T
 export type AnyArr = any[]
 export type AnyMap = Map<any, any>
 export type AnySet = Set<any>
-

@@ -26,6 +26,12 @@ export function shakeFalsy(target) {
   return filter(target, isTruthy)
 }
 
+/**
+ * 数组去重
+ *
+ * - 如果提供了 getKey，则根据 getKey 的返回值去重。
+ * - 如果没有提供 getKey，则直接根据数组元素本身去重。
+ */
 export function unifyItem<T>(arr: T[], options?: { getKey?: (item: T) => Primitive }): T[] {
   if (options?.getKey) {
     const resultList = [] as T[]

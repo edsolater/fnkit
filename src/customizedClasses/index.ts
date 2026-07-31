@@ -1,4 +1,4 @@
-export * from "./EventCenter"
+export * from "./EventEmitter"
 export * from "./Neuron"
 export * from "./Subscription"
 export * from "./WeakerMap"

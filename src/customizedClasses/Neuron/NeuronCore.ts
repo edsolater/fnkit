@@ -1,4 +1,4 @@
-import { createEventCenter } from "../EventCenter"
+import { EventEmitter } from "../EventEmitter"
 import { Subscription } from "../Subscription"
 import { WeakerMap } from "../WeakerMap"
 
@@ -18,10 +18,10 @@ export type NeuronCore<T> = {
 
 export function createNeuronCore<T>(options?: {}): NeuronCore<T> {
   const linkedNeurons = new WeakerMap<NeuronCore<T>, Subscription>()
-  const eventCenter = createEventCenter<{ changeValue: [item: T] }>()
-  const subscribe = eventCenter.on("changeValue")
+  const eventEmitter = new EventEmitter<{ changeValue: [item: T] }>()
+  const subscribe: NeuronCore<T>["subscribe"] = (listener) => eventEmitter.on("changeValue", listener)
   const link: NeuronCore<T>["link"] = (neuronB) => {
-    const subscription = subscribe((v) => neuronB.infuse?.(v))
+    const subscription = subscribe((v) => neuronB.infuse(v))
     linkedNeurons.set(neuronB, subscription)
     return { unlink: () => unlink(neuronB) }
   }
@@ -30,7 +30,7 @@ export function createNeuronCore<T>(options?: {}): NeuronCore<T> {
     return subscription?.unsubscribe()
   }
   const infuse: NeuronCore<T>["infuse"] = (item) => {
-    eventCenter.emit("changeValue", [item])
+    eventEmitter.emit("changeValue", [item])
   }
   return {
     _isNeuron: true,
