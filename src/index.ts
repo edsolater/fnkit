@@ -67,3 +67,4 @@ export * from "./wrapper"
 export * from "./merge"
 export * from "./checkHelpers" // 辅助逻辑判断函数的组合
 export * from "./mergeObject" // 浅合并多个对象（“工具”的“工具”）
+export * from "./id" // ID 生成器
