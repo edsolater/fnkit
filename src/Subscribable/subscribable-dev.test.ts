@@ -1,9 +1,10 @@
 import { describe, expect, test, vi } from "vitest"
 import { Subscription } from "../customizedClasses/Subscription"
+import { PluginSystem } from "../plugin-system"
 import {
   isSubscribable,
   Subscribable,
-  type SubscribablePluginFN,
+  type SubscribablePluginChannels,
 } from "./subscribable-dev"
 
 describe("Subscribable 取值与写入", () => {
@@ -160,11 +161,11 @@ describe("Subscribable 订阅", () => {
 
 describe("Subscribable 插件", () => {
   test("插件按安装顺序连续转换，实例 beforeSet 最后处理", () => {
-    const addOnePlugin: SubscribablePluginFN<number> = () => ({
-      beforeSet: (value) => value + 1,
+    const addOnePlugin = PluginSystem.createPlugin<SubscribablePluginChannels<number>>({
+      input: (value) => value + 1,
     })
-    const doublePlugin: SubscribablePluginFN<number> = () => ({
-      beforeSet: (value) => value * 2,
+    const doublePlugin = PluginSystem.createPlugin<SubscribablePluginChannels<number>>({
+      input: (value) => value * 2,
     })
     const subscribable = new Subscribable(0, {
       plugins: [addOnePlugin, doublePlugin],
@@ -176,26 +177,24 @@ describe("Subscribable 插件", () => {
     expect(subscribable.value).toBe(3)
   })
 
-  test("运行时安装只影响后续写入，同一个插件对象只安装一次", async () => {
-    const onInitFN = vi.fn()
-    const onSetFN = vi.fn()
-    const pluginFN = vi.fn<SubscribablePluginFN<number>>(() => ({
-      beforeSet: (value) => value * 2,
-      onInit: onInitFN,
-      onSet: onSetFN,
-    }))
+  test("运行时装载只影响后续写入，重复装载会重复追加 wrapper", () => {
+    const inputWrapper = vi.fn((value: number) => value * 2)
+    const plugin = PluginSystem.createPlugin<SubscribablePluginChannels<number>>({
+      input: inputWrapper,
+    })
     const subscribable = new Subscribable(1)
 
     subscribable.set(2)
-    Subscribable.loadPlugin({ to: subscribable, plugins: [pluginFN] })
-    Subscribable.loadPlugin({ to: subscribable, plugins: [pluginFN] })
-    await Promise.resolve()
+    subscribable.load(plugin)
+    subscribable.load(plugin)
     subscribable.set(3)
 
-    expect(pluginFN).toHaveBeenCalledOnce()
-    expect(onInitFN).toHaveBeenCalledOnce()
-    expect(onSetFN).toHaveBeenCalledOnce()
-    expect(subscribable.value).toBe(6)
+    expect(inputWrapper).toHaveBeenCalledTimes(2)
+    expect(subscribable.value).toBe(12)
+    expect(subscribable.loadedPlugins).toBe(
+      subscribable.pluginSystem.loadedPlugins,
+    )
+    expect(subscribable.loadedPlugins).toEqual([plugin, plugin])
   })
 })
 
