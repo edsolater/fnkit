@@ -49,6 +49,7 @@ export * from "./oldMethodsMath"
 export * from "./oldMethodsString"
 export * from "./pickProperty" // FP style utils to get property easily
 export * from "./pipe"
+export * from "./plugin-system"
 export * from "./promiseHelpers"
 export * from "./promisify" // make `Promise<Record<K, V>>` to `Record<K, Promise<V>>`
 export * from "./proxyObject"

@@ -49,6 +49,11 @@
 | [`NeuronContext`](./src/customizedClasses/Neuron/Neuron.ts) | 节点上下文 | 跟随 Neuron 一直存在；Neuron 自动更新 prev，插件可以扩展或调整字段。 | `typed` |
 | [`new Subscription`](./src/customizedClasses/Subscription.ts) | 可取消资源 | 创建只执行一次取消动作的生命周期句柄。 | `factory` |
 | [`isNeuron`](./src/customizedClasses/Neuron/utils/isNeuron.ts) | 未知值 | 判断值是否为当前 Neuron 类的实例。 | `typed` |
+| [`new PluginSystem`](./src/plugin-system/PluginSystem.ts) | 实例名称 | 创建拥有独立 channels 和装载记录的插件系统。 | `factory` `pipeline` `typed` |
+| [`PluginSystem.createPlugin`](./src/plugin-system/PluginSystem.ts) | channel wrappers | 创建同步处理同型数据的插件；完整 channels 类型可以省略。 | `factory` `typed` |
+| [`PluginSystem.load`](./src/plugin-system/PluginSystem.ts) | Plugin | 把插件提供的 wrappers 追加到对应 channel 管线。 | `pipeline` `typed` |
+| [`PluginSystem.pass`](./src/plugin-system/PluginSystem.ts) | channel 与数据 | 让数据依次经过当前 channel 已经装载的 wrappers。 | `pipeline` `typed` |
+| [`Pluginable`](./src/plugin-system/PluginSystem.ts) | 支持插件的领域对象 | 声明对象拥有独立 Plugin System、装载记录和 load 入口。 | `typed` |
 | [`formatDate`](./src/timeTools/stringifyDate.ts) | 日期值 | 按格式字符串输出日期文本。 | `format` |
 | [`toDateString`](./src/timeTools/stringifyDate.ts) | 时间戳 | 快速转成日期时间字符串。 | `format` `alias` |
 | [`parseDuration`](./src/timeTools/parseDuration.ts) | 秒数 duration | 拆成天、时、分、秒、毫秒结构。 | `parse` |
