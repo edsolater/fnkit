@@ -8,17 +8,18 @@ import {
 import { isNeuron } from "./utils/isNeuron"
 
 describe("Neuron 根节点", () => {
-  test("source 创建输入输出同型且持有 context 的 Neuron", () => {
+  test("source 创建原样接收 value 且持有 context 的 Neuron", () => {
     const source = Neuron.source<number>()
-    const receivedSignals: Array<[number, number | undefined]> = []
+    const receivedSignals: Array<[number, NeuronContext]> = []
     const subscriberFN = vi.fn(
-      (output: number, context: NeuronContext<number>) => {
-        receivedSignals.push([output, context.prev])
+      (value: number, context: NeuronContext) => {
+        receivedSignals.push([value, context])
       },
     )
 
-    expectTypeOf(source).toEqualTypeOf<Neuron<number, number>>()
-    expect(source.context).toEqual({ prev: undefined })
+    expectTypeOf(source).toEqualTypeOf<Neuron<number>>()
+    expect(source.value).toBeUndefined()
+    expect(source.context).toEqual({})
 
     source.tick(0)
     const subscription = source.subscribe(subscriberFN)
@@ -27,8 +28,8 @@ describe("Neuron 根节点", () => {
     source.tick(2)
 
     expect(subscriberFN).toHaveBeenCalledOnce()
-    expect(receivedSignals).toEqual([[1, 0]])
-    expect(source.context.prev).toBe(2)
+    expect(receivedSignals).toEqual([[1, source.context]])
+    expect(source.value).toBe(2)
   })
 
   test("相同 subscriber FN 的每次订阅都可以独立取消", () => {
@@ -44,7 +45,7 @@ describe("Neuron 根节点", () => {
     source.tick(3)
 
     expect(subscriberFN).toHaveBeenCalledTimes(3)
-    expect(subscriberFN.mock.calls.map(([output]) => output)).toEqual([1, 1, 2])
+    expect(subscriberFN.mock.calls.map(([value]) => value)).toEqual([1, 1, 2])
   })
 
   test("传播期间的订阅变化只影响下一次输出", () => {
@@ -75,7 +76,7 @@ describe("Neuron 节点连接", () => {
     const targetSubscriberFN = vi.fn()
 
     target.subscribe(targetSubscriberFN)
-    const subscription = source.subscribe((output) => target.tick(output))
+    const subscription = source.subscribe((value) => target.tick(value))
     source.tick(1)
     subscription.unsubscribe()
     source.tick(2)
@@ -91,7 +92,7 @@ describe("Neuron 节点连接", () => {
     const targetSubscriberFN = vi.fn()
 
     target.subscribe(targetSubscriberFN)
-    const forwardToTarget = (output: number) => target.tick(output)
+    const forwardToTarget = (value: number) => target.tick(value)
     const firstSubscription = source.subscribe(forwardToTarget)
     const secondSubscription = source.subscribe(forwardToTarget)
     source.tick(1)
@@ -101,7 +102,7 @@ describe("Neuron 节点连接", () => {
     source.tick(3)
 
     expect(targetSubscriberFN).toHaveBeenCalledTimes(3)
-    expect(targetSubscriberFN.mock.calls.map(([output]) => output)).toEqual([
+    expect(targetSubscriberFN.mock.calls.map(([value]) => value)).toEqual([
       1,
       1,
       2,
@@ -109,26 +110,32 @@ describe("Neuron 节点连接", () => {
   })
 })
 
-describe("Neuron 派生节点", () => {
-  test("deriveFrom 把 mapper 保存在新节点并转换以后经过的信号", () => {
+describe("Neuron 数据管线", () => {
+  test("pipe 把 mapper 保存在下游节点并转换以后经过的信号", () => {
     const source = Neuron.source<number>()
-    const derived = Neuron.deriveFrom(source, (value) => `value:${value * 2}`)
+    const mapperFN = vi.fn((value: number) => `value:${value * 2}`)
+    const derived = source.pipe(mapperFN)
     const subscriberFN = vi.fn()
 
-    expectTypeOf(derived).toEqualTypeOf<Neuron<number, string>>()
+    expectTypeOf(derived).toEqualTypeOf<Neuron<string, number>>()
+    expect(derived.mapper).toBe(mapperFN)
+    expect(derived.value).toBeUndefined()
 
     source.tick(1)
+    expect(mapperFN).toHaveBeenLastCalledWith(1, derived.context)
+    expect(derived.value).toBe("value:2")
     derived.subscribe(subscriberFN)
     source.tick(2)
 
     expect(subscriberFN).toHaveBeenCalledOnce()
     expect(subscriberFN.mock.calls[0]?.[0]).toBe("value:4")
     expect(subscriberFN.mock.calls[0]?.[1]).toBe(derived.context)
+    expect(derived.value).toBe("value:4")
   })
 
   test("派生节点的 tick 使用自身 mapper", () => {
     const source = Neuron.source<number>()
-    const derived = Neuron.deriveFrom(source, (value) => `value:${value * 2}`)
+    const derived = source.pipe((value) => `value:${value * 2}`)
     const subscriberFN = vi.fn()
 
     derived.subscribe(subscriberFN)
@@ -137,15 +144,16 @@ describe("Neuron 派生节点", () => {
     expect(subscriberFN).toHaveBeenCalledOnce()
     expect(subscriberFN.mock.calls[0]?.[0]).toBe("value:6")
     expect(subscriberFN.mock.calls[0]?.[1]).toBe(derived.context)
+    expect(derived.value).toBe("value:6")
   })
 
-  test("deriveFrom 可以连续组成不同输入输出类型的数据管道", () => {
+  test("pipe 可以连续组成不同 value 类型的数据管道", () => {
     const source = Neuron.source<number>()
-    const doubled = Neuron.deriveFrom(source, (value) => value * 2)
-    const text = Neuron.deriveFrom(doubled, (value) => `value:${value + 1}`)
+    const doubled = source.pipe((value) => value * 2)
+    const text = doubled.pipe((value) => `value:${value + 1}`)
     const subscriberFN = vi.fn()
 
-    expectTypeOf(text).toEqualTypeOf<Neuron<number, string>>()
+    expectTypeOf(text).toEqualTypeOf<Neuron<string, number>>()
 
     text.subscribe(subscriberFN)
     source.tick(3)
@@ -153,88 +161,87 @@ describe("Neuron 派生节点", () => {
     expect(subscriberFN).toHaveBeenCalledOnce()
     expect(subscriberFN.mock.calls[0]?.[0]).toBe("value:7")
     expect(subscriberFN.mock.calls[0]?.[1]).toBe(text.context)
+    expect(source.value).toBe(3)
+    expect(doubled.value).toBe(6)
+    expect(text.value).toBe("value:7")
   })
 })
 
 describe("Neuron context", () => {
-  test("Neuron 持有同一个 context，并在每次 tick 后推进 prev", () => {
+  test("Neuron 持有同一个 context，并在每次 tick 后更新核心 value", () => {
     const source = Neuron.source<number>()
     const receivedSignals: Array<{
-      output: number
-      prev: number | undefined
-      context: NeuronContext<number>
+      value: number
+      context: NeuronContext
     }> = []
 
-    source.subscribe((output, context) => {
-      receivedSignals.push({ output, prev: context.prev, context })
+    source.subscribe((value, context) => {
+      receivedSignals.push({ value, context })
     })
     source.tick(1)
     source.tick(2)
     source.tick(3)
 
-    expect(receivedSignals.map(({ output, prev }) => [output, prev])).toEqual([
-      [1, undefined],
-      [2, 1],
-      [3, 2],
-    ])
+    expect(receivedSignals.map(({ value }) => value)).toEqual([1, 2, 3])
     expect(receivedSignals.every(({ context }) => context === source.context)).toBe(
       true,
     )
-    expect(source.context.prev).toBe(3)
+    expect(source.value).toBe(3)
+    expect(source.context).toEqual({})
   })
 
-  test("派生节点持有自己的 context，不继承 source context", () => {
+  test("下游节点持有自己的 value 和 context", () => {
     const source = Neuron.source<number>()
-    const derived = Neuron.deriveFrom(source, (value) => `value:${value * 2}`)
-    const sourceSignals: Array<[number, number | undefined]> = []
-    const derivedSignals: Array<[string, string | undefined]> = []
+    const derived = source.pipe((value) => `value:${value * 2}`)
+    const sourceSignals: Array<[number, NeuronContext]> = []
+    const derivedSignals: Array<[string, NeuronContext]> = []
 
-    source.subscribe((output, context) => {
-      sourceSignals.push([output, context.prev])
+    source.subscribe((value, context) => {
+      sourceSignals.push([value, context])
     })
-    derived.subscribe((output, context) => {
-      derivedSignals.push([output, context.prev])
+    derived.subscribe((value, context) => {
+      derivedSignals.push([value, context])
     })
     source.tick(1)
     source.tick(2)
 
     expect(source.context).not.toBe(derived.context)
     expect(sourceSignals).toEqual([
-      [1, undefined],
-      [2, 1],
+      [1, source.context],
+      [2, source.context],
     ])
     expect(derivedSignals).toEqual([
-      ["value:2", undefined],
-      ["value:4", "value:2"],
+      ["value:2", derived.context],
+      ["value:4", derived.context],
     ])
+    expect(source.value).toBe(2)
+    expect(derived.value).toBe("value:4")
   })
 
   test("插件字段保存在同一个 context 中，并会跨 tick 保留", () => {
     const source = Neuron.source<number>()
-    const plugin: NeuronPlugin<number, number> = {
+    const plugin: NeuronPlugin<number> = {
       install() {},
-      refineContext(output, context) {
+      refineContext(value, context) {
         const tickCount =
           typeof context.tickCount === "number" ? context.tickCount : 0
         context.tickCount = tickCount + 1
-        context.scaledOutput = output * 10
+        context.scaledValue = value * 10
       },
     }
     const receivedSignals: Array<{
-      output: number
-      prev: number | undefined
+      value: number
       tickCount: unknown
-      scaledOutput: unknown
-      context: NeuronContext<number>
+      scaledValue: unknown
+      context: NeuronContext
     }> = []
 
     Neuron.loadPlugin({ to: source, plugins: [plugin] })
-    source.subscribe((output, context) => {
+    source.subscribe((value, context) => {
       receivedSignals.push({
-        output,
-        prev: context.prev,
+        value,
         tickCount: context.tickCount,
-        scaledOutput: context.scaledOutput,
+        scaledValue: context.scaledValue,
         context,
       })
     })
@@ -242,26 +249,25 @@ describe("Neuron context", () => {
     source.tick(4)
 
     expect(
-      receivedSignals.map(({ output, prev, tickCount, scaledOutput }) => [
-        output,
-        prev,
+      receivedSignals.map(({ value, tickCount, scaledValue }) => [
+        value,
         tickCount,
-        scaledOutput,
+        scaledValue,
       ]),
     ).toEqual([
-      [3, undefined, 1, 30],
-      [4, 3, 2, 40],
+      [3, 1, 30],
+      [4, 2, 40],
     ])
     expect(receivedSignals[0]?.context).toBe(source.context)
     expect(receivedSignals[1]?.context).toBe(source.context)
     expect(source.context).toEqual({
-      prev: 4,
       tickCount: 2,
-      scaledOutput: 40,
+      scaledValue: 40,
     })
+    expect(source.value).toBe(4)
   })
 
-  test("传播中抛错也会把 context.prev 推进到本次 output", () => {
+  test("传播中抛错也会保留本次核心 value", () => {
     const source = Neuron.source<number>()
 
     source.subscribe(() => {
@@ -269,17 +275,17 @@ describe("Neuron context", () => {
     })
 
     expect(() => source.tick(1)).toThrow("stop propagation")
-    expect(source.context.prev).toBe(1)
+    expect(source.value).toBe(1)
   })
 })
 
 describe("Neuron 插件装载", () => {
   test("插件可以通过公开扩展面增强 mapper", () => {
     const source = Neuron.source<number>()
-    const plugin: NeuronPlugin<number, number> = {
+    const plugin: NeuronPlugin<number> = {
       install(neuron) {
         const mapper = neuron.mapper
-        neuron.mapper = (input) => mapper(input) * 2
+        neuron.mapper = (value, context) => mapper(value, context) * 2
       },
     }
     const subscriberFN = vi.fn()
@@ -291,15 +297,16 @@ describe("Neuron 插件装载", () => {
     expect(subscriberFN).toHaveBeenCalledOnce()
     expect(subscriberFN.mock.calls[0]?.[0]).toBe(6)
     expect(subscriberFN.mock.calls[0]?.[1]).toBe(source.context)
+    expect(source.value).toBe(6)
   })
 
   test("loadPlugin 是运行时唯一装载入口，同一插件实例只装载一次", () => {
     const source = Neuron.source<number>()
-    const derived = Neuron.deriveFrom(source, (value) => `value:${value * 2}`)
-    const observedOutputs: string[] = []
-    const plugin: NeuronPlugin<number, string> = {
+    const derived = source.pipe((value) => `value:${value * 2}`)
+    const observedValues: string[] = []
+    const plugin: NeuronPlugin<string, number> = {
       install: vi.fn((neuron) => {
-        neuron.subscribe((output) => observedOutputs.push(output))
+        neuron.subscribe((value) => observedValues.push(value))
       }),
     }
 
@@ -310,13 +317,13 @@ describe("Neuron 插件装载", () => {
     source.tick(3)
 
     expect(plugin.install).toHaveBeenCalledOnce()
-    expect(observedOutputs).toEqual(["value:4", "value:6"])
+    expect(observedValues).toEqual(["value:4", "value:6"])
   })
 
   test("插件可以包装 subscribe，而 Neuron 不解释 subscriber FN 的来源", () => {
     const source = Neuron.source<number>()
     const observedSubscriberFNs: NeuronSubscriberFN<number>[] = []
-    const plugin: NeuronPlugin<number, number> = {
+    const plugin: NeuronPlugin<number> = {
       install(neuron) {
         const subscribe = neuron.subscribe
         neuron.subscribe = (subscriberFN) => {

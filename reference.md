@@ -41,12 +41,13 @@
 | [`toObjectProxy`](./src/object-proxy.ts) | Promise 中的对象 | 转成可递归读取、调用和等待的 ObjectProxy。 | `factory` `typed` |
 | [`isObjectProxy`](./src/object-proxy.ts) | 未知值 | 判断值是否实现 ObjectProxy 的 symbol 身份协议。 | `typed` |
 | [`toPromiseFromObjectProxy`](./src/object-proxy.ts) | ObjectProxy | 取得解析当前真实值的原生 Promise。 | `typed` |
-| [`Neuron.source`](./src/customizedClasses/Neuron/Neuron.ts) | 根数据流节点 | 创建输入输出同型、持有独立 context 的根 Neuron。 | `factory` `pipeline` `typed` |
-| [`Neuron.deriveFrom`](./src/customizedClasses/Neuron/Neuron.ts) | 已有 Neuron 与 mapper | 创建保存转换规则的下游 Neuron，并通过订阅接收上游信号。 | `factory` `pipeline` `typed` |
-| [`Neuron.subscribe`](./src/customizedClasses/Neuron/Neuron.ts) | subscriber FN | 订阅 output，并取得当前 Neuron 一直持有的 context。 | `pipeline` `typed` |
-| [`Neuron.tick`](./src/customizedClasses/Neuron/Neuron.ts) | 一次 input | 让数据流经过当前 Neuron，并在传播结束前推进 context.prev。 | `pipeline` `typed` |
+| [`Neuron.source`](./src/customizedClasses/Neuron/Neuron.ts) | 根数据流节点 | 创建原样接收 value、持有独立 context 的根 Neuron。 | `factory` `pipeline` `typed` |
+| [`Neuron#pipe`](./src/customizedClasses/Neuron/Neuron.ts) | mapper | 在当前 Neuron 后接入保存转换规则的下游 Neuron。 | `factory` `pipeline` `typed` |
+| [`Neuron#value`](./src/customizedClasses/Neuron/Neuron.ts) | 最近一次激活结果 | 读取当前核心值；第一次 tick 以前是 undefined。 | `typed` |
+| [`Neuron.subscribe`](./src/customizedClasses/Neuron/Neuron.ts) | subscriber FN | 订阅以后的 value，并取得当前 Neuron 一直持有的 context。 | `pipeline` `typed` |
+| [`Neuron.tick`](./src/customizedClasses/Neuron/Neuron.ts) | 一次待映射值 | 使用当前 mapper 激活 Neuron，保存核心 value 后再传播。 | `pipeline` `typed` |
 | [`Neuron.loadPlugin`](./src/customizedClasses/Neuron/Neuron.ts) | Neuron 与插件列表 | 装载可包装公开能力或增强 context 的能力模块。 | `typed` |
-| [`NeuronContext`](./src/customizedClasses/Neuron/Neuron.ts) | 节点上下文 | 跟随 Neuron 一直存在；Neuron 自动更新 prev，插件可以扩展或调整字段。 | `typed` |
+| [`NeuronContext`](./src/customizedClasses/Neuron/Neuron.ts) | 节点上下文 | 跟随 Neuron 一直存在，字段由插件按需扩展。 | `typed` |
 | [`new Subscription`](./src/customizedClasses/Subscription.ts) | 可取消资源 | 创建只执行一次取消动作的生命周期句柄。 | `factory` |
 | [`isNeuron`](./src/customizedClasses/Neuron/utils/isNeuron.ts) | 未知值 | 判断值是否为当前 Neuron 类的实例。 | `typed` |
 | [`new PluginSystem`](./src/plugin-system/PluginSystem.ts) | 实例名称 | 创建拥有独立 channels 和装载记录的插件系统。 | `factory` `pipeline` `typed` |

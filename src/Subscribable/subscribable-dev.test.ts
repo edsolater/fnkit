@@ -27,7 +27,7 @@ describe("Subscribable 取值与写入", () => {
   test("最终转换值相同则跳过，force 可以强制写入", () => {
     const subscriberFN = vi.fn()
     const subscribable = new Subscribable(2, {
-      beforeSet: (value) => Math.abs(value),
+      refine: (value) => Math.abs(value),
     })
     subscribable.subscribe(subscriberFN, { immediately: false })
 
@@ -160,16 +160,16 @@ describe("Subscribable 订阅", () => {
 })
 
 describe("Subscribable 插件", () => {
-  test("插件按安装顺序连续转换，实例 beforeSet 最后处理", () => {
+  test("beforeSet 插件按装载顺序转换，实例 refine 最后处理", () => {
     const addOnePlugin = PluginSystem.createPlugin<SubscribablePluginChannels<number>>({
-      input: (value) => value + 1,
+      beforeSet: (value) => value + 1,
     })
     const doublePlugin = PluginSystem.createPlugin<SubscribablePluginChannels<number>>({
-      input: (value) => value * 2,
+      beforeSet: (value) => value * 2,
     })
     const subscribable = new Subscribable(0, {
       plugins: [addOnePlugin, doublePlugin],
-      beforeSet: (value) => value - 3,
+      refine: (value) => value - 3,
     })
 
     subscribable.set(2)
@@ -178,9 +178,9 @@ describe("Subscribable 插件", () => {
   })
 
   test("运行时装载只影响后续写入，重复装载会重复追加 wrapper", () => {
-    const inputWrapper = vi.fn((value: number) => value * 2)
+    const beforeSetWrapper = vi.fn((value: number) => value * 2)
     const plugin = PluginSystem.createPlugin<SubscribablePluginChannels<number>>({
-      input: inputWrapper,
+      beforeSet: beforeSetWrapper,
     })
     const subscribable = new Subscribable(1)
 
@@ -189,7 +189,7 @@ describe("Subscribable 插件", () => {
     subscribable.load(plugin)
     subscribable.set(3)
 
-    expect(inputWrapper).toHaveBeenCalledTimes(2)
+    expect(beforeSetWrapper).toHaveBeenCalledTimes(2)
     expect(subscribable.value).toBe(12)
     expect(subscribable.loadedPlugins).toBe(
       subscribable.pluginSystem.loadedPlugins,
@@ -199,9 +199,12 @@ describe("Subscribable 插件", () => {
 })
 
 describe("Subscribable 派生与销毁", () => {
-  test("pipe 创建持续跟随上游的 Subscribable", () => {
+  test("deriveFrom 创建持续跟随 source 的 Subscribable", () => {
     const source = new Subscribable(2)
-    const derived = source.pipe((value) => `value:${value * 2}`)
+    const derived = Subscribable.deriveFrom(
+      source,
+      (value) => `value:${value * 2}`,
+    )
 
     source.set(3)
     expect(derived.value).toBe("value:6")

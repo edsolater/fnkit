@@ -21,13 +21,14 @@ export interface SubscribableContext<Value> {
  * 接收当前值和本次传播上下文。
  * 返回的清理函数会在下一次交付、取消订阅或销毁时执行一次。
  */
-export type SubscribableSubscriberFN<Value> = (value: Value, context: SubscribableContext<Value>) => void | (() => void)
+export type SubscriberFN<Value> = (value: Value, context: SubscribableContext<Value>) => void | (() => void)
 
 /** set 接受同步值或同步更新函数；函数只用于计算，不能作为值保存。 */
 export type SubscribableSetValueDispatcher<Value> = Value | ((oldValue: Value) => Value)
 
-/** Subscribable 允许插件处理准备写入的值。 */
+/** Subscribable 允许插件介入的时机。 */
 export type SubscribablePluginChannels<Value> = {
+  /** set 保存值以前经过的插件管线。 */
   beforeSet: Value
 }
 
@@ -39,7 +40,7 @@ export interface SubscribableConstructorOptions<Value> {
   /** 用于调试和辨认实例的名称。 */
   name?: string
 
-  /** 插件完成转换后，最后关头，对本次输入做最后处理。 */
+  /** 对插件处理后的输入作最终转换。 */
   refine?: (newValue: Value, prevValue: Value, utils: { self: Subscribable<Value> }) => Value
 
   /** 判断最终输入与当前值是否相同，默认使用 Object.is。 */
@@ -52,7 +53,7 @@ export interface SubscribableConstructorOptions<Value> {
 type SubscribeDetailInfo<Value> = {
   /** 订阅返回的控制器 */
   subscription: Subscription
-  subscriberFN: SubscribableSubscriberFN<Value>
+  subscriberFN: SubscriberFN<Value>
   once: boolean
   key?: string
   cleanupFN?: () => void
@@ -81,7 +82,7 @@ export class Subscribable<Value> implements Pluginable<SubscribablePluginChannel
   /** 最终值的比较规则；由 constructor 设置，外界不要直接改。 */
   equals: (value: Value, prevValue: Value) => boolean
 
-  /** 当前实例自己的插件系统与 input 管线，外界通常只读取。 */
+  /** 当前实例自己的插件系统与 beforeSet 管线，外界通常只读取。 */
   pluginSystem = new PluginSystem<SubscribablePluginChannels<Value>>({
     name: "subscribable",
   })
@@ -107,7 +108,7 @@ export class Subscribable<Value> implements Pluginable<SubscribablePluginChannel
   }
 
   /**
-   * 把插件的 input wrapper 追加到当前实例。
+   * 把插件的 beforeSet wrapper 追加到当前实例。
    * 每次 load 都会追加，且只影响之后的写入。
    */
   load(plugin: SubscribablePlugin<Value>): void {
@@ -120,7 +121,7 @@ export class Subscribable<Value> implements Pluginable<SubscribablePluginChannel
    * key 相同会先结束旧订阅，once 在第一次交付结束后取消本次订阅。
    */
   subscribe(
-    subscriberFN: SubscribableSubscriberFN<Value>,
+    subscriberFN: SubscriberFN<Value>,
     options?: {
       /** 相同 key 重复订阅时，由新订阅接替旧订阅。 */
       key?: string
@@ -168,7 +169,7 @@ export class Subscribable<Value> implements Pluginable<SubscribablePluginChannel
 
   /**
    * 同步写入值或根据旧值计算新值。
-   * input 插件和 beforeSet 转换完成后再比较；force 可以强制写入相同值。
+   * beforeSet 插件和 refine 完成转换后再比较；force 可以强制写入相同值。
    */
   set(
     dispatcher: SubscribableSetValueDispatcher<Value>,
@@ -195,12 +196,15 @@ export class Subscribable<Value> implements Pluginable<SubscribablePluginChannel
     this.#broadcast(value, { prev, version: this.#version })
   }
 
-  /** 创建一个由当前值转换而来的 Subscribable，并持续跟随后续写入。 */
-  pipe<MappedValue>(mapperFN: (value: Value) => MappedValue): Subscribable<MappedValue> {
-    this.#assertOpen("创建派生值")
+  /** 根据 source 的当前值创建新实例，并持续跟随 source 以后的写入。 */
+  static deriveFrom<SourceValue, DerivedValue>(
+    source: Subscribable<SourceValue>,
+    mapperFN: (value: SourceValue) => DerivedValue,
+  ): Subscribable<DerivedValue> {
+    source.#assertOpen("创建派生值")
 
-    const derived = new Subscribable(mapperFN(this.value))
-    const upstreamSubscription = this.subscribe((value) => derived.set(mapperFN(value)), { immediately: false })
+    const derived = new Subscribable(mapperFN(source.value))
+    const upstreamSubscription = source.subscribe((value) => derived.set(mapperFN(value)), { immediately: false })
     derived.onDestroy(() => upstreamSubscription.unsubscribe())
     return derived
   }
