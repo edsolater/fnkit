@@ -44,9 +44,11 @@ export class EventEmitter<Events extends EventMap<Events>> {
    */
   on<EventName extends keyof Events>(
     eventName: EventName,
-    listener: EventListener<Events[EventName]>,
+    listener: EventListener<Events[EventName]> | undefined,
     options?: EventListenerOptions,
   ): Subscription {
+    if (!listener) return new Subscription({ onUnsubscribe: () => {} })
+      
     const registrations = getOrCreateProperty(
       this.listeners,
       eventName,
@@ -128,7 +130,6 @@ export class EventEmitter<Events extends EventMap<Events>> {
       registration.subscription.unsubscribe()
     }
   }
-
 }
 
 /**

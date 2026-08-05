@@ -48,6 +48,7 @@
 | [`Neuron.tick`](./src/customizedClasses/Neuron/Neuron.ts) | 一次待映射值 | 使用当前 mapper 激活 Neuron，保存核心 value 后再传播。 | `pipeline` `typed` |
 | [`Neuron.loadPlugin`](./src/customizedClasses/Neuron/Neuron.ts) | Neuron 与插件列表 | 装载可包装公开能力或增强 context 的能力模块。 | `typed` |
 | [`NeuronContext`](./src/customizedClasses/Neuron/Neuron.ts) | 节点上下文 | 跟随 Neuron 一直存在，字段由插件按需扩展。 | `typed` |
+| [`new EventEmitter`](./src/customizedClasses/EventEmitter.ts) | 强类型事件 | 创建独立的同步事件发布与订阅机制。 | `factory` `typed` |
 | [`new Subscription`](./src/customizedClasses/Subscription.ts) | 可取消资源 | 创建只执行一次取消动作的生命周期句柄。 | `factory` |
 | [`isNeuron`](./src/customizedClasses/Neuron/utils/isNeuron.ts) | 未知值 | 判断值是否为当前 Neuron 类的实例。 | `typed` |
 | [`new PluginSystem`](./src/plugin-system/PluginSystem.ts) | 实例名称 | 创建拥有独立 channels 和装载记录的插件系统。 | `factory` `pipeline` `typed` |
